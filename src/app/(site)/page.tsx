@@ -54,34 +54,34 @@ async function getFeaturedProperties() {
       },
       orderBy: [{ createdAt: "desc" }],
       take: 6,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        city: true,
-        neighborhood: true,
-        propertyType: true,
-        salePrice: true,
-        monthlyRent: true,
-        dailyRate: true,
-        bedrooms: true,
-        parkingSpaces: true,
-        privateArea: true,
-        isFeatured: true,
+      include: {
+        photos: {
+          orderBy: [{ isCover: "desc" }, { position: "asc" }],
+        },
       },
     });
 
     return rows.map((r) => ({
       id: r.id,
+      code: r.code,
       slug: r.slug,
       title: r.title,
       location: r.neighborhood ? `${r.neighborhood}, ${r.city}` : r.city,
+      city: r.city,
+      neighborhood: r.neighborhood,
+      purpose: r.purpose,
       price: r.salePrice ?? r.monthlyRent ?? r.dailyRate ?? null,
+      salePrice: r.salePrice,
+      monthlyRent: r.monthlyRent,
+      dailyRate: r.dailyRate,
       propertyType: r.propertyType,
       bedrooms: r.bedrooms,
+      suites: r.suites,
+      bathrooms: r.bathrooms,
       parkingSpaces: r.parkingSpaces,
       privateArea: r.privateArea,
       isFeatured: r.isFeatured,
+      photos: r.photos,
     }));
   } catch {
     return [];
