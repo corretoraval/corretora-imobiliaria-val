@@ -208,53 +208,57 @@ export function UsersManager({
           {loading ? (
             <p className="mt-4">Carregando…</p>
           ) : (
-            <table className="mt-4 w-full text-sm">
-              <thead className="text-left text-[var(--ink-soft)]">
-                <tr>
-                  <th>E-mail</th>
-                  <th>Nome</th>
-                  <th>Papel</th>
-                  <th>Criado</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u.id} className="border-t">
-                    <td className="py-2">{u.email}</td>
-                    <td className="py-2">{u.name ?? "—"}</td>
-                    <td className="py-2">{u.role}</td>
-                    <td className="py-2">
-                      {new Date(u.createdAt).toLocaleString()}
-                    </td>
-                    <td className="py-2">
-                      <button
-                        type="button"
-                        className="mr-2 text-xs"
-                        onClick={() => resetPassword(u.id)}
-                      >
-                        Resetar senha
-                      </button>
-                      <button
-                        type="button"
-                        className="mr-2 text-xs"
-                        onClick={() => openEdit(u)}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        className="text-xs"
-                        onClick={() => deleteUser(u.id)}
-                        disabled={u.email === currentUserEmail}
-                      >
-                        Excluir
-                      </button>
-                    </td>
+            <div className="mt-4 overflow-x-auto">
+              <table className="min-w-[600px] w-full text-sm">
+                <thead className="text-left text-[var(--ink-soft)]">
+                  <tr>
+                    <th className="pb-3 pr-4">E-mail</th>
+                    <th className="pb-3 pr-4">Nome</th>
+                    <th className="pb-3 pr-4">Papel</th>
+                    <th className="pb-3 pr-4">Criado</th>
+                    <th className="pb-3"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.id} className="border-t">
+                      <td className="py-3 pr-4">{u.email}</td>
+                      <td className="py-3 pr-4">{u.name ?? "—"}</td>
+                      <td className="py-3 pr-4">{u.role}</td>
+                      <td className="py-3 pr-4 whitespace-nowrap">
+                        {new Date(u.createdAt).toLocaleString()}
+                      </td>
+                      <td className="py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="text-xs font-semibold text-[var(--plum)] hover:underline"
+                            onClick={() => resetPassword(u.id)}
+                          >
+                            Resetar
+                          </button>
+                          <button
+                            type="button"
+                            className="text-xs font-semibold text-[var(--plum)] hover:underline"
+                            onClick={() => openEdit(u)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            className="text-xs font-semibold text-red-600 hover:underline disabled:opacity-50"
+                            onClick={() => deleteUser(u.id)}
+                            disabled={u.email === currentUserEmail}
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
 
           {message && (

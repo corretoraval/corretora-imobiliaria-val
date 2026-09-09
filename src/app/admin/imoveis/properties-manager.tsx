@@ -501,11 +501,10 @@ export function AdminPropertiesManager() {
 
                 return (
                   <li
-                    className={`flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between transition-all ${
-                      isBeingEdited
-                        ? "bg-[var(--surface-muted,#faf8f5)] -mx-3 px-3 rounded-2xl ring-2 ring-[var(--gold)]/50"
-                        : ""
-                    }`}
+                    className={`flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between transition-all ${isBeingEdited
+                      ? "bg-[var(--surface-muted,#faf8f5)] -mx-3 px-3 rounded-2xl ring-2 ring-[var(--gold)]/50"
+                      : ""
+                      }`}
                     key={property.id}
                   >
                     <div className="min-w-0">
@@ -534,9 +533,9 @@ export function AdminPropertiesManager() {
                     </div>
 
                     {/* Botões de Ação */}
-                    <div className="flex shrink-0 flex-wrap gap-2">
+                    <div className="flex shrink-0 flex-wrap gap-2 mt-2 sm:mt-0">
                       <button
-                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--plum)]/20 px-3.5 py-1.5 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--plum)]/5"
+                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--plum)]/20 px-3.5 py-2 sm:py-1.5 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--plum)]/5 min-h-[36px] sm:min-h-0"
                         onClick={() =>
                           isBeingEdited
                             ? cancelEdit()
@@ -546,25 +545,25 @@ export function AdminPropertiesManager() {
                       >
                         {isBeingEdited ? (
                           <>
-                            <X aria-hidden="true" size={13} /> Cancelar
+                            <X aria-hidden="true" size={14} /> Cancelar
                           </>
                         ) : (
                           <>
-                            <Pencil aria-hidden="true" size={13} /> Editar
+                            <Pencil aria-hidden="true" size={14} /> Editar
                           </>
                         )}
                       </button>
 
                       <button
-                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-gray-200 px-3.5 py-1.5 text-xs font-bold text-[var(--ink-soft)] hover:border-amber-400 hover:text-amber-700"
+                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-gray-200 px-3.5 py-2 sm:py-1.5 text-xs font-bold text-[var(--ink-soft)] hover:border-amber-400 hover:text-amber-700 min-h-[36px] sm:min-h-0"
                         onClick={() => archiveProperty(property.id)}
                         type="button"
                       >
-                        <Archive aria-hidden="true" size={13} /> Arquivar
+                        <Archive aria-hidden="true" size={14} /> Arquivar
                       </button>
 
                       <button
-                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-red-200 px-3.5 py-1.5 text-xs font-bold text-red-600 hover:border-red-500 hover:bg-red-50"
+                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-red-200 px-3.5 py-2 sm:py-1.5 text-xs font-bold text-red-600 hover:border-red-500 hover:bg-red-50 min-h-[36px] sm:min-h-0"
                         onClick={() =>
                           setDeleteTarget({
                             id: property.id,
@@ -574,7 +573,7 @@ export function AdminPropertiesManager() {
                         }
                         type="button"
                       >
-                        <Trash2 aria-hidden="true" size={13} /> Excluir
+                        <Trash2 aria-hidden="true" size={14} /> Excluir
                       </button>
                     </div>
                   </li>
@@ -605,7 +604,7 @@ export function AdminPropertiesManager() {
 
           <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
             {/* Código e Título */}
-            <div className="grid gap-3 sm:grid-cols-[1fr_2fr]">
+            <div className="grid gap-3">
               <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
                 Código do Imóvel *
                 <input
@@ -654,7 +653,7 @@ export function AdminPropertiesManager() {
             </label>
 
             {/* Finalidade e Tipo */}
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3">
               <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
                 Finalidade *
                 <select
@@ -667,8 +666,8 @@ export function AdminPropertiesManager() {
                   }
                   value={draft.purpose}
                 >
-                  <option value="VENDA">Venda (Comprar)</option>
-                  <option value="LOCACAO_ANUAL">Locação Anual (Alugar)</option>
+                  <option value="VENDA">Venda</option>
+                  <option value="LOCACAO_ANUAL">Locação Anual</option>
                   <option value="TEMPORADA">Temporada</option>
                 </select>
               </label>
@@ -688,7 +687,7 @@ export function AdminPropertiesManager() {
             </div>
 
             {/* Cidade e Preço com Máscara e R$ */}
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3">
               <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
                 Cidade *
                 <input
@@ -771,7 +770,7 @@ export function AdminPropertiesManager() {
                 </label>
 
                 {/* Quartos, Suítes, Banheiros, Vagas, Metragem */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
                   <label className="grid gap-1 text-xs font-bold text-white/90">
                     Dormitórios (Qts)
                     <input
@@ -963,11 +962,10 @@ export function AdminPropertiesManager() {
                             })),
                           )
                         }
-                        className={`absolute bottom-1 left-1 rounded px-1.5 py-0.5 text-[9px] font-bold ${
-                          photo.isCover
-                            ? "bg-[var(--gold)] text-[var(--plum)]"
-                            : "bg-black/60 text-white hover:bg-black/90"
-                        }`}
+                        className={`absolute bottom-1 left-1 rounded px-1.5 py-0.5 text-[9px] font-bold ${photo.isCover
+                          ? "bg-[var(--gold)] text-[var(--plum)]"
+                          : "bg-black/60 text-white hover:bg-black/90"
+                          }`}
                       >
                         {photo.isCover ? "Capa ✓" : "Definir Capa"}
                       </button>
