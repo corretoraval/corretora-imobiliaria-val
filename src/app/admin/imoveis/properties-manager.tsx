@@ -464,9 +464,9 @@ export function AdminPropertiesManager() {
             catálogo atualizado.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-row items-center gap-3 shrink-0">
           <button
-            className="interactive inline-flex items-center justify-center gap-2 rounded-full border bg-[var(--surface)] px-4 py-3 text-sm font-bold text-[var(--plum)] hover:border-[var(--gold)]"
+            className="interactive inline-flex items-center justify-center gap-2 rounded-full border bg-[var(--surface)] px-4 py-3 text-sm font-bold text-[var(--plum)] hover:border-[var(--gold)] whitespace-nowrap"
             disabled={loading}
             onClick={loadProperties}
             type="button"
@@ -474,7 +474,7 @@ export function AdminPropertiesManager() {
             <RefreshCw aria-hidden="true" size={16} /> Atualizar lista
           </button>
           <button
-            className="interactive inline-flex items-center justify-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)]"
+            className="interactive inline-flex items-center justify-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] whitespace-nowrap"
             onClick={openCreateModal}
             type="button"
           >
