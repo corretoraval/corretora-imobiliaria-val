@@ -11,10 +11,8 @@ import {
   Layers,
   MapPin,
   Maximize2,
-  Share2,
   ShieldCheck,
   Sparkles,
-  Tv,
   Waves,
   Wifi,
   Wind,
@@ -22,6 +20,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Finalidade } from "@prisma/client";
 import { PropertyCard } from "@/components/property-card";
 import { PropertyGallery } from "@/components/property-gallery";
 import { PropertyLeadForm } from "@/components/property-lead-form";
@@ -55,13 +54,17 @@ async function getPropertyBySlug(slug: string) {
   }
 }
 
-async function getRelatedProperties(currentId: string, purpose: string, city: string) {
+async function getRelatedProperties(
+  currentId: string,
+  purpose: string,
+  city: string,
+) {
   try {
     const properties = await prisma.imovel.findMany({
       where: {
         id: { not: currentId },
         archivedAt: null,
-        OR: [{ purpose: purpose as any }, { city }],
+        OR: [{ purpose: purpose as Finalidade }, { city }],
       },
       take: 3,
       orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
@@ -127,7 +130,9 @@ export async function generateMetadata({
   };
 }
 
-export default async function PropertyDetailPage({ params }: PropertyPageProps) {
+export default async function PropertyDetailPage({
+  params,
+}: PropertyPageProps) {
   const { slug } = await params;
   const property = await getPropertyBySlug(slug);
 
@@ -144,16 +149,22 @@ export default async function PropertyDetailPage({ params }: PropertyPageProps) 
   // Configuração do Badge e Rótulo de Preço
   const isRent = property.purpose === "LOCACAO_ANUAL";
   const isSeason = property.purpose === "TEMPORADA";
-  const isSale = property.purpose === "VENDA";
+  const _isSale = property.purpose === "VENDA";
 
   let mainPrice = property.salePrice;
   let pricePeriod = "";
-  let purposeBadge = { label: "Venda", bg: "bg-[var(--gold)] text-[var(--plum)]" };
+  let purposeBadge = {
+    label: "Venda",
+    bg: "bg-[var(--gold)] text-[var(--plum)]",
+  };
 
   if (isRent) {
     mainPrice = property.monthlyRent;
     pricePeriod = " /mês";
-    purposeBadge = { label: "Locação Anual", bg: "bg-[var(--plum)] text-white" };
+    purposeBadge = {
+      label: "Locação Anual",
+      bg: "bg-[var(--plum)] text-white",
+    };
   } else if (isSeason) {
     mainPrice = property.dailyRate;
     pricePeriod = " /diária";
@@ -162,12 +173,20 @@ export default async function PropertyDetailPage({ params }: PropertyPageProps) 
 
   // Lista de comodidades
   const amenities = [
-    { label: "Suítes", active: Boolean(property.suites && property.suites > 0), desc: `${property.suites} suíte(s)` },
+    {
+      label: "Suítes",
+      active: Boolean(property.suites && property.suites > 0),
+      desc: `${property.suites} suíte(s)`,
+    },
     { label: "Mobiliado", active: property.furnished, icon: Home },
     { label: "Sacada", active: property.hasBalcony, icon: Compass },
     { label: "Churrasqueira", active: property.hasBarbecue, icon: Flame },
     { label: "Piscina", active: property.hasPool, icon: Waves },
-    { label: "Ar Condicionado", active: property.hasAirConditioning, icon: Wind },
+    {
+      label: "Ar Condicionado",
+      active: property.hasAirConditioning,
+      icon: Wind,
+    },
     { label: "Vista para o Mar", active: property.seaView, icon: Waves },
     { label: "Frente Mar", active: property.oceanFront, icon: Waves },
     { label: "Quadra Mar", active: property.beachBlock, icon: Waves },
@@ -179,12 +198,18 @@ export default async function PropertyDetailPage({ params }: PropertyPageProps) 
   return (
     <main className="shell py-10 sm:py-14">
       {/* Breadcrumb Navigation */}
-      <nav aria-label="Navegação estrutural" className="mb-6 flex items-center gap-2 text-xs text-[var(--ink-soft)]">
+      <nav
+        aria-label="Navegação estrutural"
+        className="mb-6 flex items-center gap-2 text-xs text-[var(--ink-soft)]"
+      >
         <Link href="/" className="hover:text-[var(--plum)] transition-colors">
           Início
         </Link>
         <ChevronRight size={12} className="opacity-40" />
-        <Link href="/imoveis" className="hover:text-[var(--plum)] transition-colors">
+        <Link
+          href="/imoveis"
+          className="hover:text-[var(--plum)] transition-colors"
+        >
           Imóveis
         </Link>
         <ChevronRight size={12} className="opacity-40" />
@@ -262,17 +287,25 @@ export default async function PropertyDetailPage({ params }: PropertyPageProps) 
             {property.bedrooms ? (
               <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-4 text-center shadow-xs">
                 <Bed className="mx-auto mb-1 text-[var(--gold)]" size={24} />
-                <span className="text-xs text-[var(--ink-soft)] block">Dormitórios</span>
+                <span className="text-xs text-[var(--ink-soft)] block">
+                  Dormitórios
+                </span>
                 <span className="font-extrabold text-[var(--plum)] text-lg">
-                  {property.bedrooms} {property.bedrooms === 1 ? "quarto" : "quartos"}
+                  {property.bedrooms}{" "}
+                  {property.bedrooms === 1 ? "quarto" : "quartos"}
                 </span>
               </div>
             ) : null}
 
             {property.suites ? (
               <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-4 text-center shadow-xs">
-                <ShieldCheck className="mx-auto mb-1 text-[var(--gold)]" size={24} />
-                <span className="text-xs text-[var(--ink-soft)] block">Suítes</span>
+                <ShieldCheck
+                  className="mx-auto mb-1 text-[var(--gold)]"
+                  size={24}
+                />
+                <span className="text-xs text-[var(--ink-soft)] block">
+                  Suítes
+                </span>
                 <span className="font-extrabold text-[var(--plum)] text-lg">
                   {property.suites} {property.suites === 1 ? "suíte" : "suítes"}
                 </span>
@@ -282,7 +315,9 @@ export default async function PropertyDetailPage({ params }: PropertyPageProps) 
             {property.bathrooms ? (
               <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-4 text-center shadow-xs">
                 <Bath className="mx-auto mb-1 text-[var(--gold)]" size={24} />
-                <span className="text-xs text-[var(--ink-soft)] block">Banheiros</span>
+                <span className="text-xs text-[var(--ink-soft)] block">
+                  Banheiros
+                </span>
                 <span className="font-extrabold text-[var(--plum)] text-lg">
                   {property.bathrooms}
                 </span>
@@ -292,17 +327,25 @@ export default async function PropertyDetailPage({ params }: PropertyPageProps) 
             {property.parkingSpaces ? (
               <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-4 text-center shadow-xs">
                 <Car className="mx-auto mb-1 text-[var(--gold)]" size={24} />
-                <span className="text-xs text-[var(--ink-soft)] block">Garagem</span>
+                <span className="text-xs text-[var(--ink-soft)] block">
+                  Garagem
+                </span>
                 <span className="font-extrabold text-[var(--plum)] text-lg">
-                  {property.parkingSpaces} {property.parkingSpaces === 1 ? "vaga" : "vagas"}
+                  {property.parkingSpaces}{" "}
+                  {property.parkingSpaces === 1 ? "vaga" : "vagas"}
                 </span>
               </div>
             ) : null}
 
             {property.privateArea ? (
               <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-4 text-center shadow-xs">
-                <Maximize2 className="mx-auto mb-1 text-[var(--gold)]" size={24} />
-                <span className="text-xs text-[var(--ink-soft)] block">Área Privativa</span>
+                <Maximize2
+                  className="mx-auto mb-1 text-[var(--gold)]"
+                  size={24}
+                />
+                <span className="text-xs text-[var(--ink-soft)] block">
+                  Área Privativa
+                </span>
                 <span className="font-extrabold text-[var(--plum)] text-lg">
                   {property.privateArea} m²
                 </span>
@@ -311,8 +354,13 @@ export default async function PropertyDetailPage({ params }: PropertyPageProps) 
 
             {property.totalArea ? (
               <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-4 text-center shadow-xs">
-                <Maximize2 className="mx-auto mb-1 text-[var(--gold)]" size={24} />
-                <span className="text-xs text-[var(--ink-soft)] block">Área Total</span>
+                <Maximize2
+                  className="mx-auto mb-1 text-[var(--gold)]"
+                  size={24}
+                />
+                <span className="text-xs text-[var(--ink-soft)] block">
+                  Área Total
+                </span>
                 <span className="font-extrabold text-[var(--plum)] text-lg">
                   {property.totalArea} m²
                 </span>
@@ -329,20 +377,32 @@ export default async function PropertyDetailPage({ params }: PropertyPageProps) 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
                 {property.condoFee ? (
                   <div>
-                    <span className="text-xs text-[var(--ink-soft)] block">Condomínio</span>
-                    <span className="font-bold text-[var(--plum)]">{formatPrice(property.condoFee)}/mês</span>
+                    <span className="text-xs text-[var(--ink-soft)] block">
+                      Condomínio
+                    </span>
+                    <span className="font-bold text-[var(--plum)]">
+                      {formatPrice(property.condoFee)}/mês
+                    </span>
                   </div>
                 ) : null}
                 {property.iptu ? (
                   <div>
-                    <span className="text-xs text-[var(--ink-soft)] block">IPTU</span>
-                    <span className="font-bold text-[var(--plum)]">{formatPrice(property.iptu)}/ano</span>
+                    <span className="text-xs text-[var(--ink-soft)] block">
+                      IPTU
+                    </span>
+                    <span className="font-bold text-[var(--plum)]">
+                      {formatPrice(property.iptu)}/ano
+                    </span>
                   </div>
                 ) : null}
                 {property.cleaningFee ? (
                   <div>
-                    <span className="text-xs text-[var(--ink-soft)] block">Taxa de Limpeza</span>
-                    <span className="font-bold text-[var(--plum)]">{formatPrice(property.cleaningFee)}</span>
+                    <span className="text-xs text-[var(--ink-soft)] block">
+                      Taxa de Limpeza
+                    </span>
+                    <span className="font-bold text-[var(--plum)]">
+                      {formatPrice(property.cleaningFee)}
+                    </span>
                   </div>
                 ) : null}
               </div>
@@ -396,7 +456,11 @@ export default async function PropertyDetailPage({ params }: PropertyPageProps) 
           <PropertyLeadForm
             propertyCode={property.code}
             propertyTitle={property.title}
-            propertyAddress={property.neighborhood ? `${property.neighborhood}, ${property.city}` : property.city}
+            propertyAddress={
+              property.neighborhood
+                ? `${property.neighborhood}, ${property.city}`
+                : property.city
+            }
             propertyType={property.propertyType}
           />
         </aside>

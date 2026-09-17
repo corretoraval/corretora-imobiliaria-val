@@ -1,0 +1,46 @@
+name: Supabase Keep-Alive Health Check
+
+on:
+  schedule:
+    # Executa diariamente às 04:00 UTC (01:00 Horário de Brasília)
+    - cron: '0 4 * * *'
+  workflow_dispatch: # Permite disparo manual direto no painel do GitHub Actions
+
+jobs:
+  health-check:
+    name: Ping Database Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executar requisição de Health Check
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          HEALTH_CHECK_SECRET: ${{ secrets.HEALTH_CHECK_SECRET }}
+        run: |
+          BASE_URL="${APP_URL:-https://corretoraval.com.br}"
+          # Remove barra final se presente
+          BASE_URL="${BASE_URL%/}"
+          TARGET_URL="${BASE_URL}/api/health"
+          
+          echo "Disparando health check para: $TARGET_URL"
+
+          HEADERS=(-H "Cache-Control: no-cache, no-store")
+          if [ -n "$HEALTH_CHECK_SECRET" ]; then
+            echo "Header de autenticação configurado via secret."
+            HEADERS+=(-H "Authorization: Bearer $HEALTH_CHECK_SECRET")
+          else
+            echo "Nenhum HEALTH_CHECK_SECRET configurado. Enviando chamada sem token."
+          fi
+
+          HTTP_CODE=$(curl -s -o response.json -w "%{http_code}" "${HEADERS[@]}" "$TARGET_URL")
+
+          echo "HTTP Code recebido: $HTTP_CODE"
+          echo "Resposta do servidor:"
+          cat response.json || true
+          echo ""
+
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "ERRO: O Health Check retornou status $HTTP_CODE (esperado: 200)."
+            exit 1
+          fi
+
+          echo "Sucesso: O banco PostgreSQL no Supabase respondeu com sucesso ao SELECT 1."

@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Expand, Home, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface PropertyGalleryProps {
   title: string;
@@ -19,22 +19,32 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  const nextPhoto = useCallback(() => {
+    setSelectedIndex((prev) => (prev + 1) % photos.length);
+  }, [photos.length]);
+
+  const prevPhoto = useCallback(() => {
+    setSelectedIndex((prev) => (prev - 1 + photos.length) % photos.length);
+  }, [photos.length]);
+
   // Close lightbox on Escape key
   useEffect(() => {
+    if (!lightboxOpen) return;
+
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setLightboxOpen(false);
       if (e.key === "ArrowRight") nextPhoto();
       if (e.key === "ArrowLeft") prevPhoto();
     }
-    if (lightboxOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
-    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset";
     };
-  }, [lightboxOpen, photos.length]);
+  }, [lightboxOpen, nextPhoto, prevPhoto]);
 
   if (!photos || photos.length === 0) {
     return (
@@ -52,14 +62,6 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
   }
 
   const currentPhoto = photos[selectedIndex] || photos[0];
-
-  function nextPhoto() {
-    setSelectedIndex((prev) => (prev + 1) % photos.length);
-  }
-
-  function prevPhoto() {
-    setSelectedIndex((prev) => (prev - 1 + photos.length) % photos.length);
-  }
 
   return (
     <div className="space-y-3">

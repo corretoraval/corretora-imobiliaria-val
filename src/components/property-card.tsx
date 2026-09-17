@@ -2,7 +2,6 @@ import {
   ArrowRight,
   Bed,
   Car,
-  Check,
   Home,
   MapPin,
   Maximize2,
@@ -141,7 +140,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
 
         {/* Informações do Imóvel */}
         <div className="p-5">
-          <Link href={href} className="block group-hover:text-[var(--plum-bright)] transition-colors">
+          <Link
+            href={href}
+            className="block group-hover:text-[var(--plum-bright)] transition-colors"
+          >
             <h3 className="text-lg font-bold leading-snug text-[var(--plum)] line-clamp-1">
               {property.title}
             </h3>
@@ -164,13 +166,20 @@ export function PropertyCard({ property }: PropertyCardProps) {
                 </span>
               ) : null}
               {property.parkingSpaces ? (
-                <span className="flex items-center gap-1" title="Vagas de garagem">
+                <span
+                  className="flex items-center gap-1"
+                  title="Vagas de garagem"
+                >
                   <Car size={15} className="text-[var(--gold)]" />
-                  {property.parkingSpaces} {property.parkingSpaces === 1 ? "vg" : "vgs"}
+                  {property.parkingSpaces}{" "}
+                  {property.parkingSpaces === 1 ? "vg" : "vgs"}
                 </span>
               ) : null}
               {property.privateArea ? (
-                <span className="flex items-center gap-1" title="Área privativa">
+                <span
+                  className="flex items-center gap-1"
+                  title="Área privativa"
+                >
                   <Maximize2 size={13} className="text-[var(--gold)]" />
                   {property.privateArea} m²
                 </span>

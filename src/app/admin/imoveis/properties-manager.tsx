@@ -2,21 +2,15 @@
 
 import {
   Archive,
-  Bed,
-  Car,
   ChevronDown,
   ChevronUp,
-  FileText,
-  Home,
   LoaderCircle,
   MapPin,
-  Maximize2,
   Pencil,
   Plus,
   RefreshCw,
   Sparkles,
   Trash2,
-  X,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -26,6 +20,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { AdminModal } from "@/components/admin/admin-modal";
 import { formatPrice } from "@/lib/format-price";
 
 type Purpose = "VENDA" | "LOCACAO_ANUAL" | "TEMPORADA";
@@ -99,9 +94,9 @@ type PropertyPayload = {
   description?: string | null;
   photos?: Array<{
     url: string;
-    alt: string | null;
-    position: number;
-    isCover: boolean;
+    alt?: string | null;
+    position?: number;
+    isCover?: boolean;
   }>;
 };
 
@@ -124,35 +119,30 @@ const initialDraft: Draft = {
   description: "",
 };
 
-function priceFor(property: Property) {
-  return property.salePrice ?? property.monthlyRent ?? property.dailyRate;
+function formatCurrencyInput(value: number | string): string {
+  if (value === "" || value === null || value === undefined) return "";
+  const numeric =
+    typeof value === "number"
+      ? value
+      : Number(String(value).replace(/\D/g, ""));
+  if (Number.isNaN(numeric) || numeric === 0) return "";
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  }).format(numeric);
 }
 
-function labelFor(purpose: Purpose) {
-  if (purpose === "LOCACAO_ANUAL") return "Aluguel mensal";
-  if (purpose === "TEMPORADA") return "Valor da diária";
-  return "Valor de venda";
+function parseCurrencyInput(value: string): number | null {
+  const digits = value.replace(/\D/g, "");
+  return digits ? Number(digits) : null;
 }
 
-function formatCurrencyInput(val: string | number): string {
-  if (val === "" || val === null || val === undefined) return "";
-  const clean = String(val).replace(/\D/g, "");
-  if (!clean) return "";
-  const num = Number(clean);
-  if (isNaN(num)) return "";
-  return new Intl.NumberFormat("pt-BR").format(num);
-}
-
-function parseCurrencyInput(val: string): number | null {
-  const clean = val.replace(/\D/g, "");
-  return clean ? Number(clean) : null;
-}
-
-function toSlug(value: string) {
-  return value
+function toSlug(text: string): string {
+  return text
+    .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
@@ -166,13 +156,14 @@ export function AdminPropertiesManager() {
   const [message, setMessage] = useState<string | null>(null);
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
     code: string;
     title: string;
   } | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const formRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const loadProperties = useCallback(async () => {
@@ -203,11 +194,21 @@ export function AdminPropertiesManager() {
     }
   }, [deleteTarget]);
 
+  function openCreateModal() {
+    setEditingId(null);
+    setDraft(initialDraft);
+    setPhotos([]);
+    setShowMoreDetails(false);
+    setMessage(null);
+    setIsModalOpen(true);
+  }
+
   function cancelEdit() {
     setEditingId(null);
     setDraft(initialDraft);
     setPhotos([]);
-    setMessage(null);
+    setShowMoreDetails(false);
+    setIsModalOpen(false);
   }
 
   async function loadPropertyForEdit(property: Property) {
@@ -218,7 +219,8 @@ export function AdminPropertiesManager() {
       });
       if (!res.ok) throw new Error("Não foi possível carregar o imóvel.");
       const full = await res.json();
-      const rawPrice = full.salePrice ?? full.monthlyRent ?? full.dailyRate ?? "";
+      const rawPrice =
+        full.salePrice ?? full.monthlyRent ?? full.dailyRate ?? "";
 
       setDraft({
         code: full.code || "",
@@ -233,7 +235,8 @@ export function AdminPropertiesManager() {
         bedrooms: full.bedrooms != null ? String(full.bedrooms) : "",
         suites: full.suites != null ? String(full.suites) : "",
         bathrooms: full.bathrooms != null ? String(full.bathrooms) : "",
-        parkingSpaces: full.parkingSpaces != null ? String(full.parkingSpaces) : "",
+        parkingSpaces:
+          full.parkingSpaces != null ? String(full.parkingSpaces) : "",
         privateArea: full.privateArea != null ? String(full.privateArea) : "",
         summary: full.summary || "",
         description: full.description || "",
@@ -254,7 +257,7 @@ export function AdminPropertiesManager() {
 
       if (Array.isArray(full.photos)) {
         setPhotos(
-          full.photos.map((photo: any) => ({
+          full.photos.map((photo: PhotoEntry) => ({
             url: photo.url,
             path: photo.path ?? undefined,
             alt: photo.alt ?? undefined,
@@ -264,7 +267,7 @@ export function AdminPropertiesManager() {
         );
       }
       setEditingId(property.id);
-      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      setIsModalOpen(true);
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Erro ao carregar imóvel.",
@@ -296,7 +299,9 @@ export function AdminPropertiesManager() {
       neighborhood: draft.neighborhood.trim() || null,
       isFeatured: draft.isFeatured,
       ...(draft.purpose === "VENDA" ? { salePrice: numericPrice } : {}),
-      ...(draft.purpose === "LOCACAO_ANUAL" ? { monthlyRent: numericPrice } : {}),
+      ...(draft.purpose === "LOCACAO_ANUAL"
+        ? { monthlyRent: numericPrice }
+        : {}),
       ...(draft.purpose === "TEMPORADA" ? { dailyRate: numericPrice } : {}),
       bedrooms: draft.bedrooms ? Number(draft.bedrooms) : null,
       suites: draft.suites ? Number(draft.suites) : null,
@@ -333,6 +338,7 @@ export function AdminPropertiesManager() {
 
       setDraft(initialDraft);
       setPhotos([]);
+      setIsModalOpen(false);
       setMessage("Imóvel cadastrado com sucesso.");
       await loadProperties();
     } catch (error) {
@@ -388,6 +394,7 @@ export function AdminPropertiesManager() {
       setEditingId(null);
       setDraft(initialDraft);
       setPhotos([]);
+      setIsModalOpen(false);
       await loadProperties();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Ocorreu um erro.");
@@ -453,109 +460,137 @@ export function AdminPropertiesManager() {
             Gestão de Imóveis
           </h1>
           <p className="mt-3 max-w-2xl text-[var(--ink-soft)]">
-            Cadastre novos imóveis, gerencie fotos, valores e mantenha seu catálogo atualizado.
+            Cadastre novos imóveis, gerencie fotos, valores e mantenha seu
+            catálogo atualizado.
           </p>
         </div>
-        <button
-          className="interactive inline-flex items-center justify-center gap-2 rounded-full border bg-[var(--surface)] px-5 py-3 text-sm font-bold text-[var(--plum)] hover:border-[var(--gold)]"
-          disabled={loading}
-          onClick={loadProperties}
-          type="button"
-        >
-          <RefreshCw aria-hidden="true" size={16} /> Atualizar lista
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            className="interactive inline-flex items-center justify-center gap-2 rounded-full border bg-[var(--surface)] px-4 py-3 text-sm font-bold text-[var(--plum)] hover:border-[var(--gold)]"
+            disabled={loading}
+            onClick={loadProperties}
+            type="button"
+          >
+            <RefreshCw aria-hidden="true" size={16} /> Atualizar lista
+          </button>
+          <button
+            className="interactive inline-flex items-center justify-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)]"
+            onClick={openCreateModal}
+            type="button"
+          >
+            <Plus aria-hidden="true" size={18} /> Adicionar Imóvel
+          </button>
+        </div>
       </div>
 
-      {/* ── Grid Principal: Lista + Formulário ─────────── */}
-      <section className="mt-10 grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.85fr)]">
-        {/* Lista de Imóveis */}
+      {message && (
+        <div
+          className="mt-6 rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-4 text-sm font-semibold text-[var(--plum)] shadow-xs"
+          role="status"
+        >
+          {message}
+        </div>
+      )}
+
+      {/* ── Listagem em Largura Total ─────────── */}
+      <section className="mt-8">
         <div className="rounded-3xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-5 shadow-[0_8px_24px_rgba(53,16,79,0.06)] sm:p-7">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-4 border-b border-[var(--border,#f0ede6)] pb-4">
             <h2 className="display text-3xl text-[var(--plum)]">
               Catálogo Ativo
             </h2>
             <span className="rounded-full bg-[var(--surface-muted,#f0ede6)] px-3 py-1 text-xs font-bold text-[var(--ink-soft)]">
-              {properties.length} imóveis
+              {properties.length}{" "}
+              {properties.length === 1 ? "imóvel" : "imóveis"}
             </span>
           </div>
 
           {loading ? (
-            <div className="flex items-center gap-2 py-10 text-sm text-[var(--ink-soft)]">
-              <LoaderCircle className="animate-spin" size={18} /> Carregando imóveis…
+            <div className="flex items-center justify-center gap-2 py-16 text-sm text-[var(--ink-soft)]">
+              <LoaderCircle className="animate-spin" size={20} /> Carregando
+              imóveis…
             </div>
           ) : properties.length === 0 ? (
-            <p className="py-10 text-sm text-[var(--ink-soft)]">
-              Nenhum imóvel ativo. Cadastre o primeiro usando o formulário ao lado.
-            </p>
+            <div className="py-16 text-center space-y-4">
+              <p className="text-sm text-[var(--ink-soft)]">
+                Nenhum imóvel ativo cadastrado no catálogo.
+              </p>
+              <button
+                className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-5 py-2.5 text-xs font-extrabold text-white hover:bg-[var(--plum-bright)]"
+                onClick={openCreateModal}
+                type="button"
+              >
+                <Plus size={16} /> Cadastrar primeiro imóvel
+              </button>
+            </div>
           ) : (
-            <ul className="mt-5 divide-y divide-[var(--border,#f0ede6)]">
+            <ul className="mt-6 divide-y divide-[var(--border,#f0ede6)]">
               {properties.map((property) => {
-                const price = priceFor(property);
-                const isBeingEdited = editingId === property.id;
-                const purposeLabel =
-                  property.purpose === "LOCACAO_ANUAL"
-                    ? "LOCAÇÃO ANUAL"
-                    : property.purpose === "TEMPORADA"
-                      ? "TEMPORADA"
-                      : "VENDA";
+                const price =
+                  property.salePrice ??
+                  property.monthlyRent ??
+                  property.dailyRate ??
+                  null;
 
                 return (
                   <li
-                    className={`flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between transition-all ${isBeingEdited
-                      ? "bg-[var(--surface-muted,#faf8f5)] -mx-3 px-3 rounded-2xl ring-2 ring-[var(--gold)]/50"
-                      : ""
-                      }`}
+                    className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center hover:bg-[var(--surface-muted,#faf8f5)]/50 rounded-2xl px-3 transition-colors"
                     key={property.id}
                   >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-md bg-[var(--plum)]/10 px-2 py-0.5 text-[0.65rem] font-extrabold tracking-wider text-[var(--plum)] uppercase">
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-[var(--plum)] bg-[var(--plum)]/10 px-2 py-0.5 rounded">
                           {property.code}
                         </span>
-                        <span className="text-[0.65rem] font-bold text-[var(--gold)] uppercase tracking-wider">
-                          {purposeLabel}
+                        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-bold text-[var(--ink-soft)] uppercase tracking-wider">
+                          {property.purpose.replace("_", " ")}
                         </span>
-                        {isBeingEdited && (
-                          <span className="rounded bg-[var(--gold)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--plum)]">
-                            editando
+                        {property.isFeatured && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-800">
+                            <Sparkles size={10} /> Destaque
                           </span>
                         )}
                       </div>
 
-                      <h3 className="mt-1 truncate font-bold text-[var(--plum)] text-base">
+                      <h3 className="font-bold text-[var(--ink)] text-base truncate">
                         {property.title}
                       </h3>
-                      <p className="mt-0.5 text-xs text-[var(--ink-soft)]">
-                        {property.propertyType} · {property.city}
-                        {property.neighborhood ? ` (${property.neighborhood})` : ""}
-                        {price != null ? ` · ${formatPrice(price)}` : ""}
+
+                      <p className="text-xs text-[var(--ink-soft)] flex items-center gap-1.5 flex-wrap">
+                        <MapPin
+                          size={12}
+                          className="text-[var(--gold)] shrink-0"
+                        />
+                        <span>{property.city}</span>
+                        {property.neighborhood ? (
+                          <span>· {property.neighborhood}</span>
+                        ) : null}
+                        {price != null ? (
+                          <span className="font-bold text-[var(--plum)]">
+                            · {formatPrice(price)}
+                          </span>
+                        ) : null}
+                        {property.bedrooms ? (
+                          <span>· {property.bedrooms} dorms</span>
+                        ) : null}
+                        {property.privateArea ? (
+                          <span>· {property.privateArea} m²</span>
+                        ) : null}
                       </p>
                     </div>
 
                     {/* Botões de Ação */}
                     <div className="flex shrink-0 flex-wrap gap-2 mt-2 sm:mt-0">
                       <button
-                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--plum)]/20 px-3.5 py-2 sm:py-1.5 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--plum)]/5 min-h-[36px] sm:min-h-0"
-                        onClick={() =>
-                          isBeingEdited
-                            ? cancelEdit()
-                            : loadPropertyForEdit(property)
-                        }
+                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--plum)]/25 px-4 py-2 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--plum)]/5 min-h-[36px]"
+                        onClick={() => loadPropertyForEdit(property)}
                         type="button"
                       >
-                        {isBeingEdited ? (
-                          <>
-                            <X aria-hidden="true" size={14} /> Cancelar
-                          </>
-                        ) : (
-                          <>
-                            <Pencil aria-hidden="true" size={14} /> Editar
-                          </>
-                        )}
+                        <Pencil aria-hidden="true" size={14} /> Editar
                       </button>
 
                       <button
-                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-gray-200 px-3.5 py-2 sm:py-1.5 text-xs font-bold text-[var(--ink-soft)] hover:border-amber-400 hover:text-amber-700 min-h-[36px] sm:min-h-0"
+                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-gray-200 px-4 py-2 text-xs font-bold text-[var(--ink-soft)] hover:border-amber-400 hover:text-amber-700 min-h-[36px]"
                         onClick={() => archiveProperty(property.id)}
                         type="button"
                       >
@@ -563,7 +598,7 @@ export function AdminPropertiesManager() {
                       </button>
 
                       <button
-                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-red-200 px-3.5 py-2 sm:py-1.5 text-xs font-bold text-red-600 hover:border-red-500 hover:bg-red-50 min-h-[36px] sm:min-h-0"
+                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-red-200 px-4 py-2 text-xs font-bold text-red-600 hover:border-red-500 hover:bg-red-50 min-h-[36px]"
                         onClick={() =>
                           setDeleteTarget({
                             id: property.id,
@@ -582,33 +617,34 @@ export function AdminPropertiesManager() {
             </ul>
           )}
         </div>
+      </section>
 
-        {/* Painel do Formulário */}
-        <section
-          ref={formRef}
-          className="rounded-3xl bg-[var(--plum)] p-6 text-white shadow-[0_12px_34px_rgba(53,16,79,0.2)] sm:p-8 self-start"
-        >
-          {isEditing ? (
-            <>
-              <p className="eyebrow text-[var(--gold-light)]">Modo de Edição</p>
-              <h2 className="display mt-2 text-3xl">
-                Editando <span className="text-[var(--gold-light)]">{editingCode}</span>
-              </h2>
-            </>
-          ) : (
-            <>
-              <p className="eyebrow text-[var(--gold-light)]">Novo Imóvel</p>
-              <h2 className="display mt-2 text-3xl">Adicionar Imóvel</h2>
-            </>
-          )}
+      {/* ── Modal do Formulário de Imóvel ─────────────── */}
+      <AdminModal
+        isOpen={isModalOpen}
+        onClose={cancelEdit}
+        title={
+          isEditing ? `Editar Imóvel ${editingCode || ""}` : "Adicionar Imóvel"
+        }
+        description={
+          isEditing
+            ? "Atualize as informações, fotos, valores e características deste imóvel."
+            : "Preencha os dados abaixo para cadastrar um novo imóvel no catálogo."
+        }
+        size="4xl"
+      >
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Seção: Identificação Principal */}
+          <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface-muted,#faf8f5)] p-5 space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--gold)]">
+              Informações Básicas
+            </h3>
 
-          <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
-            {/* Código e Título */}
-            <div className="grid gap-3">
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
                 Código do Imóvel *
                 <input
-                  className="rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm font-bold text-[var(--plum)] placeholder:font-normal placeholder:text-gray-400"
+                  className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm font-bold text-[var(--plum)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
                   minLength={3}
                   placeholder="Ex: VAL-004"
                   onChange={(e) =>
@@ -619,10 +655,10 @@ export function AdminPropertiesManager() {
                 />
               </label>
 
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
+              <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
                 Título do Imóvel *
                 <input
-                  className="rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm font-semibold text-[var(--ink)] placeholder:font-normal placeholder:text-gray-400"
+                  className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm font-semibold text-[var(--ink)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
                   minLength={3}
                   placeholder="Ex: Apartamento Vista Mar na Barra Sul"
                   onChange={(e) =>
@@ -638,11 +674,10 @@ export function AdminPropertiesManager() {
               </label>
             </div>
 
-            {/* URL amigável */}
-            <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
+            <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
               URL Amigável (Slug) *
               <input
-                className="rounded-xl border-0 bg-white px-3.5 py-2.5 text-xs font-mono text-[var(--ink)] placeholder:text-gray-400"
+                className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-xs font-mono text-[var(--ink)] placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
                 placeholder="ex: apartamento-vista-mar-barra-sul"
                 onChange={(e) =>
                   setDraft({ ...draft, slug: toSlug(e.target.value) })
@@ -652,12 +687,11 @@ export function AdminPropertiesManager() {
               />
             </label>
 
-            {/* Finalidade e Tipo */}
-            <div className="grid gap-3">
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
                 Finalidade *
                 <select
-                  className="rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm font-bold text-[var(--plum)]"
+                  className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm font-bold text-[var(--plum)] focus:border-[var(--plum)] focus:outline-hidden"
                   onChange={(e) =>
                     setDraft({
                       ...draft,
@@ -672,10 +706,10 @@ export function AdminPropertiesManager() {
                 </select>
               </label>
 
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
+              <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
                 Tipo do Imóvel *
                 <input
-                  className="rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm font-semibold text-[var(--ink)]"
+                  className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm font-semibold text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
                   placeholder="Ex: Apartamento, Casa, Cobertura"
                   onChange={(e) =>
                     setDraft({ ...draft, propertyType: e.target.value })
@@ -684,271 +718,257 @@ export function AdminPropertiesManager() {
                   value={draft.propertyType}
                 />
               </label>
-            </div>
 
-            {/* Cidade e Preço com Máscara e R$ */}
-            <div className="grid gap-3">
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
+              <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                {draft.purpose === "VENDA"
+                  ? "Preço de Venda *"
+                  : draft.purpose === "LOCACAO_ANUAL"
+                    ? "Aluguel Mensal *"
+                    : "Valor da Diária *"}
+                <input
+                  className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm font-bold text-[var(--plum)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
+                  placeholder="R$ 0"
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    setDraft({
+                      ...draft,
+                      price: digits ? formatCurrencyInput(digits) : "",
+                    });
+                  }}
+                  required
+                  value={draft.price}
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Seção: Localização */}
+          <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface-muted,#faf8f5)] p-5 space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--gold)]">
+              Localização
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
                 Cidade *
                 <input
-                  className="rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm font-semibold text-[var(--ink)]"
-                  placeholder="Ex: Balneário Camboriú"
-                  onChange={(e) =>
-                    setDraft({ ...draft, city: e.target.value })
-                  }
+                  className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm font-semibold text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                  onChange={(e) => setDraft({ ...draft, city: e.target.value })}
                   required
                   value={draft.city}
                 />
               </label>
 
-              {/* CAMPO DE VALOR COM R$ E MÁSCARA */}
-              <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
-                {labelFor(draft.purpose)} *
-                <div className="relative flex items-center">
-                  <span className="absolute left-3.5 text-sm font-extrabold text-[var(--plum)] select-none">
-                    R$
-                  </span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    className="w-full rounded-xl border-0 bg-white py-2.5 pl-11 pr-3.5 text-sm font-extrabold text-[var(--plum)] placeholder:text-gray-400 placeholder:font-normal"
-                    placeholder="0"
-                    onChange={(e) => {
-                      const masked = formatCurrencyInput(e.target.value);
-                      setDraft({ ...draft, price: masked });
-                    }}
-                    required
-                    value={draft.price}
-                  />
-                </div>
+              <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                Bairro
+                <input
+                  className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm font-semibold text-[var(--ink)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
+                  placeholder="Ex: Barra Sul, Centro, Pioneiros"
+                  onChange={(e) =>
+                    setDraft({ ...draft, neighborhood: e.target.value })
+                  }
+                  value={draft.neighborhood}
+                />
               </label>
             </div>
+          </div>
 
-            {/* Destaque na Home */}
-            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded accent-[var(--gold)]"
-                checked={draft.isFeatured}
-                onChange={(e) =>
-                  setDraft({ ...draft, isFeatured: e.target.checked })
-                }
-              />
-              <span>Exibir como imóvel em destaque na Home</span>
-            </label>
+          {/* Seção: Características e Lazer (Collapsible) */}
+          <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface-muted,#faf8f5)] p-5">
+            <button
+              className="flex w-full items-center justify-between text-left text-xs font-extrabold uppercase tracking-wider text-[var(--plum)] hover:text-[var(--gold)] transition-colors"
+              onClick={() => setShowMoreDetails((v) => !v)}
+              type="button"
+            >
+              <span>Detalhes, Medidas e Descrição</span>
+              <span className="flex items-center gap-1 text-[11px] font-bold text-[var(--ink-soft)]">
+                {showMoreDetails ? "Recolher" : "Expandir campos"}
+                {showMoreDetails ? (
+                  <ChevronUp size={16} />
+                ) : (
+                  <ChevronDown size={16} />
+                )}
+              </span>
+            </button>
 
-            {/* Botão para Expandir Mais Detalhes (Quartos, Metragem, Bairro, etc.) */}
-            <div className="border-t border-white/15 pt-3">
-              <button
-                type="button"
-                onClick={() => setShowMoreDetails(!showMoreDetails)}
-                className="interactive flex items-center justify-between w-full text-xs font-bold uppercase tracking-wider text-[var(--gold-light)] hover:text-white transition-colors"
-              >
-                <span>
-                  {showMoreDetails
-                    ? "− Ocultar características e descrição"
-                    : "+ Adicionar características detalhadas (quartos, m², fotos, etc.)"}
-                </span>
-                {showMoreDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-            </div>
-
-            {/* Seção Expansível de Detalhes */}
             {showMoreDetails && (
-              <div className="space-y-4 rounded-2xl bg-white/10 p-4 border border-white/10">
-                {/* Bairro */}
-                <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
-                  Bairro
-                  <input
-                    className="rounded-xl border-0 bg-white px-3.5 py-2 text-sm text-[var(--ink)] placeholder:text-gray-400"
-                    placeholder="Ex: Centro, Barra Sul, Pioneiros"
-                    value={draft.neighborhood}
-                    onChange={(e) =>
-                      setDraft({ ...draft, neighborhood: e.target.value })
-                    }
-                  />
-                </label>
-
-                {/* Quartos, Suítes, Banheiros, Vagas, Metragem */}
-                <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-                  <label className="grid gap-1 text-xs font-bold text-white/90">
-                    Dormitórios (Qts)
+              <div className="mt-4 space-y-4 pt-4 border-t border-[var(--border,#f0ede6)]">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                    Quartos
                     <input
-                      type="number"
-                      min="0"
-                      className="rounded-xl border-0 bg-white px-3 py-2 text-sm text-[var(--ink)]"
-                      placeholder="Ex: 3"
-                      value={draft.bedrooms}
+                      className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                      min={0}
                       onChange={(e) =>
                         setDraft({ ...draft, bedrooms: e.target.value })
                       }
+                      type="number"
+                      value={draft.bedrooms}
                     />
                   </label>
-
-                  <label className="grid gap-1 text-xs font-bold text-white/90">
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">
                     Suítes
                     <input
-                      type="number"
-                      min="0"
-                      className="rounded-xl border-0 bg-white px-3 py-2 text-sm text-[var(--ink)]"
-                      placeholder="Ex: 1"
-                      value={draft.suites}
+                      className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                      min={0}
                       onChange={(e) =>
                         setDraft({ ...draft, suites: e.target.value })
                       }
+                      type="number"
+                      value={draft.suites}
                     />
                   </label>
-
-                  <label className="grid gap-1 text-xs font-bold text-white/90">
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">
                     Banheiros
                     <input
-                      type="number"
-                      min="0"
-                      className="rounded-xl border-0 bg-white px-3 py-2 text-sm text-[var(--ink)]"
-                      placeholder="Ex: 2"
-                      value={draft.bathrooms}
+                      className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                      min={0}
                       onChange={(e) =>
                         setDraft({ ...draft, bathrooms: e.target.value })
                       }
+                      type="number"
+                      value={draft.bathrooms}
                     />
                   </label>
-
-                  <label className="grid gap-1 text-xs font-bold text-white/90">
-                    Vagas de Garagem
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                    Vagas
                     <input
-                      type="number"
-                      min="0"
-                      className="rounded-xl border-0 bg-white px-3 py-2 text-sm text-[var(--ink)]"
-                      placeholder="Ex: 2"
-                      value={draft.parkingSpaces}
+                      className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                      min={0}
                       onChange={(e) =>
                         setDraft({ ...draft, parkingSpaces: e.target.value })
                       }
+                      type="number"
+                      value={draft.parkingSpaces}
                     />
                   </label>
-
-                  <label className="grid gap-1 text-xs font-bold text-white/90">
-                    Área Privativa (m²)
+                  <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                    Área (m²)
                     <input
-                      type="number"
-                      min="0"
-                      className="rounded-xl border-0 bg-white px-3 py-2 text-sm text-[var(--ink)]"
-                      placeholder="Ex: 120"
-                      value={draft.privateArea}
+                      className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                      min={0}
                       onChange={(e) =>
                         setDraft({ ...draft, privateArea: e.target.value })
                       }
+                      type="number"
+                      value={draft.privateArea}
                     />
                   </label>
                 </div>
 
-                {/* Resumo */}
-                <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
+                <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
                   Resumo Curto
                   <input
-                    className="rounded-xl border-0 bg-white px-3.5 py-2 text-sm text-[var(--ink)] placeholder:text-gray-400"
-                    placeholder="Ex: Cobertura duplex com vista panorâmica para a Praia Central."
-                    value={draft.summary}
+                    className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                    maxLength={200}
+                    placeholder="Frase de destaque para cards e compartilhamento"
                     onChange={(e) =>
                       setDraft({ ...draft, summary: e.target.value })
                     }
+                    value={draft.summary}
                   />
                 </label>
 
-                {/* Descrição Completa */}
-                <label className="grid gap-1 text-xs font-bold uppercase tracking-wider text-white/90">
-                  Descrição Completa do Imóvel
+                <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                  Descrição Completa
                   <textarea
-                    rows={4}
-                    className="rounded-xl border-0 bg-white px-3.5 py-2 text-sm text-[var(--ink)] placeholder:text-gray-400 resize-y"
-                    placeholder="Descreva todos os detalhes, mobília, posição solar, lazer do prédio, etc."
-                    value={draft.description}
+                    className="rounded-xl border border-[var(--border,#d4cec4)] bg-white p-3.5 text-sm text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                    placeholder="Descreva os detalhes, mobília, posição solar, comodidades do edifício, etc."
                     onChange={(e) =>
                       setDraft({ ...draft, description: e.target.value })
                     }
+                    rows={4}
+                    value={draft.description}
                   />
                 </label>
               </div>
             )}
+          </div>
 
-            {/* Upload e Galeria de Fotos */}
-            <div className="grid gap-2 border-t border-white/15 pt-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-white/90">
-                Fotos do Imóvel
+          {/* Destaque e Upload de Fotos */}
+          <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface-muted,#faf8f5)] p-5 space-y-4">
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={draft.isFeatured}
+                onChange={(e) =>
+                  setDraft({ ...draft, isFeatured: e.target.checked })
+                }
+                className="h-4 w-4 rounded border-gray-300 text-[var(--plum)] focus:ring-[var(--plum)]"
+              />
+              <span className="text-sm font-bold text-[var(--plum)] flex items-center gap-1.5">
+                <Sparkles size={16} className="text-[var(--gold)]" />
+                Marcar como Imóvel em Destaque na Página Inicial
               </span>
-              <div className="flex flex-wrap gap-2 items-center">
-                <input
-                  id="photos"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="sr-only"
-                  onChange={async (e) => {
-                    const files = Array.from(e.currentTarget.files || []);
-                    if (files.length === 0) return;
-                    setMessage("Enviando imagens...");
+            </label>
+
+            <div className="pt-3 border-t border-[var(--border,#f0ede6)]">
+              <label
+                htmlFor="property-photos-input"
+                className="block text-xs font-bold uppercase tracking-wider text-[var(--ink)] mb-2 cursor-pointer"
+              >
+                Fotos do Imóvel
+              </label>
+              <input
+                id="property-photos-input"
+                type="file"
+                accept="image/*"
+                multiple
+                className="block w-full text-xs text-[var(--ink-soft)] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-extrabold file:bg-[var(--plum)] file:text-white hover:file:bg-[var(--plum-bright)] file:cursor-pointer"
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length === 0) return;
+
+                  for (const file of files) {
+                    const fd = new FormData();
+                    fd.append("file", file);
                     try {
-                      for (const f of files) {
-                        const form = new FormData();
-                        form.append("file", f, f.name);
-                        const resp = await fetch("/api/uploads", {
-                          method: "POST",
-                          body: form,
-                        });
-                        const body = await resp.json();
-                        if (!resp.ok)
-                          throw new Error(body.error || "Upload falhou");
-                        setPhotos((prev) => [
-                          ...prev,
+                      const res = await fetch("/api/uploads", {
+                        method: "POST",
+                        body: fd,
+                      });
+                      const json = await res.json();
+                      if (res.ok && json.url) {
+                        setPhotos((current) => [
+                          ...current,
                           {
-                            url: body.url,
-                            path: body.path,
-                            isCover: prev.length === 0,
+                            url: json.url,
+                            path: json.path,
+                            alt: draft.title || file.name,
+                            position: current.length,
+                            isCover: current.length === 0,
                           },
                         ]);
                       }
                     } catch (err) {
-                      setMessage(
-                        err instanceof Error ? err.message : "Erro no upload",
-                      );
-                    } finally {
-                      setMessage(null);
+                      console.error("Upload error:", err);
                     }
-                  }}
-                />
-                <label
-                  htmlFor="photos"
-                  className="interactive inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border bg-[var(--surface)] px-5 py-2.5 text-xs font-bold text-[var(--plum)] hover:border-[var(--gold)]"
-                >
-                  Selecionar Fotos
-                </label>
-                <span className="text-xs text-white/70">
-                  {photos.length} foto(s) selecionada(s).
-                </span>
-              </div>
+                  }
+                  e.target.value = "";
+                }}
+              />
 
               {photos.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {photos.map((photo, idx) => (
                     <div
-                      key={photo.url || `photo-${idx}`}
-                      className="relative h-16 w-24 overflow-hidden rounded-xl bg-white shadow-xs"
+                      key={photo.url}
+                      className="relative group rounded-xl overflow-hidden border border-[var(--border,#d4cec4)] bg-white h-24"
                     >
                       <Image
                         src={photo.url}
                         alt={photo.alt || `Foto ${idx + 1}`}
-                        width={96}
-                        height={64}
-                        className="h-full w-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                       <button
                         type="button"
                         onClick={() =>
                           setPhotos((current) =>
-                            current.filter((_, photoIndex) => photoIndex !== idx),
+                            current.filter((_, i) => i !== idx),
                           )
                         }
-                        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white text-[10px] hover:bg-red-600 transition-colors"
+                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-white text-xs hover:bg-red-600 transition-colors"
+                        title="Remover foto"
                       >
                         ✕
                       </button>
@@ -962,10 +982,11 @@ export function AdminPropertiesManager() {
                             })),
                           )
                         }
-                        className={`absolute bottom-1 left-1 rounded px-1.5 py-0.5 text-[9px] font-bold ${photo.isCover
-                          ? "bg-[var(--gold)] text-[var(--plum)]"
-                          : "bg-black/60 text-white hover:bg-black/90"
-                          }`}
+                        className={`absolute bottom-1 left-1 rounded px-2 py-0.5 text-[10px] font-bold ${
+                          photo.isCover
+                            ? "bg-[var(--gold)] text-[var(--plum)]"
+                            : "bg-black/60 text-white hover:bg-black/90"
+                        }`}
                       >
                         {photo.isCover ? "Capa ✓" : "Definir Capa"}
                       </button>
@@ -974,47 +995,39 @@ export function AdminPropertiesManager() {
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Linha de Envio e Cancelamento */}
-            <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                className="interactive inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[var(--gold)] px-5 py-3 text-sm font-extrabold text-[var(--plum)] hover:bg-[var(--gold-light)] disabled:cursor-wait disabled:opacity-70 shadow-md"
-                disabled={submitting}
-                type="submit"
-              >
-                {submitting ? (
-                  <LoaderCircle className="animate-spin" size={17} />
-                ) : isEditing ? (
-                  <Pencil size={17} />
-                ) : (
-                  <Plus size={17} />
-                )}
-                {submitting
-                  ? "Salvando…"
-                  : isEditing
-                    ? "Salvar Alterações"
-                    : "Cadastrar Imóvel"}
-              </button>
-
-              {isEditing && (
-                <button
-                  className="interactive inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-5 py-3 text-sm font-bold text-white/80 hover:border-white hover:text-white"
-                  onClick={cancelEdit}
-                  type="button"
-                >
-                  <X size={15} /> Cancelar
-                </button>
+          {/* Ações do Formulário */}
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border,#f0ede6)]">
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="interactive rounded-full border border-gray-300 px-5 py-2.5 text-sm font-bold text-[var(--ink-soft)] hover:border-[var(--plum)] hover:text-[var(--plum)]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-2.5 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60"
+            >
+              {submitting ? (
+                <>
+                  <LoaderCircle className="animate-spin" size={16} /> Salvando…
+                </>
+              ) : isEditing ? (
+                <>
+                  <Pencil size={16} /> Salvar Alterações
+                </>
+              ) : (
+                <>
+                  <Plus size={16} /> Cadastrar Imóvel
+                </>
               )}
-            </div>
-          </form>
-
-          {message && (
-            <p className="mt-4 rounded-xl bg-white/15 p-3 text-xs font-semibold text-white" role="status">
-              {message}
-            </p>
-          )}
-        </section>
-      </section>
+            </button>
+          </div>
+        </form>
+      </AdminModal>
 
       {/* ── Dialog de Exclusão Permanente ─────────────── */}
       <dialog

@@ -71,12 +71,15 @@ export function PropertyLeadForm({
   return (
     <div className="rounded-3xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-6 shadow-[0_12px_32px_rgba(53,16,79,0.08)] sm:p-7">
       <div className="text-center">
-        <span className="eyebrow text-[var(--gold)]">Atendimento Exclusivo</span>
+        <span className="eyebrow text-[var(--gold)]">
+          Atendimento Exclusivo
+        </span>
         <h3 className="display mt-1 text-2xl text-[var(--plum)]">
           Gostou deste imóvel?
         </h3>
         <p className="mt-1 text-xs text-[var(--ink-soft)]">
-          Fale diretamente com a Corretora Val e receba atendimento personalizado.
+          Fale diretamente com a Corretora Val e receba atendimento
+          personalizado.
         </p>
       </div>
 
@@ -113,10 +116,14 @@ export function PropertyLeadForm({
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-bold text-[var(--plum)] mb-1">
+            <label
+              htmlFor="lead-name"
+              className="block text-xs font-bold text-[var(--plum)] mb-1"
+            >
               Seu nome completo *
             </label>
             <input
+              id="lead-name"
               type="text"
               required
               value={name}
@@ -127,10 +134,14 @@ export function PropertyLeadForm({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[var(--plum)] mb-1">
+            <label
+              htmlFor="lead-email"
+              className="block text-xs font-bold text-[var(--plum)] mb-1"
+            >
               E-mail *
             </label>
             <input
+              id="lead-email"
               type="email"
               required
               value={email}
@@ -141,10 +152,14 @@ export function PropertyLeadForm({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[var(--plum)] mb-1">
+            <label
+              htmlFor="lead-phone"
+              className="block text-xs font-bold text-[var(--plum)] mb-1"
+            >
               WhatsApp / Telefone *
             </label>
             <input
+              id="lead-phone"
               type="tel"
               required
               value={phone}
@@ -155,10 +170,14 @@ export function PropertyLeadForm({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[var(--plum)] mb-1">
+            <label
+              htmlFor="lead-message"
+              className="block text-xs font-bold text-[var(--plum)] mb-1"
+            >
               Mensagem
             </label>
             <textarea
+              id="lead-message"
               rows={3}
               value={message}
               onChange={(e) => setMessage(e.target.value)}

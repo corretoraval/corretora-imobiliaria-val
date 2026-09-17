@@ -66,9 +66,24 @@ export default async function ImoveisPage({ searchParams }: ImoveisPageProps) {
 
   const filterTabs = [
     { id: "TODOS", label: "Todos os Imóveis", href: "/imoveis", icon: Layers },
-    { id: "VENDA", label: "Comprar (Venda)", href: "/imoveis?finalidade=venda", icon: ShoppingBag },
-    { id: "LOCACAO_ANUAL", label: "Alugar (Locação)", href: "/imoveis?finalidade=locacao_anual", icon: KeyRound },
-    { id: "TEMPORADA", label: "Temporada", href: "/imoveis?finalidade=temporada", icon: Sun },
+    {
+      id: "VENDA",
+      label: "Comprar (Venda)",
+      href: "/imoveis?finalidade=venda",
+      icon: ShoppingBag,
+    },
+    {
+      id: "LOCACAO_ANUAL",
+      label: "Alugar (Locação)",
+      href: "/imoveis?finalidade=locacao_anual",
+      icon: KeyRound,
+    },
+    {
+      id: "TEMPORADA",
+      label: "Temporada",
+      href: "/imoveis?finalidade=temporada",
+      icon: Sun,
+    },
   ];
 
   return (
@@ -80,7 +95,9 @@ export default async function ImoveisPage({ searchParams }: ImoveisPageProps) {
           Imóveis Selecionados
         </h1>
         <p className="mt-3 text-base text-[var(--ink-soft)] leading-relaxed">
-          Encontre os melhores apartamentos, casas e coberturas em Balneário Camboriú, Camboriú e região com a garantia e o cuidado da Corretora Val.
+          Encontre os melhores apartamentos, casas e coberturas em Balneário
+          Camboriú, Camboriú e região com a garantia e o cuidado da Corretora
+          Val.
         </p>
       </div>
 
@@ -99,7 +116,12 @@ export default async function ImoveisPage({ searchParams }: ImoveisPageProps) {
                   : "bg-[var(--surface-muted,#faf8f5)] text-[var(--ink)] hover:bg-[var(--border,#eae5dc)] border border-transparent"
               }`}
             >
-              <Icon size={14} className={isActive ? "text-[var(--gold)]" : "text-[var(--ink-soft)]"} />
+              <Icon
+                size={14}
+                className={
+                  isActive ? "text-[var(--gold)]" : "text-[var(--ink-soft)]"
+                }
+              />
               <span>{tab.label}</span>
             </Link>
           );
@@ -114,7 +136,8 @@ export default async function ImoveisPage({ searchParams }: ImoveisPageProps) {
               Nenhum imóvel encontrado nesta categoria no momento.
             </p>
             <p className="mt-2 text-xs text-[var(--ink-soft)]">
-              Entre em contato conosco para encomendar seu imóvel ideal ou volte a visualizar todos os imóveis.
+              Entre em contato conosco para encomendar seu imóvel ideal ou volte
+              a visualizar todos os imóveis.
             </p>
             <Link
               href="/imoveis"
