@@ -2,6 +2,7 @@ import {
   BookOpen,
   Building2,
   ExternalLink,
+  FileText,
   LayoutDashboard,
   Settings,
   Users,
@@ -15,6 +16,7 @@ import { SignOutButton } from "./sign-out-button";
 const navigation = [
   { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { href: "/admin/imoveis", label: "Imóveis", icon: Building2 },
+  { href: "/admin/blog", label: "Blog", icon: FileText },
   { href: "/admin/conteudo", label: "Páginas e conteúdo", icon: BookOpen },
   {
     href: "/admin/configuracoes",

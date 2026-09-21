@@ -1,15 +1,9 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { BLOG_CATEGORIES } from "@/lib/blog-constants";
 
-const categories = [
-  "Todos",
-  "Investimentos",
-  "Alugar",
-  "Comprar",
-  "Mercado",
-  "Temporada",
-];
+const categories = ["Todos", ...BLOG_CATEGORIES];
 
 interface BlogSearchProps {
   activeCategory: string;

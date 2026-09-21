@@ -85,39 +85,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
 
               {/* Body */}
-              <div className="prose prose-plum max-w-none space-y-6 text-[var(--ink)] leading-relaxed">
-                {post.content.split("\n\n").map((paragraph, index) => {
-                  const key = `${paragraph.slice(0, 24)}-${index}`;
-                  if (paragraph.startsWith("### ")) {
-                    return (
-                      <h3
-                        key={key}
-                        className="display text-2xl font-bold text-[var(--plum)] pt-4"
-                      >
-                        {paragraph.replace("### ", "")}
-                      </h3>
-                    );
-                  }
-                  if (paragraph.startsWith("## ")) {
-                    return (
-                      <h2
-                        key={key}
-                        className="display text-3xl font-bold text-[var(--plum)] pt-6"
-                      >
-                        {paragraph.replace("## ", "")}
-                      </h2>
-                    );
-                  }
-                  return (
-                    <p
-                      key={key}
-                      className="text-base text-[var(--ink-soft)] leading-relaxed"
-                    >
-                      {paragraph}
-                    </p>
-                  );
-                })}
-              </div>
+              <div
+                className="prose prose-plum max-w-none space-y-6 text-[var(--ink)] leading-relaxed [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-[var(--plum)] [&_h2]:pt-4 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-[var(--plum)] [&_h3]:pt-2 [&_p]:text-base [&_p]:text-[var(--ink-soft)] [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_blockquote]:border-l-4 [&_blockquote]:border-[var(--gold)] [&_blockquote]:pl-4 [&_blockquote]:italic"
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted admin-generated content
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
 
               {/* Bottom Navigation */}
               <div className="pt-8 border-t flex items-center justify-between">
