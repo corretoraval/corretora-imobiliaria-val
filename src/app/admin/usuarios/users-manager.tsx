@@ -478,7 +478,8 @@ export function UsersManager({
               <input
                 type="password"
                 required
-                minLength={6}
+                minLength={8}
+                pattern="^(?=.*[A-Za-z])(?=.*[0-9]).{8,}$"
                 className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
                 placeholder="Mínimo 6 caracteres"
                 value={createForm.password}

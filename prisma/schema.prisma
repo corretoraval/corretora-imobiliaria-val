@@ -112,13 +112,14 @@ model Imovel {
 }
 
 model Usuario {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  name      String?
-  password  String
-  role      String     @default("user")
-  createdAt DateTime   @default(now())
-  contratos Contrato[]
+  id                 String     @id @default(cuid())
+  email              String     @unique
+  name               String?
+  password           String
+  role               String     @default("user")
+  mustChangePassword Boolean    @default(false)
+  createdAt          DateTime   @default(now())
+  contratos          Contrato[]
 }
 
 model Contrato {

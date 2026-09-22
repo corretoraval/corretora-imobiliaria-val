@@ -27,6 +27,15 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
+  if (token.mustChangePassword) {
+    const changePasswordUrl = new URL("/auth/change-password", req.url);
+    changePasswordUrl.searchParams.set(
+      "callbackUrl",
+      pathname + (req.nextUrl.search || ""),
+    );
+    return NextResponse.redirect(changePasswordUrl);
+  }
+
   return NextResponse.next();
 }
 

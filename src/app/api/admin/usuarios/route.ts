@@ -4,12 +4,13 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { ZodError, z } from "zod";
 import { authOptions } from "@/lib/auth";
+import { passwordSchema } from "@/lib/password-policy";
 import { prisma } from "@/lib/prisma";
 
 const createSchema = z.object({
   email: z.string().trim().email(),
   name: z.string().trim().max(120).optional(),
-  password: z.string().min(6),
+  password: passwordSchema,
   role: z.enum(["admin", "user"]).optional(),
 });
 
@@ -17,7 +18,7 @@ const updateSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("changeOwnPassword"),
     currentPassword: z.string().min(1),
-    newPassword: z.string().min(6),
+    newPassword: passwordSchema,
   }),
   z.object({
     type: z.literal("updateUser"),
@@ -64,6 +65,7 @@ export async function POST(req: Request) {
         name: body.name ?? null,
         password: hash,
         role,
+        mustChangePassword: false,
       },
       select: {
         id: true,
@@ -124,7 +126,7 @@ export async function PUT(req: Request) {
       const hash = await bcrypt.hash(payload.newPassword, 10);
       await prisma.usuario.update({
         where: { id: user.id },
-        data: { password: hash },
+        data: { password: hash, mustChangePassword: false },
       });
       return NextResponse.json({ success: true });
     }
@@ -160,7 +162,7 @@ export async function PUT(req: Request) {
       const hash = await bcrypt.hash(temp, 10);
       await prisma.usuario.update({
         where: { id: payload.id },
-        data: { password: hash },
+        data: { password: hash, mustChangePassword: true },
       });
       return NextResponse.json({ tempPassword: temp });
     }

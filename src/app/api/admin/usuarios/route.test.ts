@@ -54,7 +54,7 @@ describe("API /api/admin/usuarios handlers", () => {
       method: "POST",
       body: JSON.stringify({
         email: "a@a.com",
-        password: "senha123",
+        password: "senha1234",
         name: "A",
       }),
       headers: { "Content-Type": "application/json" },
@@ -72,11 +72,54 @@ describe("API /api/admin/usuarios handlers", () => {
 
     const req = new Request("http://localhost/api/admin/usuarios", {
       method: "POST",
-      body: JSON.stringify({ email: "a@a.com", password: "senha123" }),
+      body: JSON.stringify({ email: "a@a.com", password: "senha1234" }),
       headers: { "Content-Type": "application/json" },
     });
     const res = await route.POST(req as Request);
     expect(res.status).toBe(409);
+  });
+
+  it("POST rejects passwords without the required strength", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+
+    const req = new Request("http://localhost/api/admin/usuarios", {
+      method: "POST",
+      body: JSON.stringify({ email: "a@a.com", password: "12345678" }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await route.POST(req);
+
+    expect(res.status).toBe(400);
+    expect(prismaMock.prisma.usuario.create).not.toHaveBeenCalled();
+  });
+
+  it("clears mustChangePassword after the owner changes their password", async () => {
+    mockGetServerSession.mockResolvedValue({
+      user: { role: "admin", email: "me@x" },
+    });
+    prismaMock.prisma.usuario.findUnique.mockResolvedValue({
+      id: "me",
+      password: "$2a$10$eLCNG7jaz2Q/DO7spGFKRucKh0r5eehv66byGhlFe8FPUT9bkWvOK",
+    });
+
+    const req = new Request("http://localhost/api/admin/usuarios", {
+      method: "PUT",
+      body: JSON.stringify({
+        type: "changeOwnPassword",
+        currentPassword: "senha1234",
+        newPassword: "novaSenha9",
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await route.PUT(req);
+
+    expect(res.status).toBe(200);
+    expect(prismaMock.prisma.usuario.update).toHaveBeenCalledWith({
+      where: { id: "me" },
+      data: { password: expect.any(String), mustChangePassword: false },
+    });
   });
 
   it("DELETE prevents deleting own account", async () => {

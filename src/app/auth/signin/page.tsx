@@ -12,7 +12,7 @@ import {
   ShieldAlert,
   ShieldCheck,
 } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -52,7 +52,11 @@ export default function SignInPage() {
         );
         setIsLoading(false);
       } else {
-        router.replace(callbackUrl);
+        const session = await getSession();
+        const destination = session?.user.mustChangePassword
+          ? `/auth/change-password?callbackUrl=${encodeURIComponent(callbackUrl)}`
+          : callbackUrl;
+        router.replace(destination);
         router.refresh();
       }
     } catch {
