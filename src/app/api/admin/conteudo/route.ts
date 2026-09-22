@@ -27,14 +27,30 @@ const VALID_BODY_FONTS = [
   "plus-jakarta",
 ] as const;
 
+const nullableText = (max: number) =>
+  z.preprocess(
+    (value) => (value === "" ? null : value),
+    z.string().trim().max(max).nullable(),
+  );
+
+const nullableEmail = z.preprocess(
+  (value) => (value === "" ? null : value),
+  z.string().trim().email().nullable(),
+);
+
+const nullableUrl = z.preprocess(
+  (value) => (value === "" ? null : value),
+  z.string().trim().url().nullable(),
+);
+
 const settingsSchema = z.object({
   brandName: z.string().trim().min(2).max(80),
   tagline: z.string().trim().min(2).max(160),
-  phone: z.string().trim().max(40).nullable(),
-  whatsapp: z.string().trim().max(32).nullable(),
-  email: z.string().trim().email().nullable(),
-  address: z.string().trim().max(160).nullable(),
-  instagramUrl: z.string().trim().url().nullable(),
+  phone: nullableText(40),
+  whatsapp: nullableText(32),
+  email: nullableEmail,
+  address: nullableText(160),
+  instagramUrl: nullableUrl,
   creci: z.string().trim().min(3).max(60),
   // Tema visual
   themePreset: z.enum(VALID_THEME_PRESETS),
@@ -92,16 +108,46 @@ async function isAdmin() {
   return session?.user?.role === "admin";
 }
 
+function errorResponse(error: unknown, context: string) {
+  console.error(`${context}:`, error);
+
+  if (error instanceof ZodError) {
+    return NextResponse.json(
+      {
+        error: "Dados inválidos. Revise os campos informados.",
+        details: error.issues,
+      },
+      { status: 400 },
+    );
+  }
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return NextResponse.json(
+      { error: "Não foi possível persistir os dados no banco de dados." },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json(
+    { error: "Não foi possível concluir a operação. Tente novamente." },
+    { status: 500 },
+  );
+}
+
 export async function GET() {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [settings, pages] = await prisma.$transaction([
-    prisma.configuracaoSite.findUnique({ where: { id: "principal" } }),
-    prisma.paginaSite.findMany({ orderBy: { sortOrder: "asc" } }),
-  ]);
-  return NextResponse.json({ settings, pages });
+  try {
+    const [settings, pages] = await prisma.$transaction([
+      prisma.configuracaoSite.findUnique({ where: { id: "principal" } }),
+      prisma.paginaSite.findMany({ orderBy: { sortOrder: "asc" } }),
+    ]);
+    return NextResponse.json({ settings, pages });
+  } catch (error) {
+    return errorResponse(error, "GET /api/admin/conteudo failed");
+  }
 }
 
 export async function PUT(request: Request) {
@@ -119,8 +165,8 @@ export async function PUT(request: Request) {
       });
 
       try {
-        // Revalidate public site so header/footer reflect new settings
-        revalidatePath("/");
+        revalidatePath("/", "layout");
+        revalidatePath("/", "page");
       } catch (e) {
         console.error("Revalidate after settings update failed:", e);
       }
@@ -185,12 +231,6 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ page });
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
-    }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return errorResponse(error, "PUT /api/admin/conteudo failed");
   }
 }

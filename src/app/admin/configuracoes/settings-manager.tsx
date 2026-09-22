@@ -168,8 +168,19 @@ export function SettingsManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "settings", settings }),
       });
-      if (!response.ok)
-        throw new Error("Não foi possível salvar as configurações.");
+      const body = (await response.json().catch(() => null)) as {
+        error?: string;
+        settings?: Settings;
+      } | null;
+      if (!response.ok) {
+        throw new Error(
+          body?.error ||
+            "Não foi possível salvar as configurações. Tente novamente.",
+        );
+      }
+      if (body?.settings) {
+        setSettings(body.settings);
+      }
       setMessage(
         "Configurações salvas. As alterações serão refletidas no site.",
       );
