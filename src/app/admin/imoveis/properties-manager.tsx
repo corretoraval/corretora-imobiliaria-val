@@ -17,6 +17,7 @@ import {
   type FormEvent,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -32,6 +33,8 @@ type Property = {
   code: string;
   slug: string;
   title: string;
+  createdAt: string;
+  updatedAt: string;
   propertyType: string;
   purpose: Purpose;
   status: string;
@@ -144,6 +147,16 @@ type PropertyPayload = {
   }>;
 };
 
+type PropertySort =
+  | "code-asc"
+  | "code-desc"
+  | "name-asc"
+  | "name-desc"
+  | "createdAt-asc"
+  | "createdAt-desc"
+  | "updatedAt-asc"
+  | "updatedAt-desc";
+
 const initialDraft: Draft = {
   code: "",
   slug: "",
@@ -207,6 +220,8 @@ export function AdminPropertiesManager() {
   const [userEditedSlug, setUserEditedSlug] = useState(false);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [propertySort, setPropertySort] = useState<PropertySort>("code-asc");
 
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
@@ -585,6 +600,36 @@ export function AdminPropertiesManager() {
   const editingCode = isEditing
     ? (properties.find((p) => p.id === editingId)?.code ?? "imóvel")
     : null;
+  const visibleProperties = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLocaleLowerCase("pt-BR");
+    const filtered = properties.filter((property) =>
+      [property.title, property.code, property.city].some((value) =>
+        value.toLocaleLowerCase("pt-BR").includes(normalizedSearch),
+      ),
+    );
+    const [field, direction] = propertySort.split("-") as [
+      "code" | "name" | "createdAt" | "updatedAt",
+      "asc" | "desc",
+    ];
+    const multiplier = direction === "asc" ? 1 : -1;
+
+    return filtered.toSorted((left, right) => {
+      if (field === "code") {
+        return (
+          left.code.localeCompare(right.code, "pt-BR", {
+            numeric: true,
+          }) * multiplier
+        );
+      }
+      if (field === "name") {
+        return left.title.localeCompare(right.title, "pt-BR") * multiplier;
+      }
+      return (
+        (new Date(left[field]).getTime() - new Date(right[field]).getTime()) *
+        multiplier
+      );
+    });
+  }, [properties, propertySort, searchTerm]);
 
   return (
     <main className="shell py-12 sm:py-16" style={{ minHeight: "100dvh" }}>
@@ -631,14 +676,48 @@ export function AdminPropertiesManager() {
       {/* ── Listagem em Largura Total ─────────── */}
       <section className="mt-8">
         <div className="rounded-3xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-5 shadow-[0_8px_24px_rgba(53,16,79,0.06)] sm:p-7">
-          <div className="flex items-center justify-between gap-4 border-b border-[var(--border,#f0ede6)] pb-4">
+          <div className="flex flex-col gap-4 border-b border-[var(--border,#f0ede6)] pb-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="display text-3xl text-[var(--plum)]">
               Catálogo Ativo
             </h2>
             <span className="rounded-full bg-[var(--surface-muted,#f0ede6)] px-3 py-1 text-xs font-bold text-[var(--ink-soft)]">
-              {properties.length}{" "}
+              {visibleProperties.length} de {properties.length}{" "}
               {properties.length === 1 ? "imóvel" : "imóveis"}
             </span>
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <label className="min-w-0 flex-1">
+              <span className="sr-only">Buscar imóvel</span>
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Buscar por título, código ou cidade..."
+                className="w-full rounded-xl border border-[var(--border,#d4cec4)] bg-[var(--surface-muted,#faf8f5)] px-4 py-2.5 text-sm focus:border-[var(--plum)] focus:outline-hidden"
+              />
+            </label>
+            <label className="sm:w-72">
+              <span className="sr-only">Ordenar imóveis</span>
+              <select
+                value={propertySort}
+                onChange={(event) =>
+                  setPropertySort(event.target.value as PropertySort)
+                }
+                className="w-full rounded-xl border border-[var(--border,#d4cec4)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+              >
+                <option value="code-asc">Código: menor para maior</option>
+                <option value="code-desc">Código: maior para menor</option>
+                <option value="name-asc">Nome: A-Z</option>
+                <option value="name-desc">Nome: Z-A</option>
+                <option value="createdAt-desc">Cadastro: mais recentes</option>
+                <option value="createdAt-asc">Cadastro: mais antigos</option>
+                <option value="updatedAt-desc">
+                  Modificação: mais recentes
+                </option>
+                <option value="updatedAt-asc">Modificação: mais antigas</option>
+              </select>
+            </label>
           </div>
 
           {loading ? (
@@ -659,9 +738,15 @@ export function AdminPropertiesManager() {
                 <Plus size={16} /> Cadastrar primeiro imóvel
               </button>
             </div>
+          ) : visibleProperties.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="text-sm text-[var(--ink-soft)]">
+                Nenhum imóvel corresponde à busca informada.
+              </p>
+            </div>
           ) : (
             <ul className="mt-6 divide-y divide-[var(--border,#f0ede6)]">
-              {properties.map((property) => {
+              {visibleProperties.map((property) => {
                 const price =
                   property.salePrice ??
                   property.monthlyRent ??
