@@ -15,11 +15,9 @@ import { PropertyCard } from "@/components/property-card";
 import { CTASection } from "@/components/site/cta-section";
 import { SectionTitle } from "@/components/site/section-title";
 import { prisma } from "@/lib/prisma";
-import { getHomeContent } from "@/lib/site-content";
+import { getDepoimentos, getHomeContent } from "@/lib/site-content";
 
 export const revalidate = 60;
-
-const serviceIcons = [ShoppingBag, KeyRound, CalendarDays, Building2];
 
 async function getFeaturedProperties() {
   try {
@@ -65,9 +63,10 @@ async function getFeaturedProperties() {
 }
 
 export default async function Home() {
-  const [featuredProperties, content] = await Promise.all([
+  const [featuredProperties, content, depoimentos] = await Promise.all([
     getFeaturedProperties(),
     getHomeContent(),
+    getDepoimentos(),
   ]);
 
   return (
@@ -138,7 +137,7 @@ export default async function Home() {
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {content.areas.map((service, index) => {
-              const Icon = serviceIcons[index] ?? ShoppingBag;
+              const Icon = [ShoppingBag, KeyRound, CalendarDays, Building2][index] ?? ShoppingBag;
               return (
                 <Link
                   href={service.href}
@@ -292,9 +291,9 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* SEÇÃO 3 — Depoimentos ("Em breve") */}
+      {/* SEÇÃO 3 — Depoimentos */}
       <section className="py-20 md:py-24 bg-white border-t">
-        <TestimonialsPlaceholder />
+        <TestimonialsPlaceholder testimonials={depoimentos} />
       </section>
 
       {/* CTA Final */}

@@ -4,7 +4,12 @@ import { Timeline } from "@/components/institutional/timeline";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
-import { getMemoriaVivaContent } from "@/lib/site-content";
+import {
+  getMarcosHistoricos,
+  getMemoriaVivaContent,
+} from "@/lib/site-content";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Memória Viva | Corretora Val",
@@ -13,7 +18,28 @@ export const metadata: Metadata = {
 };
 
 export default async function MemoriaVivaPage() {
-  const content = await getMemoriaVivaContent();
+  const [dbMarcos, content] = await Promise.all([
+    getMarcosHistoricos(),
+    getMemoriaVivaContent(),
+  ]);
+
+  const timelineItems =
+    dbMarcos.length > 0
+      ? dbMarcos.map((m) => ({
+          year: String(m.year),
+          title: m.title,
+          description: m.description || "",
+          image:
+            String(m.year) === "1989"
+              ? {
+                  src: "/images/institutional/valdete-inicio-1989.png",
+                  alt: "Valdete no início da carreira na Imobiliária Gonzaga em Curitiba (1989/1990)",
+                  caption:
+                    "1989 — O convite que abriu a primeira porta, na Imobiliária Gonzaga em Curitiba.",
+                }
+              : undefined,
+        }))
+      : undefined;
   return (
     <main className="min-h-screen">
       <PageHero
@@ -32,7 +58,7 @@ export default async function MemoriaVivaPage() {
           />
 
           <div className="max-w-4xl">
-            <Timeline />
+            <Timeline items={timelineItems} />
           </div>
         </div>
       </section>

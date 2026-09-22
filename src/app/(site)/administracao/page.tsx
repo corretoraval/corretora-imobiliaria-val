@@ -16,6 +16,8 @@ import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
 import { getAdministracaoContent } from "@/lib/site-content";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Administração de Imóveis | Corretora Val",
   description:

@@ -48,23 +48,23 @@ enum MarcadorImovel {
 }
 
 model Imovel {
-  id                    String                 @id @default(cuid())
-  code                  String                 @unique
-  slug                  String                 @unique
+  id                    String               @id @default(cuid())
+  code                  String               @unique
+  slug                  String               @unique
   title                 String
   summary               String?
   description           String?
   propertyType          String
   purpose               Finalidade
-  status                StatusImovel           @default(DISPONIVEL)
-  documentationStatus   StatusDocumentacao     @default(REGULAR)
+  status                StatusImovel         @default(DISPONIVEL)
+  documentationStatus   StatusDocumentacao   @default(REGULAR)
   city                  String
   neighborhood          String?
   address               String?
   postalCode            String?
-  addressVisibility     VisibilidadeEndereco   @default(APROXIMADA)
-  latitude              Decimal?               @db.Decimal(10, 7)
-  longitude             Decimal?               @db.Decimal(10, 7)
+  addressVisibility     VisibilidadeEndereco @default(APROXIMADA)
+  latitude              Decimal?             @db.Decimal(10, 7)
+  longitude             Decimal?             @db.Decimal(10, 7)
   salePrice             Int?
   monthlyRent           Int?
   condoFee              Int?
@@ -85,24 +85,24 @@ model Imovel {
   privateArea           Int?
   totalArea             Int?
   floor                 Int?
-  hasElevator           Boolean                @default(false)
-  hasBalcony            Boolean                @default(false)
-  hasBarbecue           Boolean                @default(false)
-  hasPool               Boolean                @default(false)
-  furnished             Boolean                @default(false)
-  hasAirConditioning    Boolean                @default(false)
-  allowsPets            Boolean                @default(false)
-  hasWifi               Boolean                @default(false)
-  seaView               Boolean                @default(false)
-  oceanFront            Boolean                @default(false)
-  beachBlock            Boolean                @default(false)
+  hasElevator           Boolean              @default(false)
+  hasBalcony            Boolean              @default(false)
+  hasBarbecue           Boolean              @default(false)
+  hasPool               Boolean              @default(false)
+  furnished             Boolean              @default(false)
+  hasAirConditioning    Boolean              @default(false)
+  allowsPets            Boolean              @default(false)
+  hasWifi               Boolean              @default(false)
+  seaView               Boolean              @default(false)
+  oceanFront            Boolean              @default(false)
+  beachBlock            Boolean              @default(false)
   videoUrl              String?
-  isFeatured            Boolean                @default(false)
+  isFeatured            Boolean              @default(false)
   markers               MarcadorImovel[]
   internalDocumentsNote String?
   archivedAt            DateTime?
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
   photos                Foto[]
   contratos             Contrato[]
 
@@ -122,7 +122,7 @@ model Usuario {
 }
 
 model Contrato {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   imovelId  String
   usuarioId String
   startAt   DateTime
@@ -134,48 +134,57 @@ model Contrato {
 }
 
 model Foto {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   url      String
   alt      String?
-  position Int    @default(0)
+  position Int     @default(0)
   isCover  Boolean @default(false)
   imovelId String
-  imovel   Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  imovel   Imovel  @relation(fields: [imovelId], references: [id], onDelete: Cascade)
 
   @@index([imovelId, position])
 }
 
 model ConfiguracaoSite {
-  id           String   @id @default("principal")
-  brandName    String   @default("Corretora Val")
-  tagline      String   @default("Confiança que abre portas.")
-  phone        String?
-  whatsapp     String?
-  email        String?
-  address      String?
-  instagramUrl String?
-  creci        String   @default("CRECI/SC 56372-F")
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default("principal")
+  brandName        String   @default("Corretora Val")
+  tagline          String   @default("Confiança que abre portas.")
+  phone            String?
+  whatsapp         String?
+  email            String?
+  address          String?
+  instagramUrl     String?
+  creci            String   @default("CRECI/SC 56372-F")
+  // Tema visual
+  themePreset      String   @default("ametista-ouro")
+  primaryColor     String   @default("#35104f")
+  primaryHover     String   @default("#4a1768")
+  accentColor      String   @default("#b58a3a")
+  accentLightColor String   @default("#d8bd82")
+  backgroundColor  String   @default("#f8f5ef")
+  titleFont        String   @default("cormorant")
+  bodyFont         String   @default("manrope")
+  updatedAt        DateTime @updatedAt
 }
 
 model PaginaSite {
-  id             String   @id @default(cuid())
-  slug           String   @unique
+  id              String   @id @default(cuid())
+  slug            String   @unique
   navigationLabel String
-  eyebrow        String?
-  title          String
-  heading        String
-  intro          String?
-  body           String?
-  ctaLabel       String?
-  ctaHref        String?
-  seoTitle       String?
-  seoDescription String?
-  content        Json?
-  isPublished    Boolean  @default(true)
-  sortOrder      Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  eyebrow         String?
+  title           String
+  heading         String
+  intro           String?
+  body            String?
+  ctaLabel        String?
+  ctaHref         String?
+  seoTitle        String?
+  seoDescription  String?
+  content         Json?
+  isPublished     Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([isPublished, sortOrder])
 }
@@ -233,4 +242,43 @@ model PostBlog {
   @@index([summary])
   @@index([isPublished, category])
   @@index([isFeatured])
+}
+
+model Depoimento {
+  id          String   @id @default(cuid())
+  clientName  String
+  text        String
+  role        String?
+  avatarUrl   String?
+  isPublished Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, sortOrder])
+}
+
+model MarcoHistorico {
+  id          String   @id @default(cuid())
+  year        Int
+  title       String
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model MembroEquipe {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  bio       String?
+  photoUrl  String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
 }

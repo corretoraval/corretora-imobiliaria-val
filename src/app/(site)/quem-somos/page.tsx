@@ -6,7 +6,14 @@ import { ValuesGrid } from "@/components/institutional/values-grid";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
-import { getQuemSomosContent } from "@/lib/site-content";
+import {
+  getMarcosHistoricos,
+  getMembrosEquipe,
+  getQuemSomosContent,
+  getQuemSomosPageContent,
+} from "@/lib/site-content";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Quem Somos | Corretora Val",
@@ -15,7 +22,30 @@ export const metadata: Metadata = {
 };
 
 export default async function QuemSomosPage() {
-  const content = await getQuemSomosContent();
+  const [dbMarcos, membros, content, quemSomosContent] = await Promise.all([
+    getMarcosHistoricos(),
+    getMembrosEquipe(),
+    getQuemSomosContent(),
+    getQuemSomosPageContent(),
+  ]);
+
+  const timelineItems =
+    dbMarcos.length > 0
+      ? dbMarcos.map((m) => ({
+          year: String(m.year),
+          title: m.title,
+          description: m.description || "",
+          image:
+            String(m.year) === "1989"
+              ? {
+                  src: "/images/institutional/valdete-inicio-1989.png",
+                  alt: "Valdete no início da carreira na Imobiliária Gonzaga em Curitiba (1989/1990)",
+                  caption:
+                    "1989 — O convite que abriu a primeira porta, na Imobiliária Gonzaga em Curitiba.",
+                }
+              : undefined,
+        }))
+      : undefined;
   return (
     <main className="min-h-screen">
       <PageHero
@@ -36,12 +66,16 @@ export default async function QuemSomosPage() {
                 História de Dedicação & Superação
               </span>
               <h2 className="display text-3xl md:text-5xl text-[var(--plum)] leading-tight">
-                Valdete Gonçalves de Melo
+                {quemSomosContent.biographyTitle}
               </h2>
+
+              <p className="text-base md:text-lg text-[var(--ink)] leading-relaxed font-semibold">
+                {quemSomosContent.biographyLead}
+              </p>
 
               <div className="space-y-4 text-sm md:text-base text-[var(--ink-soft)] leading-relaxed">
                 {content.biography.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
+                  <p key={paragraph.slice(0, 40)}>{paragraph}</p>
                 ))}
               </div>
 
@@ -59,7 +93,7 @@ export default async function QuemSomosPage() {
                       {content.quote}
                     </p>
                     <p className="text-xs font-bold text-[var(--ink-soft)]">
-                      — Valdete Gonçalves de Melo · CRECI/SC 56372-F
+                      {quemSomosContent.quoteAuthor}
                     </p>
                   </div>
                 </div>
@@ -198,7 +232,7 @@ export default async function QuemSomosPage() {
           />
 
           <div className="mt-14">
-            <Timeline />
+            <Timeline items={timelineItems} />
           </div>
         </div>
       </section>
@@ -281,6 +315,56 @@ export default async function QuemSomosPage() {
               </div>
             </div>
           </div>
+
+          {/* Seção Dinâmica de Membros da Equipe */}
+          {membros.length > 0 && (
+            <div className="mt-16 pt-12 border-t border-[var(--gold-light)]/40">
+              <div className="text-center max-w-2xl mx-auto mb-10">
+                <span className="eyebrow text-[var(--gold)] block">
+                  Corpo Profissional
+                </span>
+                <h3 className="display text-2xl md:text-3xl text-[var(--plum)] font-bold mt-1">
+                  Nossa Equipe de Atendimento & Operações
+                </h3>
+              </div>
+              <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
+                {membros.map((membro) => (
+                  <div
+                    key={membro.id}
+                    className="flex gap-4 rounded-3xl border border-[var(--gold-light)] bg-white p-6 shadow-xs"
+                  >
+                    <div className="size-16 rounded-2xl bg-[var(--plum)]/10 text-[var(--plum)] font-bold flex items-center justify-center text-lg shrink-0 overflow-hidden border border-[var(--gold-light)]">
+                      {membro.photoUrl ? (
+                        <Image
+                          src={membro.photoUrl}
+                          alt={membro.name}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        membro.name.slice(0, 2).toUpperCase()
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="display text-lg font-bold text-[var(--plum)] leading-tight">
+                        {membro.name}
+                      </h4>
+                      <p className="text-xs font-extrabold uppercase tracking-wider text-[var(--gold)]">
+                        {membro.role}
+                      </p>
+                      {membro.bio && (
+                        <p className="text-xs text-[var(--ink-soft)] leading-relaxed pt-1">
+                          {membro.bio}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

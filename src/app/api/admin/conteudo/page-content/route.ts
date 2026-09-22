@@ -13,13 +13,20 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const slug = new URL(request.url).searchParams.get("slug");
-  if (!slug) return NextResponse.json({ error: "Slug obrigatório" }, { status: 400 });
+  const { searchParams } = new URL(request.url);
+  const slug = searchParams.get("slug");
+
+  if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    return NextResponse.json({ error: "Slug inválido" }, { status: 400 });
+  }
 
   const page = await prisma.paginaSite.findUnique({
     where: { slug },
     select: { slug: true, content: true },
   });
-  if (!page) return NextResponse.json({ error: "Página não encontrada" }, { status: 404 });
-  return NextResponse.json(page);
+  if (!page) {
+    return NextResponse.json({ error: "Página não encontrada", slug, content: null }, { status: 404 });
+  }
+
+  return NextResponse.json({ slug: page.slug, content: page.content ?? null });
 }
