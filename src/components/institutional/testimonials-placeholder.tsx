@@ -2,7 +2,7 @@ import { MessageSquareText, Quote, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { SectionTitle } from "@/components/site/section-title";
 
-export interface TestimonialItem {
+interface TestimonialItem {
   id: string;
   clientName: string;
   text: string;

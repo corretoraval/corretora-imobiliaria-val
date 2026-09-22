@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef } from "react";
 
-export type AdminModalSize = "md" | "lg" | "xl" | "2xl" | "4xl";
+type AdminModalSize = "md" | "lg" | "xl" | "2xl" | "4xl";
 
 export interface AdminModalProps {
   /** Se o modal está visível */
