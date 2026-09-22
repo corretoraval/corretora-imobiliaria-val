@@ -146,16 +146,25 @@ model Foto {
 }
 
 model ConfiguracaoSite {
-  id           String   @id @default("principal")
-  brandName    String   @default("Corretora Val")
-  tagline      String   @default("Confiança que abre portas.")
-  phone        String?
-  whatsapp     String?
-  email        String?
-  address      String?
-  instagramUrl String?
-  creci        String   @default("CRECI/SC 56372-F")
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default("principal")
+  brandName        String   @default("Corretora Val")
+  tagline          String   @default("Confiança que abre portas.")
+  phone            String?
+  whatsapp         String?
+  email            String?
+  address          String?
+  instagramUrl     String?
+  creci            String   @default("CRECI/SC 56372-F")
+  // Tema visual
+  themePreset      String   @default("ametista-ouro")
+  primaryColor     String   @default("#35104f")
+  primaryHover     String   @default("#4a1768")
+  accentColor      String   @default("#b58a3a")
+  accentLightColor String   @default("#d8bd82")
+  backgroundColor  String   @default("#f8f5ef")
+  titleFont        String   @default("cormorant")
+  bodyFont         String   @default("manrope")
+  updatedAt        DateTime @updatedAt
 }
 
 model PaginaSite {
@@ -171,6 +180,7 @@ model PaginaSite {
   ctaHref        String?
   seoTitle       String?
   seoDescription String?
+  content        Json?
   isPublished    Boolean  @default(true)
   sortOrder      Int      @default(0)
   createdAt      DateTime @default(now())
@@ -234,3 +244,41 @@ model PostBlog {
   @@index([isFeatured])
 }
 
+model Depoimento {
+  id          String   @id @default(cuid())
+  clientName  String
+  text        String
+  role        String?
+  avatarUrl   String?
+  isPublished Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, sortOrder])
+}
+
+model MarcoHistorico {
+  id          String   @id @default(cuid())
+  year        Int
+  title       String
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model MembroEquipe {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  bio       String?
+  photoUrl  String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}

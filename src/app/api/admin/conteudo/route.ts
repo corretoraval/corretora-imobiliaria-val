@@ -1,9 +1,21 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
+import type { Prisma } from "@prisma/client";
 import { ZodError, z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+const COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+const VALID_THEME_PRESETS = [
+  "ametista-ouro",
+  "ardosia-terracota",
+  "verde-champanhe",
+  "marinho-coral",
+  "grafite-cobre",
+] as const;
+const VALID_TITLE_FONTS = ["cormorant", "playfair", "lora", "dm-serif"] as const;
+const VALID_BODY_FONTS = ["manrope", "inter", "outfit", "plus-jakarta"] as const;
 
 const settingsSchema = z.object({
   brandName: z.string().trim().min(2).max(80),
@@ -14,7 +26,17 @@ const settingsSchema = z.object({
   address: z.string().trim().max(160).nullable(),
   instagramUrl: z.string().trim().url().nullable(),
   creci: z.string().trim().min(3).max(60),
+  // Tema visual
+  themePreset: z.enum(VALID_THEME_PRESETS),
+  primaryColor: z.string().regex(COLOR_REGEX),
+  primaryHover: z.string().regex(COLOR_REGEX),
+  accentColor: z.string().regex(COLOR_REGEX),
+  accentLightColor: z.string().regex(COLOR_REGEX),
+  backgroundColor: z.string().regex(COLOR_REGEX),
+  titleFont: z.enum(VALID_TITLE_FONTS),
+  bodyFont: z.enum(VALID_BODY_FONTS),
 });
+
 
 const pageSchema = z.object({
   slug: z
@@ -35,9 +57,19 @@ const pageSchema = z.object({
   sortOrder: z.number().int().nonnegative(),
 });
 
+// Payload for saving structured Json content of a specific page slug
+const pageContentSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  content: z.record(z.string(), z.unknown()),
+});
+
 const requestSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("settings"), settings: settingsSchema }),
   z.object({ type: z.literal("page"), page: pageSchema }),
+  z.object({ type: z.literal("page-content"), pageContent: pageContentSchema }),
 ]);
 
 async function isAdmin() {
@@ -79,6 +111,21 @@ export async function PUT(request: Request) {
       }
 
       return NextResponse.json({ settings });
+    }
+
+    if (payload.type === "page-content") {
+      const { slug, content } = payload.pageContent;
+      const page = await prisma.paginaSite.update({
+        where: { slug },
+        data: { content: content as Prisma.InputJsonValue },
+      });
+      try {
+        revalidatePath("/");
+        if (slug !== "home") revalidatePath(`/${slug}`);
+      } catch (e) {
+        console.error("Revalidate after page-content update failed:", e);
+      }
+      return NextResponse.json({ page });
     }
 
     const page = await prisma.paginaSite.upsert({

@@ -4,6 +4,9 @@ import { TestimonialsPlaceholder } from "@/components/institutional/testimonials
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
+import { getDepoimentos } from "@/lib/site-content";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Autoridade e Experiência | Corretora Val",
@@ -11,7 +14,9 @@ export const metadata: Metadata = {
     "Confiança imobiliária em Balneário Camboriú e Camboriú. Mais de 35 anos de experiência, registro CRECI/SC 56372-F e sólida reputação na gestão patrimonial.",
 };
 
-export default function AutoridadePage() {
+export default async function AutoridadePage() {
+  const depoimentos = await getDepoimentos();
+
   return (
     <main className="min-h-screen">
       <PageHero
@@ -33,9 +38,9 @@ export default function AutoridadePage() {
         </div>
       </section>
 
-      {/* Testimonials Section - Em Breve */}
+      {/* Testimonials Section */}
       <section className="py-16 md:py-24 bg-[var(--surface-muted)] border-y">
-        <TestimonialsPlaceholder />
+        <TestimonialsPlaceholder testimonials={depoimentos} />
       </section>
 
       <CTASection

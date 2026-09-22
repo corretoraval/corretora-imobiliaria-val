@@ -4,6 +4,12 @@ import { Timeline } from "@/components/institutional/timeline";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
+import {
+  getMarcosHistoricos,
+  getMemoriaVivaPageContent,
+} from "@/lib/site-content";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Memória Viva | Corretora Val",
@@ -11,7 +17,30 @@ export const metadata: Metadata = {
     "Explore a trajetória da Corretora Val ao longo dos anos. Um memorial digital sobre nossas origens, momentos marcantes e o legado imobiliário em Balneário Camboriú.",
 };
 
-export default function MemoriaVivaPage() {
+export default async function MemoriaVivaPage() {
+  const [dbMarcos, memoriaVivaContent] = await Promise.all([
+    getMarcosHistoricos(),
+    getMemoriaVivaPageContent(),
+  ]);
+
+  const timelineItems =
+    dbMarcos.length > 0
+      ? dbMarcos.map((m) => ({
+          year: String(m.year),
+          title: m.title,
+          description: m.description || "",
+          image:
+            String(m.year) === "1989"
+              ? {
+                  src: "/images/institutional/valdete-inicio-1989.png",
+                  alt: "Valdete no início da carreira na Imobiliária Gonzaga em Curitiba (1989/1990)",
+                  caption:
+                    "1989 — O convite que abriu a primeira porta, na Imobiliária Gonzaga em Curitiba.",
+                }
+              : undefined,
+        }))
+      : undefined;
+
   return (
     <main className="min-h-screen">
       <PageHero
@@ -30,7 +59,7 @@ export default function MemoriaVivaPage() {
           />
 
           <div className="max-w-4xl">
-            <Timeline />
+            <Timeline items={timelineItems} />
           </div>
         </div>
       </section>
@@ -42,12 +71,10 @@ export default function MemoriaVivaPage() {
             <HeartHandshake size={24} />
           </div>
           <h2 className="display text-3xl md:text-4xl text-[var(--plum)] italic">
-            &ldquo;Cada imóvel carrega uma história. A nossa também.&rdquo;
+            &ldquo;{memoriaVivaContent.quoteBannerText}&rdquo;
           </h2>
           <p className="text-sm text-[var(--ink-soft)] leading-relaxed">
-            Preservamos com carinho as amizades e contatos que iniciaram lá nos
-            primeiros anos e continuam confiando no nosso trabalho até os dias
-            de hoje.
+            {memoriaVivaContent.quoteBannerDescription}
           </p>
         </div>
       </section>

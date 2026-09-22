@@ -268,6 +268,15 @@ async function main() {
       email: "contato@corretoraval.com.br",
       address: "Balneário Camboriú — SC",
       instagramUrl: "https://www.instagram.com/",
+      // Tema padrão: Ametista & Ouro Real
+      themePreset: "ametista-ouro",
+      primaryColor: "#35104f",
+      primaryHover: "#4a1768",
+      accentColor: "#b58a3a",
+      accentLightColor: "#d8bd82",
+      backgroundColor: "#f8f5ef",
+      titleFont: "cormorant",
+      bodyFont: "manrope",
     },
   });
 
@@ -293,6 +302,120 @@ async function main() {
       update: post,
       create: post,
     });
+  }
+
+  // Depoimentos
+  const depoimentos = [
+    {
+      clientName: "Márcia Oliveira",
+      text: "A Corretora Val cuidou do meu apartamento por anos com total transparência. Cada detalhe foi tratado com atenção e profissionalismo. Recomendo sem hesitar.",
+      role: "Proprietária · Balneário Camboriú",
+      sortOrder: 0,
+      isPublished: true,
+    },
+    {
+      clientName: "Roberto Fonseca",
+      text: "Encontrei minha casa em Camboriú com a ajuda da equipe. Eles entenderam exatamente o que eu precisava e me guiaram em cada passo da negociação.",
+      role: "Comprador · Camboriú",
+      sortOrder: 1,
+      isPublished: true,
+    },
+    {
+      clientName: "Ana Beatriz Lima",
+      text: "Confiei a locação do meu imóvel à Corretora Val e nunca me preocupei com vacância. A gestão é impecável e o atendimento é sempre humano.",
+      role: "Investidora · Balneário Camboriú",
+      sortOrder: 2,
+      isPublished: true,
+    },
+  ];
+
+  for (const depoimento of depoimentos) {
+    const existing = await prisma.depoimento.findFirst({
+      where: { clientName: depoimento.clientName },
+    });
+    if (!existing) {
+      await prisma.depoimento.create({ data: depoimento });
+    }
+  }
+
+  // Marcos históricos reais alinhados à Linha do Tempo da Corretora Val
+  const marcos = [
+    {
+      year: 1989,
+      title: "O convite que abriu a primeira porta",
+      description:
+        "Convite para atuar na tradicional Imobiliária Gonzaga, em Curitiba, marcando o primeiro contato de Valdete com o mercado imobiliário.",
+      sortOrder: 0,
+    },
+    {
+      year: 1990,
+      title: "O início oficial da trajetória profissional",
+      description:
+        "Início formal na Imobiliária Gonzaga, atuando como secretária, vistoriadora e intermediadora de relações entre proprietários e locatários.",
+      sortOrder: 1,
+    },
+    {
+      year: 1995,
+      title: "Trabalho Honesto & Liderança Social na AMAE",
+      description:
+        "Dedicação como motoboy durante 25 anos para sustentar a família com dignidade, somada à presidência da AMAE em apoio a crianças com mobilidade reduzida.",
+      sortOrder: 2,
+    },
+    {
+      year: 2019,
+      title: "Recomeço em Balneário Camboriú e Nascimento da Corretora Val",
+      description:
+        "Retorno ao mercado imobiliário no litoral catarinense, reencontrando a vocação e fundando oficialmente a Corretora Val.",
+      sortOrder: 3,
+    },
+    {
+      year: 2024,
+      title: "Tradição Familiar na Administração de Patrimônios",
+      description:
+        "Gestão familiar estruturada para administração de imóveis, locação anual, temporada e compra e venda, unindo gerações.",
+      sortOrder: 4,
+    },
+  ];
+
+  for (const marco of marcos) {
+    const existing = await prisma.marcoHistorico.findFirst({
+      where: { year: marco.year, title: marco.title },
+    });
+    if (!existing) {
+      await prisma.marcoHistorico.create({ data: marco });
+    }
+  }
+
+  // Membros reais da equipe institucional
+  const membros = [
+    {
+      name: "Valdete Gonçalves de Melo",
+      role: "Fundadora & Gestora Patrimonial",
+      bio: "Mais de 35 anos de história no setor. Especialista em administração de imóveis e locações em Balneário Camboriú e Camboriú. CRECI/SC 56372-F.",
+      photoUrl: "/images/institutional/valdete-perfil.png",
+      sortOrder: 0,
+    },
+    {
+      name: "Felipe Cesar Gonçalves de Melo",
+      role: "Gestão & Operações",
+      bio: "Atua na gestão operacional, contratos e estratégia patrimonial da Corretora Val.",
+      sortOrder: 1,
+    },
+    {
+      name: "Kauan Enrique Otto",
+      role: "Inovação & Atendimento",
+      bio: "Nova geração no mercado imobiliário com foco em relacionamento moderno, agilidade e tecnologia.",
+      sortOrder: 2,
+    },
+  ];
+
+  for (const membro of membros) {
+    const existing = await prisma.membroEquipe.findFirst({
+      where: { name: membro.name },
+    });
+    if (!existing) {
+      await prisma.membroEquipe.create({ data: membro });
+    }
   }
 
   console.log(`Seed complete. Admin: ${adminEmail} / senha123`);
