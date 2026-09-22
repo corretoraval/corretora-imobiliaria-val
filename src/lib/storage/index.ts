@@ -5,7 +5,7 @@ import {
 } from "./supabase";
 import type { StorageProvider } from "./types";
 
-export type { StorageProvider, UploadResult } from "./types";
+export type { StorageProvider } from "./types";
 
 let _provider: StorageProvider | null = null;
 

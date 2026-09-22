@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 // Provide module-level mocks via factory (hoisted safely)
 vi.mock("@/lib/prisma", () => {
@@ -55,8 +55,14 @@ beforeAll(async () => {
   route = await import("./route");
 });
 
-beforeEach(() => {
-  vi.clearAllMocks();
+afterEach(() => {
+  vi.resetAllMocks();
+  prismaMock.prisma.$transaction.mockImplementation(async (callback) =>
+    callback({
+      imovel: prismaMock.prisma.imovel,
+      foto: prismaMock.prisma.foto,
+    }),
+  );
 });
 
 describe("API /api/imoveis handlers", () => {
