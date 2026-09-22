@@ -6,6 +6,7 @@ import { ZodError, z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { findAvailableSlug, nextPropertyCode } from "@/lib/identifiers";
 import { prisma } from "@/lib/prisma";
+import { getStorageProvider } from "@/lib/storage";
 
 const purposes = ["VENDA", "LOCACAO_ANUAL", "TEMPORADA"] as const;
 const statuses = [
@@ -279,6 +280,15 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const data = updateSchema.parse(body);
     const photos = z.array(propertyPhotoSchema).optional().parse(body.photos);
+    const previousPhotos =
+      photos !== undefined
+        ? ((
+            await prisma.imovel.findUnique({
+              where: { id },
+              select: { photos: { select: { url: true } } },
+            })
+          )?.photos ?? [])
+        : [];
     const updated = await prisma.$transaction(async (tx) => {
       const property = await tx.imovel.update({ where: { id }, data });
 
@@ -302,6 +312,23 @@ export async function PUT(req: Request) {
 
       return property;
     });
+    if (previousPhotos.length > 0) {
+      const storage = getStorageProvider();
+      const results = await Promise.allSettled(
+        previousPhotos.map((photo) => storage.deleteFile(photo.url)),
+      );
+      results
+        .filter(
+          (result): result is PromiseRejectedResult =>
+            result.status === "rejected",
+        )
+        .forEach((result) => {
+          console.error(
+            "Photo cleanup after property update failed:",
+            result.reason,
+          );
+        });
+    }
     try {
       revalidatePath("/imoveis");
       if (updated.slug) revalidatePath(`/imoveis/${updated.slug}`);

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { StorageProvider, UploadResult } from "./index";
+import type { StorageProvider, UploadResult } from "./types";
 
 export function LocalStorageProvider(): StorageProvider {
   const uploadsRoot = path.join(process.cwd(), "public", "uploads");
@@ -25,7 +25,9 @@ export function LocalStorageProvider(): StorageProvider {
       return `/uploads/${p.replace(/\\\\/g, "/")}`;
     },
     async deleteFile(p) {
-      const full = path.join(uploadsRoot, p);
+      if (p.startsWith("http")) return;
+      const relativePath = p.replace(/^\/uploads[\\/]/, "");
+      const full = path.join(uploadsRoot, relativePath);
       try {
         await fs.promises.unlink(full);
       } catch {

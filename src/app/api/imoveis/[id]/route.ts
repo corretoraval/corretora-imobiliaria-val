@@ -45,9 +45,7 @@ export async function DELETE(
     if (imovel.photos.length > 0) {
       const storage = getStorageProvider();
       await Promise.allSettled(
-        imovel.photos
-          .filter((p) => p.url.startsWith("/uploads/"))
-          .map((p) => storage.deleteFile(p.url.replace(/^\/uploads\//, ""))),
+        imovel.photos.map((p) => storage.deleteFile(p.url)),
       );
     }
 

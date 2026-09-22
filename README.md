@@ -54,6 +54,38 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
+## Storage de fotos em produção
+
+O desenvolvimento local usa `public/uploads` quando as variáveis do Supabase
+Storage não estão configuradas. Em produção na Vercel, configure um bucket
+externo antes de cadastrar fotos:
+
+1. No projeto Supabase de produção, abra **Storage** e crie o bucket
+   `property-photos`.
+2. Deixe o bucket **público**. As URLs públicas são persistidas em `Foto.url`
+   e permitem que o site público e o `next/image` exibam as fotos sem criar
+   URLs assinadas a cada renderização.
+3. Em **Project Settings → API**, copie a **Project URL** e a `service_role`
+   key. A `service_role` key deve permanecer somente em variáveis server-side:
+   nunca a coloque em código cliente ou em `NEXT_PUBLIC_*`.
+4. Na Vercel, em **Settings → Environment Variables → Production**, adicione:
+
+   ```text
+   SUPABASE_URL=https://<seu-projeto>.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=<service_role_key>
+   SUPABASE_STORAGE_BUCKET=property-photos
+   ```
+
+5. Faça um novo deploy para que a configuração seja carregada. O provider
+   Supabase só é ativado quando `SUPABASE_URL` e
+   `SUPABASE_SERVICE_ROLE_KEY` existem; sem elas, o fallback local continua
+   disponível para desenvolvimento.
+
+O provider usa a API REST do Supabase para upload e exclusão, e grava no banco
+a URL pública retornada pelo bucket. Arquivos locais existentes não são
+migrados automaticamente: fotos que não estiverem mais disponíveis no
+filesystem da aplicação precisam ser reenviadas.
+
 ## Fluxo de contribuição
 
 Leia [SAAS_MASTER_CONTEXT.md](./SAAS_MASTER_CONTEXT.md) antes de implementar.

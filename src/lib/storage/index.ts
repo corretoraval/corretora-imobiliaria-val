@@ -1,15 +1,11 @@
 import { LocalStorageProvider } from "./local";
+import {
+  isSupabaseStorageConfigured,
+  SupabaseStorageProvider,
+} from "./supabase";
+import type { StorageProvider } from "./types";
 
-export type UploadResult = {
-  url: string; // public URL path
-  path: string; // internal stored path relative to uploads dir
-};
-
-export interface StorageProvider {
-  uploadFile: (buffer: Buffer, destPath: string) => Promise<UploadResult>;
-  getUrl: (path: string) => string; // path relative to uploads dir or returned by uploadFile
-  deleteFile: (path: string) => Promise<void>;
-}
+export type { StorageProvider, UploadResult } from "./types";
 
 let _provider: StorageProvider | null = null;
 
@@ -19,7 +15,11 @@ function setStorageProvider(provider: StorageProvider) {
 
 export function getStorageProvider(): StorageProvider {
   if (!_provider) {
-    setStorageProvider(LocalStorageProvider());
+    setStorageProvider(
+      isSupabaseStorageConfigured()
+        ? SupabaseStorageProvider()
+        : LocalStorageProvider(),
+    );
   }
   return _provider as StorageProvider;
 }
