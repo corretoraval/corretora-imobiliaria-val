@@ -257,7 +257,7 @@ async function main() {
       whatsapp: "5547974007391",
       email: "contato@corretoraval.com.br",
       address: "Balneário Camboriú — SC",
-      instagramUrl: null,
+      instagramUrl: "https://www.instagram.com/valdete_goncalvesdemelo/",
       // Tema padrão: Ametista & Ouro Real
       themePreset: "ametista-ouro",
       primaryColor: "#35104f",

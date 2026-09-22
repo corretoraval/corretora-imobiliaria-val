@@ -140,8 +140,11 @@ export async function PUT(request: Request) {
         data: { content: content as Prisma.InputJsonValue },
       });
       try {
-        revalidatePath("/");
-        if (slug !== "home") revalidatePath(`/${slug}`);
+        if (slug === "home") {
+          revalidatePath("/", "page");
+        } else {
+          revalidatePath(`/${slug}`, "page");
+        }
       } catch (e) {
         console.error("Revalidate after page-content update failed:", e);
       }

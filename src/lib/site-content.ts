@@ -324,7 +324,7 @@ const fallbackSettings = {
   whatsapp: "5547974007391",
   email: "contato@corretoraval.com.br",
   address: "Balneário Camboriú — SC",
-  instagramUrl: null,
+  instagramUrl: "https://www.instagram.com/valdete_goncalvesdemelo/",
   creci: "CRECI/SC 56372-F",
   // Tema visual — preset padrão: Ametista & Ouro Real
   themePreset: "ametista-ouro",
@@ -339,11 +339,15 @@ const fallbackSettings = {
 
 export async function getSiteSettings() {
   try {
-    return (
+    const settings =
       (await prisma.configuracaoSite.findUnique({
         where: { id: "principal" },
-      })) ?? fallbackSettings
-    );
+      })) ?? fallbackSettings;
+    return {
+      ...fallbackSettings,
+      ...settings,
+      instagramUrl: settings.instagramUrl ?? fallbackSettings.instagramUrl,
+    };
   } catch {
     return fallbackSettings;
   }

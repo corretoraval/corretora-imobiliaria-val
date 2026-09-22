@@ -71,7 +71,7 @@ const FONT_VAR: Record<string, string> = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Corretora Val | Confiança que abre portas",
+    default: "Corretora Val | Confiança que abre portas.",
     template: "%s | Corretora Val",
   },
   description:

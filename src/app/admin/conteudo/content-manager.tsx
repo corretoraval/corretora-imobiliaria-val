@@ -395,7 +395,9 @@ export function ContentManager() {
     setLoadingContent(true);
     setContentExpanded(false);
     try {
-      const res = await fetch(`/api/admin/conteudo/page-content?slug=${slug}`);
+      const res = await fetch(`/api/admin/conteudo/page-content?slug=${slug}`, {
+        cache: "no-store",
+      });
       if (!res.ok) return;
       const data = await res.json();
       const c = data.content ?? {};
@@ -493,6 +495,7 @@ export function ContentManager() {
         }),
       });
       if (!res.ok) throw new Error("Não foi possível salvar o conteúdo.");
+      await loadStructuredContent(slug);
       setMessage("Conteúdo estruturado salvo com sucesso.");
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Erro ao salvar.");
