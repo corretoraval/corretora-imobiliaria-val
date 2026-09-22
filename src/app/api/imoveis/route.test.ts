@@ -8,7 +8,17 @@ vi.mock("@/lib/prisma", () => {
     update: vi.fn(),
     findUnique: vi.fn(),
   };
-  return { prisma: { imovel } };
+  const foto = {
+    createMany: vi.fn(),
+    deleteMany: vi.fn(),
+  };
+  return {
+    prisma: {
+      imovel,
+      foto,
+      $transaction: vi.fn(async (callback) => callback({ imovel, foto })),
+    },
+  };
 });
 
 const mockGetServerSession = vi.fn();
@@ -23,7 +33,18 @@ type ImovelMock = {
   findUnique: ReturnType<typeof vi.fn>;
 };
 
-type PrismaMock = { prisma: { imovel: ImovelMock } };
+type FotoMock = {
+  createMany: ReturnType<typeof vi.fn>;
+  deleteMany: ReturnType<typeof vi.fn>;
+};
+
+type PrismaMock = {
+  prisma: {
+    imovel: ImovelMock;
+    foto: FotoMock;
+    $transaction: ReturnType<typeof vi.fn>;
+  };
+};
 
 let route: typeof import("./route");
 let prismaMock: PrismaMock;
@@ -66,6 +87,7 @@ describe("API /api/imoveis handlers", () => {
       id: "abc",
       title: "X",
     });
+    prismaMock.prisma.imovel.findMany.mockResolvedValue([]);
 
     const payload = {
       code: "VAL-100",
@@ -86,6 +108,88 @@ describe("API /api/imoveis handlers", () => {
       data: expect.objectContaining(payload),
     });
     expect(res.status).toBe(201);
+  });
+
+  it("saves photos and preserves their order and cover", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.imovel.create.mockResolvedValue({
+      id: "abc",
+      slug: "apartamento-teste",
+    });
+    prismaMock.prisma.imovel.findMany.mockResolvedValue([]);
+
+    const req = new Request("http://localhost/api/imoveis", {
+      method: "POST",
+      body: JSON.stringify({
+        slug: "apartamento-teste",
+        title: "Apartamento teste",
+        propertyType: "Apartamento",
+        purpose: "VENDA",
+        city: "Camboriú",
+        salePrice: 10,
+        photos: [
+          { url: "/uploads/second.jpg", isCover: false },
+          { url: "/uploads/cover.jpg", isCover: true },
+        ],
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    await route.POST(req);
+
+    expect(prismaMock.prisma.foto.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          url: "/uploads/second.jpg",
+          alt: null,
+          position: 0,
+          isCover: false,
+          imovelId: "abc",
+        },
+        {
+          url: "/uploads/cover.jpg",
+          alt: null,
+          position: 1,
+          isCover: true,
+          imovelId: "abc",
+        },
+      ],
+    });
+  });
+
+  it("replaces photos when an edited property is saved", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.imovel.update.mockResolvedValue({
+      id: "abc",
+      slug: "apartamento-teste",
+    });
+
+    const req = new Request("http://localhost/api/imoveis?id=abc", {
+      method: "PUT",
+      body: JSON.stringify({
+        title: "Apartamento atualizado",
+        photos: [{ url: "/uploads/new.jpg", isCover: true }],
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await route.PUT(req);
+
+    expect(res.status).toBe(200);
+    expect(prismaMock.prisma.foto.deleteMany).toHaveBeenCalledWith({
+      where: { imovelId: "abc" },
+    });
+    expect(prismaMock.prisma.foto.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          url: "/uploads/new.jpg",
+          alt: null,
+          position: 0,
+          isCover: true,
+          imovelId: "abc",
+        },
+      ],
+    });
   });
 
   it("PUT requires id and admin", async () => {

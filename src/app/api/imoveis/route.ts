@@ -33,12 +33,12 @@ const optionalText = z.string().trim().max(4_000).optional().nullable();
 const optionalAmount = z.number().int().nonnegative().optional().nullable();
 const optionalInteger = z.number().int().nonnegative().optional().nullable();
 
-type PropertyPhotoInput = {
-  url: string;
-  alt?: string | null;
-  position?: number | null;
-  isCover?: boolean | null;
-};
+const propertyPhotoSchema = z.object({
+  url: z.string().trim().min(1),
+  alt: z.string().trim().max(500).optional().nullable(),
+  position: z.number().int().nonnegative().optional().nullable(),
+  isCover: z.boolean().optional().nullable(),
+});
 
 const propertyFields = z.object({
   code: z.string().trim().min(3).max(32).optional(),
@@ -157,6 +157,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const data = propertySchema.parse(body);
+    const photos = z.array(propertyPhotoSchema).optional().parse(body.photos);
     const slug = await findAvailableSlug(
       data.slug || data.title,
       async (candidate) =>
@@ -172,28 +173,26 @@ export async function POST(req: Request) {
     });
     const nextCode =
       data.code || nextPropertyCode(existingCodes.map((item) => item.code));
-    const created = await prisma.imovel.create({
-      data: { ...data, code: nextCode, slug },
-    });
+    const created = await prisma.$transaction(async (tx) => {
+      const property = await tx.imovel.create({
+        data: { ...data, code: nextCode, slug },
+      });
 
-    // handle photos if provided in payload (uploaded earlier via /api/uploads)
-    if (Array.isArray(body.photos) && body.photos.length > 0) {
-      try {
-        const photosToCreate = (body.photos as PropertyPhotoInput[]).map(
-          (photo, index) => ({
+      if (photos?.length) {
+        const coverIndex = photos.findIndex((photo) => photo.isCover === true);
+        await tx.foto.createMany({
+          data: photos.map((photo, index) => ({
             url: photo.url,
             alt: photo.alt ?? null,
-            position:
-              typeof photo.position === "number" ? photo.position : index,
-            isCover: !!photo.isCover,
-            imovelId: created.id,
-          }),
-        );
-        await prisma.foto.createMany({ data: photosToCreate });
-      } catch (e) {
-        console.error("Creating photos failed:", e);
+            position: index,
+            isCover: index === (coverIndex >= 0 ? coverIndex : 0),
+            imovelId: property.id,
+          })),
+        });
       }
-    }
+
+      return property;
+    });
 
     try {
       // on-demand revalidation for public listing and individual page
@@ -218,8 +217,32 @@ export async function PUT(req: Request) {
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
   try {
-    const data = updateSchema.parse(await req.json());
-    const updated = await prisma.imovel.update({ where: { id }, data });
+    const body = await req.json();
+    const data = updateSchema.parse(body);
+    const photos = z.array(propertyPhotoSchema).optional().parse(body.photos);
+    const updated = await prisma.$transaction(async (tx) => {
+      const property = await tx.imovel.update({ where: { id }, data });
+
+      if (photos !== undefined) {
+        await tx.foto.deleteMany({ where: { imovelId: id } });
+        if (photos.length > 0) {
+          const coverIndex = photos.findIndex(
+            (photo) => photo.isCover === true,
+          );
+          await tx.foto.createMany({
+            data: photos.map((photo, index) => ({
+              url: photo.url,
+              alt: photo.alt ?? null,
+              position: index,
+              isCover: index === (coverIndex >= 0 ? coverIndex : 0),
+              imovelId: id,
+            })),
+          });
+        }
+      }
+
+      return property;
+    });
     try {
       revalidatePath("/imoveis");
       if (updated.slug) revalidatePath(`/imoveis/${updated.slug}`);

@@ -305,6 +305,12 @@ export function AdminPropertiesManager() {
       privateArea: draft.privateArea ? Number(draft.privateArea) : null,
       summary: draft.summary.trim() || null,
       description: draft.description.trim() || null,
+      photos: photos.map((p, i) => ({
+        url: p.url,
+        alt: p.alt ?? null,
+        position: i,
+        isCover: !!p.isCover,
+      })),
     };
 
     if (photos.length > 0) {
@@ -956,6 +962,50 @@ export function AdminPropertiesManager() {
                         fill
                         className="object-cover"
                       />
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() =>
+                          setPhotos((current) => {
+                            if (idx === 0) return current;
+                            const next = [...current];
+                            [next[idx - 1], next[idx]] = [
+                              next[idx],
+                              next[idx - 1],
+                            ];
+                            return next.map((item, position) => ({
+                              ...item,
+                              position,
+                            }));
+                          })
+                        }
+                        className="absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-white text-xs hover:bg-black/90 disabled:opacity-30"
+                        title="Mover para a esquerda"
+                      >
+                        <ChevronUp size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === photos.length - 1}
+                        onClick={() =>
+                          setPhotos((current) => {
+                            if (idx === current.length - 1) return current;
+                            const next = [...current];
+                            [next[idx], next[idx + 1]] = [
+                              next[idx + 1],
+                              next[idx],
+                            ];
+                            return next.map((item, position) => ({
+                              ...item,
+                              position,
+                            }));
+                          })
+                        }
+                        className="absolute left-8 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-white text-xs hover:bg-black/90 disabled:opacity-30"
+                        title="Mover para a direita"
+                      >
+                        <ChevronDown size={14} />
+                      </button>
                       <button
                         type="button"
                         onClick={() =>
