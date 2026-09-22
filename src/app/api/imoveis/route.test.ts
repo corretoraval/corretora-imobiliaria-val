@@ -222,6 +222,9 @@ describe("API /api/imoveis handlers", () => {
       id: "abc",
       slug: "apartamento-teste",
     });
+    prismaMock.prisma.imovel.findUnique.mockResolvedValue({
+      photos: [{ url: "/uploads/old.jpg" }],
+    });
 
     const req = new Request("http://localhost/api/imoveis?id=abc", {
       method: "PUT",
