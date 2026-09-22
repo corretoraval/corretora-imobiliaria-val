@@ -525,10 +525,10 @@ export function AdminBlogManager() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[760px] table-fixed text-left border-collapse">
               <thead>
                 <tr className="border-b border-[var(--border,#d4cec4)] bg-[var(--surface-muted)] text-[11px] font-extrabold uppercase tracking-wider text-[var(--ink-soft)]">
-                  <th className="py-3.5 px-4 sm:px-6">Artigo</th>
+                  <th className="w-[38%] py-3.5 px-4 sm:px-6">Artigo</th>
                   <th className="py-3.5 px-4">Categoria</th>
                   <th className="py-3.5 px-4">Leitura</th>
                   <th className="py-3.5 px-4">Status</th>
@@ -560,9 +560,9 @@ export function AdminBlogManager() {
                           </div>
                         )}
 
-                        <div className="min-w-0 flex-1">
+                        <div className="min-w-0 flex-1 overflow-hidden">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-[var(--ink)] truncate max-w-xs sm:max-w-md block">
+                            <span className="block min-w-0 flex-1 truncate font-bold text-[var(--ink)]">
                               {post.title}
                             </span>
                             {post.isFeatured && (
