@@ -95,11 +95,6 @@ const pageContentSchema = z.object({
 const requestSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("settings"), settings: settingsSchema }),
   z.object({ type: z.literal("page"), page: pageSchema }),
-  z.object({
-    type: z.literal("page-content"),
-    slug: z.string().trim().min(1),
-    content: z.record(z.string(), z.unknown()),
-  }),
   z.object({ type: z.literal("page-content"), pageContent: pageContentSchema }),
 ]);
 
@@ -175,12 +170,7 @@ export async function PUT(request: Request) {
     }
 
     if (payload.type === "page-content") {
-      const slug =
-        "pageContent" in payload ? payload.pageContent.slug : payload.slug;
-      const content =
-        "pageContent" in payload
-          ? payload.pageContent.content
-          : payload.content;
+      const { slug, content } = payload.pageContent;
       const page = await prisma.paginaSite.update({
         where: { slug },
         data: { content: content as Prisma.InputJsonValue },
