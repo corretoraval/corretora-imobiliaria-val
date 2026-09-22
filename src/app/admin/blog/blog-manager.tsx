@@ -30,6 +30,7 @@ import {
 import { AdminModal } from "@/components/admin/admin-modal";
 import { BLOG_CATEGORIES, type BlogCategory } from "@/lib/blog-constants";
 import { toSlug } from "@/lib/identifiers";
+import { uploadFile } from "@/lib/upload-file";
 import { BlogEditor } from "./blog-editor";
 
 export const categories = BLOG_CATEGORIES;
@@ -210,24 +211,12 @@ export function AdminBlogManager() {
 
     try {
       setUploadingCover(true);
-      const fd = new FormData();
-      fd.append("file", file);
-
-      const res = await fetch("/api/uploads", {
-        method: "POST",
-        body: fd,
+      const uploaded = await uploadFile(file);
+      setDraft((prev) => ({ ...prev, coverImage: uploaded.url }));
+      setMessage({
+        text: "Imagem de capa enviada com sucesso.",
+        type: "success",
       });
-
-      const json = await res.json();
-      if (res.ok && json.url) {
-        setDraft((prev) => ({ ...prev, coverImage: json.url }));
-        setMessage({
-          text: "Imagem de capa enviada com sucesso.",
-          type: "success",
-        });
-      } else {
-        throw new Error(json.error || "Erro no upload");
-      }
     } catch (err) {
       console.error(err);
       setMessage({

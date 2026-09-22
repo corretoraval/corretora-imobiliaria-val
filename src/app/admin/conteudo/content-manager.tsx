@@ -20,6 +20,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { AdminModal } from "@/components/admin/admin-modal";
+import { uploadFile } from "@/lib/upload-file";
 
 type Page = {
   slug: string;
@@ -880,15 +881,8 @@ export function ContentManager() {
   ) {
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/uploads", {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) throw new Error("Falha no upload");
-      const data = await res.json();
-      if (data.url) onSuccess(data.url);
+      const uploaded = await uploadFile(file);
+      onSuccess(uploaded.url);
     } catch (_err) {
       alert("Erro ao enviar imagem. Verifique o formato e tente novamente.");
     } finally {

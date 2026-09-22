@@ -23,6 +23,7 @@ import {
 import { AdminModal } from "@/components/admin/admin-modal";
 import { toSlug } from "@/lib/identifiers";
 import { formatPrice } from "@/lib/format-price";
+import { uploadFile } from "@/lib/upload-file";
 
 type Purpose = "VENDA" | "LOCACAO_ANUAL" | "TEMPORADA";
 
@@ -1170,20 +1171,14 @@ export function AdminPropertiesManager() {
                   if (files.length === 0) return;
 
                   for (const file of files) {
-                    const fd = new FormData();
-                    fd.append("file", file);
                     try {
-                      const res = await fetch("/api/uploads", {
-                        method: "POST",
-                        body: fd,
-                      });
-                      const json = await res.json();
-                      if (res.ok && json.url) {
+                      const uploaded = await uploadFile(file);
+                      if (uploaded.url) {
                         setPhotos((current) => [
                           ...current,
                           {
-                            url: json.url,
-                            path: json.path,
+                            url: uploaded.url,
+                            path: uploaded.path,
                             alt: draft.title || file.name,
                             position: current.length,
                             isCover: current.length === 0,

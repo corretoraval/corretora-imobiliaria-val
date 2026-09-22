@@ -39,6 +39,48 @@ export function SupabaseStorageProvider(): StorageProvider {
   };
 
   return {
+    async createSignedUploadUrl(filename, contentType) {
+      const path = `${Date.now()}-${filename}`.replace(
+        /[^a-zA-Z0-9.\-_]/g,
+        "_",
+      );
+      const response = await fetch(
+        `${baseUrl}/object/upload/sign/${SUPABASE_STORAGE_BUCKET}/${path}`,
+        {
+          method: "POST",
+          headers: {
+            ...headers,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ contentType }),
+        },
+      );
+
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(
+          `Supabase signed upload failed (${response.status}): ${detail}`,
+        );
+      }
+
+      const result = (await response.json()) as {
+        signedURL?: string;
+        token?: string;
+      };
+      const signedUrl = result.signedURL;
+      if (!signedUrl) {
+        throw new Error("Supabase did not return a signed upload URL.");
+      }
+
+      return {
+        path,
+        url: `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/${path}`,
+        uploadUrl: signedUrl.startsWith("http")
+          ? signedUrl
+          : `${SUPABASE_URL}${signedUrl}`,
+      };
+    },
+
     async uploadFile(buffer, destPath) {
       const path = objectPath(destPath);
       const response = await fetch(

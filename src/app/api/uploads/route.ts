@@ -5,6 +5,37 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
+    const provider = getStorageProvider();
+    if (
+      req.headers.get("content-type")?.includes("application/json") &&
+      provider.createSignedUploadUrl
+    ) {
+      const body = (await req.json()) as {
+        filename?: unknown;
+        contentType?: unknown;
+      };
+      if (
+        typeof body.filename !== "string" ||
+        typeof body.contentType !== "string"
+      ) {
+        return NextResponse.json(
+          { error: "Filename and content type are required" },
+          { status: 400 },
+        );
+      }
+
+      const signed = await provider.createSignedUploadUrl(
+        body.filename,
+        body.contentType,
+      );
+      return NextResponse.json({
+        ok: true,
+        url: signed.url,
+        path: signed.path,
+        uploadUrl: signed.uploadUrl,
+      });
+    }
+
     const form = await req.formData();
     const file = form.get("file");
 
@@ -18,7 +49,6 @@ export async function POST(req: Request) {
       /[^a-zA-Z0-9.\-_]/g,
       "_",
     );
-    const provider = getStorageProvider();
     const uploaded = await provider.uploadFile(buffer, filename);
     return NextResponse.json({
       ok: true,

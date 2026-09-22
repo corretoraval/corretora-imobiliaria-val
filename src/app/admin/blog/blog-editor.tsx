@@ -22,6 +22,7 @@ import {
   Unlink,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { uploadFile } from "@/lib/upload-file";
 
 type BlogEditorProps = {
   value: string;
@@ -105,24 +106,12 @@ export function BlogEditor({ value, onChange }: BlogEditorProps) {
 
     try {
       setUploadingImage(true);
-      const fd = new FormData();
-      fd.append("file", file);
-
-      const res = await fetch("/api/uploads", {
-        method: "POST",
-        body: fd,
-      });
-
-      const json = await res.json();
-      if (res.ok && json.url) {
-        editor
-          .chain()
-          .focus()
-          .setImage({ src: json.url, alt: file.name })
-          .run();
-      } else {
-        alert(json.error || "Erro ao fazer upload da imagem.");
-      }
+      const uploaded = await uploadFile(file);
+      editor
+        .chain()
+        .focus()
+        .setImage({ src: uploaded.url, alt: file.name })
+        .run();
     } catch (err) {
       console.error("Erro no upload de imagem:", err);
       alert("Erro na conexão durante upload da imagem.");
