@@ -300,7 +300,9 @@ export function BlogEditor({ value, onChange }: BlogEditorProps) {
               ? "bg-[var(--plum)] text-white"
               : "text-[var(--ink-soft)] hover:bg-white hover:text-[var(--ink)]"
           }`}
-          title={editor.isActive("link") ? "Editar ou remover link" : "Inserir link"}
+          title={
+            editor.isActive("link") ? "Editar ou remover link" : "Inserir link"
+          }
           aria-label="Inserir ou editar link"
         >
           <Link2 size={15} />

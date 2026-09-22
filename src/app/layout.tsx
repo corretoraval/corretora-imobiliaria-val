@@ -78,13 +78,15 @@ export const metadata: Metadata = {
     "Administração de imóveis, venda, locação anual e temporada em Balneário Camboriú e Camboriú.",
 };
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const cfg = await getSiteSettings();
 
-  const titleFontFamily =
-    FONT_VAR[cfg.titleFont] ?? "var(--font-cormorant)";
-  const bodyFontFamily =
-    FONT_VAR[cfg.bodyFont] ?? "var(--font-manrope)";
+  const titleFontFamily = FONT_VAR[cfg.titleFont] ?? "var(--font-cormorant)";
+  const bodyFontFamily = FONT_VAR[cfg.bodyFont] ?? "var(--font-manrope)";
 
   const themeStyle = `
     :root {

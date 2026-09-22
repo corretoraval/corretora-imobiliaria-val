@@ -236,9 +236,18 @@ export async function getHomeContent() {
       areas:
         services.length === 4
           ? services.map((service) => ({
-              title: isRecord(service) && typeof service.title === "string" ? service.title : "",
-              text: isRecord(service) && typeof service.text === "string" ? service.text : "",
-              href: isRecord(service) && typeof service.href === "string" ? service.href : "/imoveis",
+              title:
+                isRecord(service) && typeof service.title === "string"
+                  ? service.title
+                  : "",
+              text:
+                isRecord(service) && typeof service.text === "string"
+                  ? service.text
+                  : "",
+              href:
+                isRecord(service) && typeof service.href === "string"
+                  ? service.href
+                  : "/imoveis",
             }))
           : content.areas,
     };
@@ -252,11 +261,20 @@ export async function getAdministracaoContent() {
   if (isRecord(raw) && Array.isArray(raw.steps)) {
     return {
       ...content,
-      steps: raw.steps.map((step) =>
-        isRecord(step) && typeof step.description === "string"
-          ? { number: String(step.number ?? ""), title: String(step.title ?? ""), desc: step.description }
-          : null,
-      ).filter((step): step is AdministracaoContent["steps"][number] => step !== null),
+      steps: raw.steps
+        .map((step) =>
+          isRecord(step) && typeof step.description === "string"
+            ? {
+                number: String(step.number ?? ""),
+                title: String(step.title ?? ""),
+                desc: step.description,
+              }
+            : null,
+        )
+        .filter(
+          (step): step is AdministracaoContent["steps"][number] =>
+            step !== null,
+        ),
     };
   }
   return content;
@@ -268,11 +286,13 @@ export async function getQuemSomosContent() {
   if (isRecord(raw)) {
     return {
       biography:
-        Array.isArray(raw.biographyParagraphs) && raw.biographyParagraphs.length > 0
-          ? raw.biographyParagraphs.filter((paragraph): paragraph is string => typeof paragraph === "string")
+        Array.isArray(raw.biographyParagraphs) &&
+        raw.biographyParagraphs.length > 0
+          ? raw.biographyParagraphs.filter(
+              (paragraph): paragraph is string => typeof paragraph === "string",
+            )
           : content.biography,
-      quote:
-        typeof raw.quoteText === "string" ? raw.quoteText : content.quote,
+      quote: typeof raw.quoteText === "string" ? raw.quoteText : content.quote,
     };
   }
   return content;
@@ -283,7 +303,10 @@ export async function getMemoriaVivaContent() {
   const content = merge(fallbackMemoriaViva, raw);
   if (isRecord(raw)) {
     return {
-      quote: typeof raw.quoteBannerText === "string" ? raw.quoteBannerText : content.quote,
+      quote:
+        typeof raw.quoteBannerText === "string"
+          ? raw.quoteBannerText
+          : content.quote,
       quoteDescription:
         typeof raw.quoteBannerDescription === "string"
           ? raw.quoteBannerDescription

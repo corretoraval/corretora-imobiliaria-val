@@ -67,7 +67,7 @@ describe("API /api/admin/blog route handlers", () => {
     const createCall = prismaMock.prisma.postBlog.create.mock.calls[0][0];
     expect(createCall.data.content).not.toContain("<script>");
     expect(createCall.data.content).toContain("<p>Texto seguro</p>");
-    expect(createCall.data.content).toContain("href=\"https://val.com\"");
+    expect(createCall.data.content).toContain('href="https://val.com"');
   });
 
   it("PUT does NOT change publishedAt when already published post is edited", async () => {
@@ -93,7 +93,8 @@ describe("API /api/admin/blog route handlers", () => {
       method: "PUT",
       body: JSON.stringify({
         title: "Título Atualizado",
-        content: "<p>Conteúdo novo com imagem <img src='https://cdn.com/foto.jpg' alt='Foto'/></p>",
+        content:
+          "<p>Conteúdo novo com imagem <img src='https://cdn.com/foto.jpg' alt='Foto'/></p>",
       }),
       headers: { "Content-Type": "application/json" },
     });

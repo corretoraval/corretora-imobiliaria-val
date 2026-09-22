@@ -27,7 +27,9 @@ type SiteContentPrismaMock = {
 let prismaMock: SiteContentPrismaMock;
 
 beforeAll(async () => {
-  prismaMock = (await import("@/lib/prisma")) as unknown as SiteContentPrismaMock;
+  prismaMock = (await import(
+    "@/lib/prisma"
+  )) as unknown as SiteContentPrismaMock;
   siteContent = await import("./site-content");
 });
 
@@ -71,7 +73,9 @@ describe("site-content helpers and fallback behavior", () => {
 
   describe("getDepoimentos", () => {
     it("returns empty array as fallback when database throws", async () => {
-      prismaMock.prisma.depoimento.findMany.mockRejectedValue(new Error("DB error"));
+      prismaMock.prisma.depoimento.findMany.mockRejectedValue(
+        new Error("DB error"),
+      );
       const items = await siteContent.getDepoimentos();
       expect(items).toEqual([]);
     });
@@ -88,7 +92,9 @@ describe("site-content helpers and fallback behavior", () => {
 
   describe("getMarcosHistoricos", () => {
     it("returns empty array as fallback when database throws", async () => {
-      prismaMock.prisma.marcoHistorico.findMany.mockRejectedValue(new Error("DB error"));
+      prismaMock.prisma.marcoHistorico.findMany.mockRejectedValue(
+        new Error("DB error"),
+      );
       const items = await siteContent.getMarcosHistoricos();
       expect(items).toEqual([]);
     });
@@ -105,7 +111,9 @@ describe("site-content helpers and fallback behavior", () => {
 
   describe("getMembrosEquipe", () => {
     it("returns empty array as fallback when database throws", async () => {
-      prismaMock.prisma.membroEquipe.findMany.mockRejectedValue(new Error("DB error"));
+      prismaMock.prisma.membroEquipe.findMany.mockRejectedValue(
+        new Error("DB error"),
+      );
       const items = await siteContent.getMembrosEquipe();
       expect(items).toEqual([]);
     });

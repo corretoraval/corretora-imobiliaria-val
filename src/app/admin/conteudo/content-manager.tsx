@@ -65,7 +65,12 @@ type MembroEquipe = {
   sortOrder: number;
 };
 
-const STRUCTURED_SLUGS = ["home", "administracao", "quem-somos", "memoria-viva"];
+const STRUCTURED_SLUGS = [
+  "home",
+  "administracao",
+  "quem-somos",
+  "memoria-viva",
+];
 
 function emptyToNull(value: string) {
   const trimmed = value.trim();
@@ -170,56 +175,129 @@ type MemoriaVivaContentState = {
 const DEFAULT_HOME: HomeContentState = {
   hero_eyebrow: "Balneário Camboriú e Camboriú",
   hero_title: "Confiança que abre portas.",
-  hero_text: "Há mais de três décadas, transformamos imóveis em histórias bem cuidadas — com atendimento humano, gestão responsável e compromisso real com o seu patrimônio.",
+  hero_text:
+    "Há mais de três décadas, transformamos imóveis em histórias bem cuidadas — com atendimento humano, gestão responsável e compromisso real com o seu patrimônio.",
   hero_primaryCtaText: "Conheça nossos imóveis",
   hero_primaryCtaHref: "/imoveis",
   hero_secondaryCtaText: "Administrar meu imóvel",
   hero_secondaryCtaHref: "/administracao",
   hero_cardEyebrow: "Desde 1989",
   hero_cardTitle: "Mais que imóveis, cuidamos de histórias.",
-  hero_cardText: "Uma empresa construída em família, para relações que permanecem muito depois da entrega das chaves.",
+  hero_cardText:
+    "Uma empresa construída em família, para relações que permanecem muito depois da entrega das chaves.",
   services: [
-    { key: "comprar", title: "Comprar", text: "Oportunidades selecionadas de imóveis para compra com análise documental completa e segurança jurídica.", href: "/imoveis" },
-    { key: "alugar", title: "Alugar", text: "Locação anual transparente, com análise rigorosa e contratos seguros para inquilinos e proprietários.", href: "/imoveis" },
-    { key: "temporada", title: "Temporada", text: "Imóveis exclusivos para desfrutar o litoral de Balneário Camboriú com conforto em cada temporada.", href: "/imoveis" },
-    { key: "administrar", title: "Administrar Imóvel", text: "Gestão completa do seu patrimônio com vistorias, prestação de contas e atendimento próximo.", href: "/administracao" },
+    {
+      key: "comprar",
+      title: "Comprar",
+      text: "Oportunidades selecionadas de imóveis para compra com análise documental completa e segurança jurídica.",
+      href: "/imoveis",
+    },
+    {
+      key: "alugar",
+      title: "Alugar",
+      text: "Locação anual transparente, com análise rigorosa e contratos seguros para inquilinos e proprietários.",
+      href: "/imoveis",
+    },
+    {
+      key: "temporada",
+      title: "Temporada",
+      text: "Imóveis exclusivos para desfrutar o litoral de Balneário Camboriú com conforto em cada temporada.",
+      href: "/imoveis",
+    },
+    {
+      key: "administrar",
+      title: "Administrar Imóvel",
+      text: "Gestão completa do seu patrimônio com vistorias, prestação de contas e atendimento próximo.",
+      href: "/administracao",
+    },
   ],
 };
 
 const DEFAULT_ADMIN: AdminContentState = {
   benefitsEyebrow: "Por que confiar na Corretora Val",
   benefitsTitle: "Vantagens de ter seu imóvel administrado por especialistas",
-  benefitsSubtitle: "Cuidamos de tudo para que você tenha rentabilidade, tranquilidade e a certeza de que seu patrimônio está em boas mãos.",
+  benefitsSubtitle:
+    "Cuidamos de tudo para que você tenha rentabilidade, tranquilidade e a certeza de que seu patrimônio está em boas mãos.",
   benefits: [
-    { title: "Gestão Profissional", description: "Administração completa com relatórios transparentes, suporte jurídico e acompanhamento de cada contrato." },
-    { title: "Divulgação Estratégica", description: "Anúncios em portais de destaque, fotos de qualidade e atendimento ágil para atrair interessados qualificados." },
-    { title: "Seleção de Inquilinos", description: "Análise criteriosa de crédito e comprovantes de renda para garantir morada responsável e adimplência." },
-    { title: "Acompanhamento Contínuo", description: "Monitoramento de reajustes contratuais, vistorias periódicas de entrada e saída e renovações orientadas." },
-    { title: "Segurança Jurídica", description: "Contratos estruturados sob a Lei do Inquilinato com garantias locatícias sólidas para proteção do imóvel." },
+    {
+      title: "Gestão Profissional",
+      description:
+        "Administração completa com relatórios transparentes, suporte jurídico e acompanhamento de cada contrato.",
+    },
+    {
+      title: "Divulgação Estratégica",
+      description:
+        "Anúncios em portais de destaque, fotos de qualidade e atendimento ágil para atrair interessados qualificados.",
+    },
+    {
+      title: "Seleção de Inquilinos",
+      description:
+        "Análise criteriosa de crédito e comprovantes de renda para garantir morada responsável e adimplência.",
+    },
+    {
+      title: "Acompanhamento Contínuo",
+      description:
+        "Monitoramento de reajustes contratuais, vistorias periódicas de entrada e saída e renovações orientadas.",
+    },
+    {
+      title: "Segurança Jurídica",
+      description:
+        "Contratos estruturados sob a Lei do Inquilinato com garantias locatícias sólidas para proteção do imóvel.",
+    },
   ],
   stepsEyebrow: "Como Funciona",
   stepsTitle: "Passo a passo para administrar seu imóvel",
-  stepsSubtitle: "Um processo transparente e descomplicado do primeiro contato à entrega das chaves.",
+  stepsSubtitle:
+    "Um processo transparente e descomplicado do primeiro contato à entrega das chaves.",
   steps: [
-    { number: "01", title: "Você apresenta o imóvel", description: "Preencha o formulário ou fale conosco pelo WhatsApp com os dados básicos do seu imóvel." },
-    { number: "02", title: "Avaliação e alinhamento", description: "Analisamos o potencial de locação ou venda, sugerimos valores de mercado e alinhamos as condições." },
-    { number: "03", title: "Vistoria e produção de fotos", description: "Realizamos vistoria detalhada de entrada e produzimos fotos para valorizar cada ambiente." },
-    { number: "04", title: "Divulgação e seleção de interessados", description: "Anunciamos nos melhores canais e fazemos a análise cadastral completa dos proponentes." },
-    { number: "05", title: "Contrato assinado e gestão ativa", description: "Elaboramos o contrato com garantias sólidas e assumimos toda a gestão do dia a dia." },
+    {
+      number: "01",
+      title: "Você apresenta o imóvel",
+      description:
+        "Preencha o formulário ou fale conosco pelo WhatsApp com os dados básicos do seu imóvel.",
+    },
+    {
+      number: "02",
+      title: "Avaliação e alinhamento",
+      description:
+        "Analisamos o potencial de locação ou venda, sugerimos valores de mercado e alinhamos as condições.",
+    },
+    {
+      number: "03",
+      title: "Vistoria e produção de fotos",
+      description:
+        "Realizamos vistoria detalhada de entrada e produzimos fotos para valorizar cada ambiente.",
+    },
+    {
+      number: "04",
+      title: "Divulgação e seleção de interessados",
+      description:
+        "Anunciamos nos melhores canais e fazemos a análise cadastral completa dos proponentes.",
+    },
+    {
+      number: "05",
+      title: "Contrato assinado e gestão ativa",
+      description:
+        "Elaboramos o contrato com garantias sólidas e assumimos toda a gestão do dia a dia.",
+    },
   ],
 };
 
 const DEFAULT_QUEM_SOMOS: QuemSomosContentState = {
   biographyTitle: "Valdete Gonçalves de Melo",
-  biographyLead: "Meu nome é Valdete Gonçalves de Melo, fundadora da Corretora Val, especialista em Administração de Imóveis, Locação Anual, Temporada e Compra e Venda, com atuação em Balneário Camboriú e Camboriú.",
-  biographyParagraphsText: "Minha história no mercado imobiliário teve início em 1989, com o convite que abriu a primeira porta para trabalhar na tradicional Imobiliária Gonzaga, em Curitiba.\nA vida me levou por outros caminhos durante muitos anos, mas nunca apagou o sonho de voltar ao mercado imobiliário.\nDurante 25 anos, trabalhei como motoboy para sustentar minha família, sempre acreditando que o trabalho honesto abriria novas portas.\nTambém tive a honra de presidir a AMAE – Associação de Apoio à Criança e ao Adolescente com Mobilidade Reduzida e com Câncer.\nEm 2019, já em Balneário Camboriú, retornei ao mercado imobiliário e reencontrei a profissão que sempre fez parte da minha essência.\nFoi dessa trajetória que nasceu a Corretora Val.",
-  quoteText: "Quero agradecer primeiramente por me ajudar a realizar um sonho guardado desde que resolvi caminhar aqui sozinha. Na pandemia fui dispensada do trabalho, sem rumo. A Michely e o Felipe me mostraram que eu era capaz — as palavras deles e o presente da Michely, me presenteando com o curso do CRECI, me fizeram acreditar que sou capaz.",
+  biographyLead:
+    "Meu nome é Valdete Gonçalves de Melo, fundadora da Corretora Val, especialista em Administração de Imóveis, Locação Anual, Temporada e Compra e Venda, com atuação em Balneário Camboriú e Camboriú.",
+  biographyParagraphsText:
+    "Minha história no mercado imobiliário teve início em 1989, com o convite que abriu a primeira porta para trabalhar na tradicional Imobiliária Gonzaga, em Curitiba.\nA vida me levou por outros caminhos durante muitos anos, mas nunca apagou o sonho de voltar ao mercado imobiliário.\nDurante 25 anos, trabalhei como motoboy para sustentar minha família, sempre acreditando que o trabalho honesto abriria novas portas.\nTambém tive a honra de presidir a AMAE – Associação de Apoio à Criança e ao Adolescente com Mobilidade Reduzida e com Câncer.\nEm 2019, já em Balneário Camboriú, retornei ao mercado imobiliário e reencontrei a profissão que sempre fez parte da minha essência.\nFoi dessa trajetória que nasceu a Corretora Val.",
+  quoteText:
+    "Quero agradecer primeiramente por me ajudar a realizar um sonho guardado desde que resolvi caminhar aqui sozinha. Na pandemia fui dispensada do trabalho, sem rumo. A Michely e o Felipe me mostraram que eu era capaz — as palavras deles e o presente da Michely, me presenteando com o curso do CRECI, me fizeram acreditar que sou capaz.",
   quoteAuthor: "— Valdete Gonçalves de Melo · CRECI/SC 56372-F",
 };
 
 const DEFAULT_MEMORIA_VIVA: MemoriaVivaContentState = {
   quoteBannerText: "Cada imóvel carrega uma história. A nossa também.",
-  quoteBannerDescription: "Preservamos com carinho as amizades e contatos que iniciaram lá nos primeiros anos e continuam confiando no nosso trabalho até os dias de hoje.",
+  quoteBannerDescription:
+    "Preservamos com carinho as amizades e contatos que iniciaram lá nos primeiros anos e continuam confiando no nosso trabalho até os dias de hoje.",
 };
 
 export function ContentManager() {
@@ -229,10 +307,14 @@ export function ContentManager() {
   const [savingPage, setSavingPage] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   // ─── Structured Content State ─────────────────────────────────────
-  const [homeContent, setHomeContent] = useState<HomeContentState>(DEFAULT_HOME);
-  const [adminContent, setAdminContent] = useState<AdminContentState>(DEFAULT_ADMIN);
-  const [quemSomosContent, setQuemSomosContent] = useState<QuemSomosContentState>(DEFAULT_QUEM_SOMOS);
-  const [memoriaVivaContent, setMemoriaVivaContent] = useState<MemoriaVivaContentState>(DEFAULT_MEMORIA_VIVA);
+  const [homeContent, setHomeContent] =
+    useState<HomeContentState>(DEFAULT_HOME);
+  const [adminContent, setAdminContent] =
+    useState<AdminContentState>(DEFAULT_ADMIN);
+  const [quemSomosContent, setQuemSomosContent] =
+    useState<QuemSomosContentState>(DEFAULT_QUEM_SOMOS);
+  const [memoriaVivaContent, setMemoriaVivaContent] =
+    useState<MemoriaVivaContentState>(DEFAULT_MEMORIA_VIVA);
   const [loadingContent, setLoadingContent] = useState(false);
   const [savingContent, setSavingContent] = useState(false);
   const [contentExpanded, setContentExpanded] = useState(false);
@@ -318,17 +400,22 @@ export function ContentManager() {
       const c = data.content ?? {};
       if (slug === "home") {
         const hero = c.hero ?? {};
-        const services = Array.isArray(c.services) && c.services.length === 4
-          ? c.services
-          : DEFAULT_HOME.services;
+        const services =
+          Array.isArray(c.services) && c.services.length === 4
+            ? c.services
+            : DEFAULT_HOME.services;
         setHomeContent({
           hero_eyebrow: hero.eyebrow ?? DEFAULT_HOME.hero_eyebrow,
           hero_title: hero.title ?? DEFAULT_HOME.hero_title,
           hero_text: hero.text ?? DEFAULT_HOME.hero_text,
-          hero_primaryCtaText: hero.primaryCtaText ?? DEFAULT_HOME.hero_primaryCtaText,
-          hero_primaryCtaHref: hero.primaryCtaHref ?? DEFAULT_HOME.hero_primaryCtaHref,
-          hero_secondaryCtaText: hero.secondaryCtaText ?? DEFAULT_HOME.hero_secondaryCtaText,
-          hero_secondaryCtaHref: hero.secondaryCtaHref ?? DEFAULT_HOME.hero_secondaryCtaHref,
+          hero_primaryCtaText:
+            hero.primaryCtaText ?? DEFAULT_HOME.hero_primaryCtaText,
+          hero_primaryCtaHref:
+            hero.primaryCtaHref ?? DEFAULT_HOME.hero_primaryCtaHref,
+          hero_secondaryCtaText:
+            hero.secondaryCtaText ?? DEFAULT_HOME.hero_secondaryCtaText,
+          hero_secondaryCtaHref:
+            hero.secondaryCtaHref ?? DEFAULT_HOME.hero_secondaryCtaHref,
           hero_cardEyebrow: hero.cardEyebrow ?? DEFAULT_HOME.hero_cardEyebrow,
           hero_cardTitle: hero.cardTitle ?? DEFAULT_HOME.hero_cardTitle,
           hero_cardText: hero.cardText ?? DEFAULT_HOME.hero_cardText,
@@ -338,26 +425,41 @@ export function ContentManager() {
         setAdminContent({
           benefitsEyebrow: c.benefitsEyebrow ?? DEFAULT_ADMIN.benefitsEyebrow,
           benefitsTitle: c.benefitsTitle ?? DEFAULT_ADMIN.benefitsTitle,
-          benefitsSubtitle: c.benefitsSubtitle ?? DEFAULT_ADMIN.benefitsSubtitle,
-          benefits: Array.isArray(c.benefits) && c.benefits.length === 5 ? c.benefits : DEFAULT_ADMIN.benefits,
+          benefitsSubtitle:
+            c.benefitsSubtitle ?? DEFAULT_ADMIN.benefitsSubtitle,
+          benefits:
+            Array.isArray(c.benefits) && c.benefits.length === 5
+              ? c.benefits
+              : DEFAULT_ADMIN.benefits,
           stepsEyebrow: c.stepsEyebrow ?? DEFAULT_ADMIN.stepsEyebrow,
           stepsTitle: c.stepsTitle ?? DEFAULT_ADMIN.stepsTitle,
           stepsSubtitle: c.stepsSubtitle ?? DEFAULT_ADMIN.stepsSubtitle,
-          steps: Array.isArray(c.steps) && c.steps.length === 5 ? c.steps : DEFAULT_ADMIN.steps,
+          steps:
+            Array.isArray(c.steps) && c.steps.length === 5
+              ? c.steps
+              : DEFAULT_ADMIN.steps,
         });
       } else if (slug === "quem-somos") {
-        const paragraphs: string[] = Array.isArray(c.biographyParagraphs) ? c.biographyParagraphs : [];
+        const paragraphs: string[] = Array.isArray(c.biographyParagraphs)
+          ? c.biographyParagraphs
+          : [];
         setQuemSomosContent({
           biographyTitle: c.biographyTitle ?? DEFAULT_QUEM_SOMOS.biographyTitle,
           biographyLead: c.biographyLead ?? DEFAULT_QUEM_SOMOS.biographyLead,
-          biographyParagraphsText: paragraphs.length > 0 ? paragraphs.join("\n") : DEFAULT_QUEM_SOMOS.biographyParagraphsText,
+          biographyParagraphsText:
+            paragraphs.length > 0
+              ? paragraphs.join("\n")
+              : DEFAULT_QUEM_SOMOS.biographyParagraphsText,
           quoteText: c.quoteText ?? DEFAULT_QUEM_SOMOS.quoteText,
           quoteAuthor: c.quoteAuthor ?? DEFAULT_QUEM_SOMOS.quoteAuthor,
         });
       } else if (slug === "memoria-viva") {
         setMemoriaVivaContent({
-          quoteBannerText: c.quoteBannerText ?? DEFAULT_MEMORIA_VIVA.quoteBannerText,
-          quoteBannerDescription: c.quoteBannerDescription ?? DEFAULT_MEMORIA_VIVA.quoteBannerDescription,
+          quoteBannerText:
+            c.quoteBannerText ?? DEFAULT_MEMORIA_VIVA.quoteBannerText,
+          quoteBannerDescription:
+            c.quoteBannerDescription ??
+            DEFAULT_MEMORIA_VIVA.quoteBannerDescription,
         });
       }
     } catch (err) {
@@ -371,17 +473,23 @@ export function ContentManager() {
     if (STRUCTURED_SLUGS.includes(selectedSlug)) {
       loadStructuredContent(selectedSlug);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSlug, loadStructuredContent]);
 
-  async function saveStructuredContent(slug: string, content: Record<string, unknown>) {
+  async function saveStructuredContent(
+    slug: string,
+    content: Record<string, unknown>,
+  ) {
     setSavingContent(true);
     setMessage(null);
     try {
       const res = await fetch("/api/admin/conteudo", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "page-content", pageContent: { slug, content } }),
+        body: JSON.stringify({
+          type: "page-content",
+          pageContent: { slug, content },
+        }),
       });
       if (!res.ok) throw new Error("Não foi possível salvar o conteúdo.");
       setMessage("Conteúdo estruturado salvo com sucesso.");
@@ -735,9 +843,7 @@ export function ContentManager() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(
-          errorData.error || "Erro ao salvar membro da equipe",
-        );
+        throw new Error(errorData.error || "Erro ao salvar membro da equipe");
       }
 
       setMembroModalOpen(false);
@@ -761,9 +867,7 @@ export function ContentManager() {
       loadMembros();
     } catch (err) {
       alert(
-        err instanceof Error
-          ? err.message
-          : "Erro ao excluir membro da equipe",
+        err instanceof Error ? err.message : "Erro ao excluir membro da equipe",
       );
     }
   }
@@ -789,7 +893,6 @@ export function ContentManager() {
       alert("Erro ao enviar imagem. Verifique o formato e tente novamente.");
     } finally {
       setUploading(false);
-
     }
   }
 
@@ -810,8 +913,8 @@ export function ContentManager() {
         Páginas e Conteúdo
       </h1>
       <p className="mt-3 max-w-2xl text-[var(--ink-soft)]">
-        Gerencie as páginas estruturadas do site, incluindo seções institucionais,
-        depoimentos, linha do tempo e membros da equipe.
+        Gerencie as páginas estruturadas do site, incluindo seções
+        institucionais, depoimentos, linha do tempo e membros da equipe.
       </p>
 
       <section className="mt-9 grid gap-7 xl:grid-cols-[16rem_minmax(0,1fr)]">
@@ -904,7 +1007,8 @@ export function ContentManager() {
                     {selectedPage.navigationLabel}
                   </h2>
                   <p className="mt-0.5 text-xs text-[var(--ink-soft)]">
-                    Rota pública: /{selectedPage.slug === "home" ? "" : selectedPage.slug}
+                    Rota pública: /
+                    {selectedPage.slug === "home" ? "" : selectedPage.slug}
                   </p>
                 </div>
                 <label className="inline-flex items-center gap-2 text-sm font-bold text-[var(--plum)] bg-[var(--surface-muted)] px-4 py-2 rounded-full cursor-pointer">
@@ -928,7 +1032,9 @@ export function ContentManager() {
                 <Input
                   label="Texto de apoio (Eyebrow)"
                   value={selectedPage.eyebrow}
-                  onChange={(value) => patchPage({ eyebrow: emptyToNull(value) })}
+                  onChange={(value) =>
+                    patchPage({ eyebrow: emptyToNull(value) })
+                  }
                 />
                 <div className="md:col-span-2">
                   <Input
@@ -949,7 +1055,9 @@ export function ContentManager() {
                   <Textarea
                     label="Texto de introdução"
                     value={selectedPage.intro}
-                    onChange={(value) => patchPage({ intro: emptyToNull(value) })}
+                    onChange={(value) =>
+                      patchPage({ intro: emptyToNull(value) })
+                    }
                     rows={3}
                   />
                 </div>
@@ -957,7 +1065,9 @@ export function ContentManager() {
                   <Textarea
                     label="Conteúdo complementar"
                     value={selectedPage.body}
-                    onChange={(value) => patchPage({ body: emptyToNull(value) })}
+                    onChange={(value) =>
+                      patchPage({ body: emptyToNull(value) })
+                    }
                     rows={4}
                   />
                 </div>
@@ -971,7 +1081,9 @@ export function ContentManager() {
                 <Input
                   label="Destino do botão (URL / Rota)"
                   value={selectedPage.ctaHref}
-                  onChange={(value) => patchPage({ ctaHref: emptyToNull(value) })}
+                  onChange={(value) =>
+                    patchPage({ ctaHref: emptyToNull(value) })
+                  }
                 />
                 <Input
                   label="Título para motores de busca (SEO Title)"
@@ -1017,7 +1129,8 @@ export function ContentManager() {
                     Depoimentos de Clientes
                   </h3>
                   <p className="text-xs text-[var(--ink-soft)] mt-0.5">
-                    Histórias e depoimentos autorizados exibidos na página inicial e páginas institucionais.
+                    Histórias e depoimentos autorizados exibidos na página
+                    inicial e páginas institucionais.
                   </p>
                 </div>
                 <button
@@ -1031,11 +1144,13 @@ export function ContentManager() {
 
               {loadingDepoimentos ? (
                 <p className="flex items-center gap-2 text-sm text-[var(--ink-soft)] py-8">
-                  <LoaderCircle className="animate-spin" size={16} /> Carregando depoimentos…
+                  <LoaderCircle className="animate-spin" size={16} /> Carregando
+                  depoimentos…
                 </p>
               ) : depoimentos.length === 0 ? (
                 <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-[var(--ink-soft)]">
-                  Nenhum depoimento cadastrado ainda. Clique em &ldquo;Novo Depoimento&rdquo; para adicionar.
+                  Nenhum depoimento cadastrado ainda. Clique em &ldquo;Novo
+                  Depoimento&rdquo; para adicionar.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -1051,7 +1166,10 @@ export function ContentManager() {
                     </thead>
                     <tbody className="divide-y">
                       {depoimentos.map((dep) => (
-                        <tr key={dep.id} className="hover:bg-[var(--surface-muted)]/50">
+                        <tr
+                          key={dep.id}
+                          className="hover:bg-[var(--surface-muted)]/50"
+                        >
                           <td className="py-3.5 px-3 font-bold text-[var(--plum)]">
                             {dep.clientName}
                           </td>
@@ -1117,7 +1235,8 @@ export function ContentManager() {
                     Marcos Históricos da Corretora Val
                   </h3>
                   <p className="text-xs text-[var(--ink-soft)] mt-0.5">
-                    Capítulos que contam a história da fundadora e a evolução da imobiliária.
+                    Capítulos que contam a história da fundadora e a evolução da
+                    imobiliária.
                   </p>
                 </div>
                 <button
@@ -1131,11 +1250,13 @@ export function ContentManager() {
 
               {loadingMarcos ? (
                 <p className="flex items-center gap-2 text-sm text-[var(--ink-soft)] py-8">
-                  <LoaderCircle className="animate-spin" size={16} /> Carregando marcos históricos…
+                  <LoaderCircle className="animate-spin" size={16} /> Carregando
+                  marcos históricos…
                 </p>
               ) : marcos.length === 0 ? (
                 <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-[var(--ink-soft)]">
-                  Nenhum marco cadastrado ainda. A página pública exibirá os marcos padrão até que você cadastre novos.
+                  Nenhum marco cadastrado ainda. A página pública exibirá os
+                  marcos padrão até que você cadastre novos.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -1151,7 +1272,10 @@ export function ContentManager() {
                     </thead>
                     <tbody className="divide-y">
                       {marcos.map((marco) => (
-                        <tr key={marco.id} className="hover:bg-[var(--surface-muted)]/50">
+                        <tr
+                          key={marco.id}
+                          className="hover:bg-[var(--surface-muted)]/50"
+                        >
                           <td className="py-3.5 px-3 font-bold text-[var(--gold)]">
                             {marco.year}
                           </td>
@@ -1209,7 +1333,8 @@ export function ContentManager() {
                     Membros da Equipe
                   </h3>
                   <p className="text-xs text-[var(--ink-soft)] mt-0.5">
-                    Profissionais e familiares que atuam na gestão, atendimento e operações.
+                    Profissionais e familiares que atuam na gestão, atendimento
+                    e operações.
                   </p>
                 </div>
                 <button
@@ -1223,11 +1348,13 @@ export function ContentManager() {
 
               {loadingMembros ? (
                 <p className="flex items-center gap-2 text-sm text-[var(--ink-soft)] py-8">
-                  <LoaderCircle className="animate-spin" size={16} /> Carregando equipe…
+                  <LoaderCircle className="animate-spin" size={16} /> Carregando
+                  equipe…
                 </p>
               ) : membros.length === 0 ? (
                 <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-[var(--ink-soft)]">
-                  Nenhum membro cadastrado ainda. A página &ldquo;Quem Somos&rdquo; exibirá a biografia da fundadora e família.
+                  Nenhum membro cadastrado ainda. A página &ldquo;Quem
+                  Somos&rdquo; exibirá a biografia da fundadora e família.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -1244,7 +1371,10 @@ export function ContentManager() {
                     </thead>
                     <tbody className="divide-y">
                       {membros.map((membro) => (
-                        <tr key={membro.id} className="hover:bg-[var(--surface-muted)]/50">
+                        <tr
+                          key={membro.id}
+                          className="hover:bg-[var(--surface-muted)]/50"
+                        >
                           <td className="py-3.5 px-3">
                             <div className="size-10 rounded-full bg-[var(--surface-muted)] overflow-hidden border border-[var(--gold-light)] flex items-center justify-center text-xs font-bold text-[var(--plum)]">
                               {membro.photoUrl ? (
@@ -1316,147 +1446,498 @@ export function ContentManager() {
                 className="interactive w-full flex items-center justify-between gap-3 border-b pb-5"
               >
                 <div className="text-left">
-                  <span className="text-[0.65rem] font-extrabold uppercase tracking-widest text-[var(--gold)]">Seções da Página</span>
-                  <h3 className="display text-2xl font-bold text-[var(--plum)]">Conteúdo Estruturado</h3>
-                  <p className="text-xs text-[var(--ink-soft)] mt-0.5">Edite os textos visíveis nas seções desta página pública.</p>
+                  <span className="text-[0.65rem] font-extrabold uppercase tracking-widest text-[var(--gold)]">
+                    Seções da Página
+                  </span>
+                  <h3 className="display text-2xl font-bold text-[var(--plum)]">
+                    Conteúdo Estruturado
+                  </h3>
+                  <p className="text-xs text-[var(--ink-soft)] mt-0.5">
+                    Edite os textos visíveis nas seções desta página pública.
+                  </p>
                 </div>
-                {contentExpanded ? <ChevronUp size={20} className="text-[var(--plum)] shrink-0" /> : <ChevronDown size={20} className="text-[var(--plum)] shrink-0" />}
+                {contentExpanded ? (
+                  <ChevronUp
+                    size={20}
+                    className="text-[var(--plum)] shrink-0"
+                  />
+                ) : (
+                  <ChevronDown
+                    size={20}
+                    className="text-[var(--plum)] shrink-0"
+                  />
+                )}
               </button>
 
               {loadingContent && (
                 <p className="flex items-center gap-2 text-sm text-[var(--ink-soft)] py-4">
-                  <LoaderCircle className="animate-spin" size={16} /> Carregando conteúdo…
+                  <LoaderCircle className="animate-spin" size={16} /> Carregando
+                  conteúdo…
                 </p>
               )}
 
               {/* ── HOME ── */}
-              {contentExpanded && !loadingContent && selectedSlug === "home" && (
-                <form className="space-y-6" onSubmit={handleSaveHomeContent}>
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">Hero Principal</h4>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <Input label="Eyebrow do Hero" value={homeContent.hero_eyebrow} onChange={(v) => setHomeContent((p) => ({ ...p, hero_eyebrow: v }))} />
-                      <Input label="Título principal" value={homeContent.hero_title} onChange={(v) => setHomeContent((p) => ({ ...p, hero_title: v }))} />
-                    </div>
-                    <Textarea label="Texto do hero" rows={3} value={homeContent.hero_text} onChange={(v) => setHomeContent((p) => ({ ...p, hero_text: v }))} />
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <Input label="Botão primário — texto" value={homeContent.hero_primaryCtaText} onChange={(v) => setHomeContent((p) => ({ ...p, hero_primaryCtaText: v }))} />
-                      <Input label="Botão primário — URL" value={homeContent.hero_primaryCtaHref} onChange={(v) => setHomeContent((p) => ({ ...p, hero_primaryCtaHref: v }))} />
-                      <Input label="Botão secundário — texto" value={homeContent.hero_secondaryCtaText} onChange={(v) => setHomeContent((p) => ({ ...p, hero_secondaryCtaText: v }))} />
-                      <Input label="Botão secundário — URL" value={homeContent.hero_secondaryCtaHref} onChange={(v) => setHomeContent((p) => ({ ...p, hero_secondaryCtaHref: v }))} />
-                    </div>
-                    <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2 pt-2">Card do Hero</h4>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <Input label="Eyebrow do card" value={homeContent.hero_cardEyebrow} onChange={(v) => setHomeContent((p) => ({ ...p, hero_cardEyebrow: v }))} />
-                      <Input label="Título do card" value={homeContent.hero_cardTitle} onChange={(v) => setHomeContent((p) => ({ ...p, hero_cardTitle: v }))} />
-                    </div>
-                    <Textarea label="Texto do card" rows={2} value={homeContent.hero_cardText} onChange={(v) => setHomeContent((p) => ({ ...p, hero_cardText: v }))} />
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">Áreas de Atuação (4 cards)</h4>
-                    {homeContent.services.map((svc, idx) => (
-                      <div key={svc.key} className="rounded-2xl border p-4 space-y-3">
-                        <span className="text-xs font-bold text-[var(--gold)] uppercase">Card {idx + 1} — {svc.key}</span>
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <Input label="Título" value={svc.title} onChange={(v) => setHomeContent((p) => ({ ...p, services: p.services.map((s, i) => i === idx ? { ...s, title: v } : s) }))} />
-                          <Input label="URL do link" value={svc.href} onChange={(v) => setHomeContent((p) => ({ ...p, services: p.services.map((s, i) => i === idx ? { ...s, href: v } : s) }))} />
-                        </div>
-                        <Textarea label="Descrição" rows={2} value={svc.text} onChange={(v) => setHomeContent((p) => ({ ...p, services: p.services.map((s, i) => i === idx ? { ...s, text: v } : s) }))} />
+              {contentExpanded &&
+                !loadingContent &&
+                selectedSlug === "home" && (
+                  <form className="space-y-6" onSubmit={handleSaveHomeContent}>
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
+                        Hero Principal
+                      </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Eyebrow do Hero"
+                          value={homeContent.hero_eyebrow}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({ ...p, hero_eyebrow: v }))
+                          }
+                        />
+                        <Input
+                          label="Título principal"
+                          value={homeContent.hero_title}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({ ...p, hero_title: v }))
+                          }
+                        />
                       </div>
-                    ))}
-                  </div>
+                      <Textarea
+                        label="Texto do hero"
+                        rows={3}
+                        value={homeContent.hero_text}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({ ...p, hero_text: v }))
+                        }
+                      />
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Botão primário — texto"
+                          value={homeContent.hero_primaryCtaText}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero_primaryCtaText: v,
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Botão primário — URL"
+                          value={homeContent.hero_primaryCtaHref}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero_primaryCtaHref: v,
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Botão secundário — texto"
+                          value={homeContent.hero_secondaryCtaText}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero_secondaryCtaText: v,
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Botão secundário — URL"
+                          value={homeContent.hero_secondaryCtaHref}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero_secondaryCtaHref: v,
+                            }))
+                          }
+                        />
+                      </div>
+                      <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2 pt-2">
+                        Card do Hero
+                      </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Eyebrow do card"
+                          value={homeContent.hero_cardEyebrow}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero_cardEyebrow: v,
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Título do card"
+                          value={homeContent.hero_cardTitle}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({ ...p, hero_cardTitle: v }))
+                          }
+                        />
+                      </div>
+                      <Textarea
+                        label="Texto do card"
+                        rows={2}
+                        value={homeContent.hero_cardText}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({ ...p, hero_cardText: v }))
+                        }
+                      />
+                    </div>
 
-                  <div className="flex justify-end">
-                    <button type="submit" disabled={savingContent} className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60 cursor-pointer">
-                      <Save size={16} /> {savingContent ? "Salvando…" : "Salvar Conteúdo da Home"}
-                    </button>
-                  </div>
-                </form>
-              )}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
+                        Áreas de Atuação (4 cards)
+                      </h4>
+                      {homeContent.services.map((svc, idx) => (
+                        <div
+                          key={svc.key}
+                          className="rounded-2xl border p-4 space-y-3"
+                        >
+                          <span className="text-xs font-bold text-[var(--gold)] uppercase">
+                            Card {idx + 1} — {svc.key}
+                          </span>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <Input
+                              label="Título"
+                              value={svc.title}
+                              onChange={(v) =>
+                                setHomeContent((p) => ({
+                                  ...p,
+                                  services: p.services.map((s, i) =>
+                                    i === idx ? { ...s, title: v } : s,
+                                  ),
+                                }))
+                              }
+                            />
+                            <Input
+                              label="URL do link"
+                              value={svc.href}
+                              onChange={(v) =>
+                                setHomeContent((p) => ({
+                                  ...p,
+                                  services: p.services.map((s, i) =>
+                                    i === idx ? { ...s, href: v } : s,
+                                  ),
+                                }))
+                              }
+                            />
+                          </div>
+                          <Textarea
+                            label="Descrição"
+                            rows={2}
+                            value={svc.text}
+                            onChange={(v) =>
+                              setHomeContent((p) => ({
+                                ...p,
+                                services: p.services.map((s, i) =>
+                                  i === idx ? { ...s, text: v } : s,
+                                ),
+                              }))
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={savingContent}
+                        className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60 cursor-pointer"
+                      >
+                        <Save size={16} />{" "}
+                        {savingContent
+                          ? "Salvando…"
+                          : "Salvar Conteúdo da Home"}
+                      </button>
+                    </div>
+                  </form>
+                )}
 
               {/* ── ADMINISTRAÇÃO ── */}
-              {contentExpanded && !loadingContent && selectedSlug === "administracao" && (
-                <form className="space-y-6" onSubmit={handleSaveAdminContent}>
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">Seção — Benefícios</h4>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <Input label="Eyebrow" value={adminContent.benefitsEyebrow} onChange={(v) => setAdminContent((p) => ({ ...p, benefitsEyebrow: v }))} />
-                      <Input label="Título da seção" value={adminContent.benefitsTitle} onChange={(v) => setAdminContent((p) => ({ ...p, benefitsTitle: v }))} />
-                    </div>
-                    <Textarea label="Subtítulo" rows={2} value={adminContent.benefitsSubtitle} onChange={(v) => setAdminContent((p) => ({ ...p, benefitsSubtitle: v }))} />
-                    {adminContent.benefits.map((b, idx) => (
-                      <div key={b.title} className="rounded-2xl border p-4 space-y-3">
-                        <span className="text-xs font-bold text-[var(--gold)] uppercase">Benefício {idx + 1}</span>
-                        <Input label="Título" value={b.title} onChange={(v) => setAdminContent((p) => ({ ...p, benefits: p.benefits.map((x, i) => i === idx ? { ...x, title: v } : x) }))} />
-                        <Textarea label="Descrição" rows={2} value={b.description} onChange={(v) => setAdminContent((p) => ({ ...p, benefits: p.benefits.map((x, i) => i === idx ? { ...x, description: v } : x) }))} />
+              {contentExpanded &&
+                !loadingContent &&
+                selectedSlug === "administracao" && (
+                  <form className="space-y-6" onSubmit={handleSaveAdminContent}>
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
+                        Seção — Benefícios
+                      </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Eyebrow"
+                          value={adminContent.benefitsEyebrow}
+                          onChange={(v) =>
+                            setAdminContent((p) => ({
+                              ...p,
+                              benefitsEyebrow: v,
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Título da seção"
+                          value={adminContent.benefitsTitle}
+                          onChange={(v) =>
+                            setAdminContent((p) => ({ ...p, benefitsTitle: v }))
+                          }
+                        />
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">Seção — Passo a Passo</h4>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <Input label="Eyebrow" value={adminContent.stepsEyebrow} onChange={(v) => setAdminContent((p) => ({ ...p, stepsEyebrow: v }))} />
-                      <Input label="Título da seção" value={adminContent.stepsTitle} onChange={(v) => setAdminContent((p) => ({ ...p, stepsTitle: v }))} />
+                      <Textarea
+                        label="Subtítulo"
+                        rows={2}
+                        value={adminContent.benefitsSubtitle}
+                        onChange={(v) =>
+                          setAdminContent((p) => ({
+                            ...p,
+                            benefitsSubtitle: v,
+                          }))
+                        }
+                      />
+                      {adminContent.benefits.map((b, idx) => (
+                        <div
+                          key={b.title}
+                          className="rounded-2xl border p-4 space-y-3"
+                        >
+                          <span className="text-xs font-bold text-[var(--gold)] uppercase">
+                            Benefício {idx + 1}
+                          </span>
+                          <Input
+                            label="Título"
+                            value={b.title}
+                            onChange={(v) =>
+                              setAdminContent((p) => ({
+                                ...p,
+                                benefits: p.benefits.map((x, i) =>
+                                  i === idx ? { ...x, title: v } : x,
+                                ),
+                              }))
+                            }
+                          />
+                          <Textarea
+                            label="Descrição"
+                            rows={2}
+                            value={b.description}
+                            onChange={(v) =>
+                              setAdminContent((p) => ({
+                                ...p,
+                                benefits: p.benefits.map((x, i) =>
+                                  i === idx ? { ...x, description: v } : x,
+                                ),
+                              }))
+                            }
+                          />
+                        </div>
+                      ))}
                     </div>
-                    <Textarea label="Subtítulo" rows={2} value={adminContent.stepsSubtitle} onChange={(v) => setAdminContent((p) => ({ ...p, stepsSubtitle: v }))} />
-                    {adminContent.steps.map((s, idx) => (
-                      <div key={s.number} className="rounded-2xl border p-4 space-y-3">
-                        <span className="text-xs font-bold text-[var(--gold)] uppercase">Passo {s.number}</span>
-                        <Input label="Título" value={s.title} onChange={(v) => setAdminContent((p) => ({ ...p, steps: p.steps.map((x, i) => i === idx ? { ...x, title: v } : x) }))} />
-                        <Textarea label="Descrição" rows={2} value={s.description} onChange={(v) => setAdminContent((p) => ({ ...p, steps: p.steps.map((x, i) => i === idx ? { ...x, description: v } : x) }))} />
-                      </div>
-                    ))}
-                  </div>
 
-                  <div className="flex justify-end">
-                    <button type="submit" disabled={savingContent} className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60 cursor-pointer">
-                      <Save size={16} /> {savingContent ? "Salvando…" : "Salvar Conteúdo da Administração"}
-                    </button>
-                  </div>
-                </form>
-              )}
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
+                        Seção — Passo a Passo
+                      </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Eyebrow"
+                          value={adminContent.stepsEyebrow}
+                          onChange={(v) =>
+                            setAdminContent((p) => ({ ...p, stepsEyebrow: v }))
+                          }
+                        />
+                        <Input
+                          label="Título da seção"
+                          value={adminContent.stepsTitle}
+                          onChange={(v) =>
+                            setAdminContent((p) => ({ ...p, stepsTitle: v }))
+                          }
+                        />
+                      </div>
+                      <Textarea
+                        label="Subtítulo"
+                        rows={2}
+                        value={adminContent.stepsSubtitle}
+                        onChange={(v) =>
+                          setAdminContent((p) => ({ ...p, stepsSubtitle: v }))
+                        }
+                      />
+                      {adminContent.steps.map((s, idx) => (
+                        <div
+                          key={s.number}
+                          className="rounded-2xl border p-4 space-y-3"
+                        >
+                          <span className="text-xs font-bold text-[var(--gold)] uppercase">
+                            Passo {s.number}
+                          </span>
+                          <Input
+                            label="Título"
+                            value={s.title}
+                            onChange={(v) =>
+                              setAdminContent((p) => ({
+                                ...p,
+                                steps: p.steps.map((x, i) =>
+                                  i === idx ? { ...x, title: v } : x,
+                                ),
+                              }))
+                            }
+                          />
+                          <Textarea
+                            label="Descrição"
+                            rows={2}
+                            value={s.description}
+                            onChange={(v) =>
+                              setAdminContent((p) => ({
+                                ...p,
+                                steps: p.steps.map((x, i) =>
+                                  i === idx ? { ...x, description: v } : x,
+                                ),
+                              }))
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={savingContent}
+                        className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60 cursor-pointer"
+                      >
+                        <Save size={16} />{" "}
+                        {savingContent
+                          ? "Salvando…"
+                          : "Salvar Conteúdo da Administração"}
+                      </button>
+                    </div>
+                  </form>
+                )}
 
               {/* ── QUEM SOMOS ── */}
-              {contentExpanded && !loadingContent && selectedSlug === "quem-somos" && (
-                <form className="space-y-4" onSubmit={handleSaveQuemSomosContent}>
-                  <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">Biografia da Fundadora</h4>
-                  <Input label="Título (nome)" value={quemSomosContent.biographyTitle} onChange={(v) => setQuemSomosContent((p) => ({ ...p, biographyTitle: v }))} />
-                  <Textarea label="Parágrafo de abertura (lead)" rows={3} value={quemSomosContent.biographyLead} onChange={(v) => setQuemSomosContent((p) => ({ ...p, biographyLead: v }))} />
-                  <Textarea label="Parágrafos da biografia (um por linha)" rows={10} value={quemSomosContent.biographyParagraphsText} onChange={(v) => setQuemSomosContent((p) => ({ ...p, biographyParagraphsText: v }))} />
-                  <p className="text-xs text-[var(--ink-soft)]">Cada linha vira um parágrafo separado no site público.</p>
+              {contentExpanded &&
+                !loadingContent &&
+                selectedSlug === "quem-somos" && (
+                  <form
+                    className="space-y-4"
+                    onSubmit={handleSaveQuemSomosContent}
+                  >
+                    <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
+                      Biografia da Fundadora
+                    </h4>
+                    <Input
+                      label="Título (nome)"
+                      value={quemSomosContent.biographyTitle}
+                      onChange={(v) =>
+                        setQuemSomosContent((p) => ({
+                          ...p,
+                          biographyTitle: v,
+                        }))
+                      }
+                    />
+                    <Textarea
+                      label="Parágrafo de abertura (lead)"
+                      rows={3}
+                      value={quemSomosContent.biographyLead}
+                      onChange={(v) =>
+                        setQuemSomosContent((p) => ({ ...p, biographyLead: v }))
+                      }
+                    />
+                    <Textarea
+                      label="Parágrafos da biografia (um por linha)"
+                      rows={10}
+                      value={quemSomosContent.biographyParagraphsText}
+                      onChange={(v) =>
+                        setQuemSomosContent((p) => ({
+                          ...p,
+                          biographyParagraphsText: v,
+                        }))
+                      }
+                    />
+                    <p className="text-xs text-[var(--ink-soft)]">
+                      Cada linha vira um parágrafo separado no site público.
+                    </p>
 
-                  <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2 pt-2">Citação / Depoimento da Fundadora</h4>
-                  <Textarea label="Texto da citação" rows={4} value={quemSomosContent.quoteText} onChange={(v) => setQuemSomosContent((p) => ({ ...p, quoteText: v }))} />
-                  <Input label="Assinatura da citação" value={quemSomosContent.quoteAuthor} onChange={(v) => setQuemSomosContent((p) => ({ ...p, quoteAuthor: v }))} />
+                    <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2 pt-2">
+                      Citação / Depoimento da Fundadora
+                    </h4>
+                    <Textarea
+                      label="Texto da citação"
+                      rows={4}
+                      value={quemSomosContent.quoteText}
+                      onChange={(v) =>
+                        setQuemSomosContent((p) => ({ ...p, quoteText: v }))
+                      }
+                    />
+                    <Input
+                      label="Assinatura da citação"
+                      value={quemSomosContent.quoteAuthor}
+                      onChange={(v) =>
+                        setQuemSomosContent((p) => ({ ...p, quoteAuthor: v }))
+                      }
+                    />
 
-                  <div className="flex justify-end">
-                    <button type="submit" disabled={savingContent} className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60 cursor-pointer">
-                      <Save size={16} /> {savingContent ? "Salvando…" : "Salvar Conteúdo de Quem Somos"}
-                    </button>
-                  </div>
-                </form>
-              )}
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={savingContent}
+                        className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60 cursor-pointer"
+                      >
+                        <Save size={16} />{" "}
+                        {savingContent
+                          ? "Salvando…"
+                          : "Salvar Conteúdo de Quem Somos"}
+                      </button>
+                    </div>
+                  </form>
+                )}
 
               {/* ── MEMÓRIA VIVA ── */}
-              {contentExpanded && !loadingContent && selectedSlug === "memoria-viva" && (
-                <form className="space-y-4" onSubmit={handleSaveMemoriaVivaContent}>
-                  <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">Banner de Citação</h4>
-                  <Textarea label="Texto da citação" rows={2} value={memoriaVivaContent.quoteBannerText} onChange={(v) => setMemoriaVivaContent((p) => ({ ...p, quoteBannerText: v }))} />
-                  <Textarea label="Texto complementar" rows={3} value={memoriaVivaContent.quoteBannerDescription} onChange={(v) => setMemoriaVivaContent((p) => ({ ...p, quoteBannerDescription: v }))} />
+              {contentExpanded &&
+                !loadingContent &&
+                selectedSlug === "memoria-viva" && (
+                  <form
+                    className="space-y-4"
+                    onSubmit={handleSaveMemoriaVivaContent}
+                  >
+                    <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
+                      Banner de Citação
+                    </h4>
+                    <Textarea
+                      label="Texto da citação"
+                      rows={2}
+                      value={memoriaVivaContent.quoteBannerText}
+                      onChange={(v) =>
+                        setMemoriaVivaContent((p) => ({
+                          ...p,
+                          quoteBannerText: v,
+                        }))
+                      }
+                    />
+                    <Textarea
+                      label="Texto complementar"
+                      rows={3}
+                      value={memoriaVivaContent.quoteBannerDescription}
+                      onChange={(v) =>
+                        setMemoriaVivaContent((p) => ({
+                          ...p,
+                          quoteBannerDescription: v,
+                        }))
+                      }
+                    />
 
-                  <div className="flex justify-end">
-                    <button type="submit" disabled={savingContent} className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60 cursor-pointer">
-                      <Save size={16} /> {savingContent ? "Salvando…" : "Salvar Conteúdo de Memória Viva"}
-                    </button>
-                  </div>
-                </form>
-              )}
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={savingContent}
+                        className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60 cursor-pointer"
+                      >
+                        <Save size={16} />{" "}
+                        {savingContent
+                          ? "Salvando…"
+                          : "Salvar Conteúdo de Memória Viva"}
+                      </button>
+                    </div>
+                  </form>
+                )}
             </div>
           )}
         </div>
-
       </section>
 
       {/* ─── MODAL: DEPOIMENTO ──────────────────────────────────────── */}
@@ -1653,7 +2134,9 @@ export function ContentManager() {
       <AdminModal
         isOpen={membroModalOpen}
         onClose={() => setMembroModalOpen(false)}
-        title={editingMembro ? "Editar Membro da Equipe" : "Novo Membro da Equipe"}
+        title={
+          editingMembro ? "Editar Membro da Equipe" : "Novo Membro da Equipe"
+        }
         description="Cadastre os dados institucionais do integrante da equipe."
         size="lg"
       >
@@ -1680,9 +2163,7 @@ export function ContentManager() {
             label="Biografia / Apresentação"
             rows={4}
             value={membroForm.bio}
-            onChange={(val) =>
-              setMembroForm((prev) => ({ ...prev, bio: val }))
-            }
+            onChange={(val) => setMembroForm((prev) => ({ ...prev, bio: val }))}
           />
 
           <div>

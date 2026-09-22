@@ -25,7 +25,10 @@ export async function GET(request: Request) {
     select: { slug: true, content: true },
   });
   if (!page) {
-    return NextResponse.json({ error: "Página não encontrada", slug, content: null }, { status: 404 });
+    return NextResponse.json(
+      { error: "Página não encontrada", slug, content: null },
+      { status: 404 },
+    );
   }
 
   return NextResponse.json({ slug: page.slug, content: page.content ?? null });

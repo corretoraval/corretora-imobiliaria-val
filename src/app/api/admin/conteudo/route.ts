@@ -14,8 +14,18 @@ const VALID_THEME_PRESETS = [
   "marinho-coral",
   "grafite-cobre",
 ] as const;
-const VALID_TITLE_FONTS = ["cormorant", "playfair", "lora", "dm-serif"] as const;
-const VALID_BODY_FONTS = ["manrope", "inter", "outfit", "plus-jakarta"] as const;
+const VALID_TITLE_FONTS = [
+  "cormorant",
+  "playfair",
+  "lora",
+  "dm-serif",
+] as const;
+const VALID_BODY_FONTS = [
+  "manrope",
+  "inter",
+  "outfit",
+  "plus-jakarta",
+] as const;
 
 const settingsSchema = z.object({
   brandName: z.string().trim().min(2).max(80),
@@ -36,7 +46,6 @@ const settingsSchema = z.object({
   titleFont: z.enum(VALID_TITLE_FONTS),
   bodyFont: z.enum(VALID_BODY_FONTS),
 });
-
 
 const pageSchema = z.object({
   slug: z
@@ -120,8 +129,12 @@ export async function PUT(request: Request) {
     }
 
     if (payload.type === "page-content") {
-      const slug = "pageContent" in payload ? payload.pageContent.slug : payload.slug;
-      const content = "pageContent" in payload ? payload.pageContent.content : payload.content;
+      const slug =
+        "pageContent" in payload ? payload.pageContent.slug : payload.slug;
+      const content =
+        "pageContent" in payload
+          ? payload.pageContent.content
+          : payload.content;
       const page = await prisma.paginaSite.update({
         where: { slug },
         data: { content: content as Prisma.InputJsonValue },

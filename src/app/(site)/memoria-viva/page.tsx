@@ -4,10 +4,7 @@ import { Timeline } from "@/components/institutional/timeline";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
-import {
-  getMarcosHistoricos,
-  getMemoriaVivaContent,
-} from "@/lib/site-content";
+import { getMarcosHistoricos, getMemoriaVivaContent } from "@/lib/site-content";
 
 export const revalidate = 60;
 

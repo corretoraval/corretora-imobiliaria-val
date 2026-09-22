@@ -11,7 +11,9 @@ describe("TestimonialsPlaceholder component", () => {
     render(<TestimonialsPlaceholder testimonials={[]} />);
 
     expect(
-      screen.getByText(/Em breve, depoimentos reais de clientes da Corretora Val/i),
+      screen.getByText(
+        /Em breve, depoimentos reais de clientes da Corretora Val/i,
+      ),
     ).not.toBeNull();
     expect(
       screen.getByText(/Compromisso com transparência e autenticidade/i),
@@ -41,7 +43,9 @@ describe("TestimonialsPlaceholder component", () => {
     expect(screen.getByText("Márcia Oliveira")).not.toBeNull();
     expect(screen.getByText("Proprietária")).not.toBeNull();
     expect(
-      screen.getByText(/Atendimento humano e transparência em todas as negociações/i),
+      screen.getByText(
+        /Atendimento humano e transparência em todas as negociações/i,
+      ),
     ).not.toBeNull();
 
     expect(screen.getByText("Roberto Fonseca")).not.toBeNull();
@@ -49,7 +53,9 @@ describe("TestimonialsPlaceholder component", () => {
 
     // Fallback message should NOT be displayed
     expect(
-      screen.queryByText(/Em breve, depoimentos reais de clientes da Corretora Val/i),
+      screen.queryByText(
+        /Em breve, depoimentos reais de clientes da Corretora Val/i,
+      ),
     ).toBeNull();
   });
 });

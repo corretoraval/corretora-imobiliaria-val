@@ -74,16 +74,28 @@ const COLOR_PRESETS = [
 
 const TITLE_FONTS = [
   { id: "cormorant", name: "Cormorant Garamond", style: "Georgia, serif" },
-  { id: "playfair", name: "Playfair Display", style: "'Playfair Display', Georgia, serif" },
+  {
+    id: "playfair",
+    name: "Playfair Display",
+    style: "'Playfair Display', Georgia, serif",
+  },
   { id: "lora", name: "Lora", style: "'Lora', Georgia, serif" },
-  { id: "dm-serif", name: "DM Serif Display", style: "'DM Serif Display', Georgia, serif" },
+  {
+    id: "dm-serif",
+    name: "DM Serif Display",
+    style: "'DM Serif Display', Georgia, serif",
+  },
 ] as const;
 
 const BODY_FONTS = [
   { id: "manrope", name: "Manrope", style: "'Manrope', Arial, sans-serif" },
   { id: "inter", name: "Inter", style: "'Inter', Arial, sans-serif" },
   { id: "outfit", name: "Outfit", style: "'Outfit', Arial, sans-serif" },
-  { id: "plus-jakarta", name: "Plus Jakarta Sans", style: "'Plus Jakarta Sans', Arial, sans-serif" },
+  {
+    id: "plus-jakarta",
+    name: "Plus Jakarta Sans",
+    style: "'Plus Jakarta Sans', Arial, sans-serif",
+  },
 ] as const;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

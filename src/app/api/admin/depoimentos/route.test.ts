@@ -54,7 +54,12 @@ describe("API /api/admin/depoimentos route handlers", () => {
   it("GET returns items list when admin", async () => {
     mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
     prismaMock.prisma.depoimento.findMany.mockResolvedValue([
-      { id: "1", clientName: "Maria", text: "Excelente atendimento", isPublished: true },
+      {
+        id: "1",
+        clientName: "Maria",
+        text: "Excelente atendimento",
+        isPublished: true,
+      },
     ]);
     const res = await route.GET();
     expect(res.status).toBe(200);

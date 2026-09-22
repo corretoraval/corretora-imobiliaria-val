@@ -20,7 +20,13 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { AdminModal } from "@/components/admin/admin-modal";
 import { BLOG_CATEGORIES, type BlogCategory } from "@/lib/blog-constants";
 import { BlogEditor } from "./blog-editor";
@@ -87,7 +93,10 @@ function toSlug(text: string): string {
 }
 
 function calculateReadingTime(html: string): number {
-  const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const text = html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
   return Math.max(1, Math.ceil(words / 200));
 }
@@ -284,8 +293,7 @@ export function AdminBlogManager() {
     } catch (err) {
       console.error(err);
       setMessage({
-        text:
-          err instanceof Error ? err.message : "Erro ao excluir o artigo.",
+        text: err instanceof Error ? err.message : "Erro ao excluir o artigo.",
         type: "error",
       });
     } finally {
@@ -336,7 +344,9 @@ export function AdminBlogManager() {
         seoDescription: draft.seoDescription.trim() || draft.summary.trim(),
       };
 
-      const url = editingId ? `/api/admin/blog/${editingId}` : "/api/admin/blog";
+      const url = editingId
+        ? `/api/admin/blog/${editingId}`
+        : "/api/admin/blog";
       const method = editingId ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -490,7 +500,10 @@ export function AdminBlogManager() {
       <div className="bg-white rounded-2xl border border-[var(--border,#d4cec4)] overflow-hidden shadow-xs">
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3 text-[var(--ink-soft)]">
-            <LoaderCircle size={32} className="animate-spin text-[var(--plum)]" />
+            <LoaderCircle
+              size={32}
+              className="animate-spin text-[var(--plum)]"
+            />
             <p className="text-sm font-medium">Carregando artigos...</p>
           </div>
         ) : filteredPosts.length === 0 ? (
@@ -609,7 +622,9 @@ export function AdminBlogManager() {
                     <td className="py-4 px-4 whitespace-nowrap text-xs text-[var(--ink-soft)]">
                       <div className="flex items-center gap-1.5">
                         <Calendar size={14} />
-                        <span>{formatDate(post.publishedAt || post.createdAt)}</span>
+                        <span>
+                          {formatDate(post.publishedAt || post.createdAt)}
+                        </span>
                       </div>
                     </td>
 
@@ -829,7 +844,10 @@ export function AdminBlogManager() {
                   onChange={(e) =>
                     setDraft((prev) => ({
                       ...prev,
-                      readingTimeMinutes: Math.max(1, Number(e.target.value) || 1),
+                      readingTimeMinutes: Math.max(
+                        1,
+                        Number(e.target.value) || 1,
+                      ),
                     }))
                   }
                   className="w-full rounded-xl border border-[var(--border,#d4cec4)] px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--plum)] bg-white"
@@ -961,10 +979,7 @@ export function AdminBlogManager() {
                 Editor visual formatado
               </span>
             </div>
-            <BlogEditor
-              value={draft.content}
-              onChange={handleContentChange}
-            />
+            <BlogEditor value={draft.content} onChange={handleContentChange} />
           </div>
 
           {/* Destaque & Publicação Switches */}
@@ -1041,7 +1056,10 @@ export function AdminBlogManager() {
                   id="seo-title"
                   type="text"
                   maxLength={160}
-                  placeholder={draft.title || "Preenchimento automático a partir do título..."}
+                  placeholder={
+                    draft.title ||
+                    "Preenchimento automático a partir do título..."
+                  }
                   value={draft.seoTitle}
                   onChange={(e) =>
                     setDraft((prev) => ({
@@ -1069,7 +1087,10 @@ export function AdminBlogManager() {
                   id="seo-desc"
                   rows={2}
                   maxLength={320}
-                  placeholder={draft.summary || "Preenchimento automático a partir do resumo..."}
+                  placeholder={
+                    draft.summary ||
+                    "Preenchimento automático a partir do resumo..."
+                  }
                   value={draft.seoDescription}
                   onChange={(e) =>
                     setDraft((prev) => ({

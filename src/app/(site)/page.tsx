@@ -89,7 +89,8 @@ export default async function Home() {
               className="interactive inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--plum)] px-6 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(53,16,79,0.18)] hover:-translate-y-0.5 hover:bg-[var(--plum-bright)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--gold)]"
               href={content.hero.primaryHref}
             >
-              {content.hero.primaryLabel} <ArrowRight aria-hidden="true" size={17} />
+              {content.hero.primaryLabel}{" "}
+              <ArrowRight aria-hidden="true" size={17} />
             </Link>
             <Link
               className="interactive inline-flex min-h-12 items-center justify-center gap-2 rounded-full border bg-[var(--surface)] px-6 text-sm font-extrabold text-[var(--plum)] hover:border-[var(--gold)] hover:bg-[var(--surface-muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--gold)]"
@@ -137,7 +138,9 @@ export default async function Home() {
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {content.areas.map((service, index) => {
-              const Icon = [ShoppingBag, KeyRound, CalendarDays, Building2][index] ?? ShoppingBag;
+              const Icon =
+                [ShoppingBag, KeyRound, CalendarDays, Building2][index] ??
+                ShoppingBag;
               return (
                 <Link
                   href={service.href}

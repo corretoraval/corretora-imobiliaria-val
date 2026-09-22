@@ -12,9 +12,9 @@ import {
   ShieldAlert,
   ShieldCheck,
 } from "lucide-react";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { useState } from "react";
 
 export default function SignInPage() {
@@ -186,7 +186,7 @@ export default function SignInPage() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@corretoraval.com.br"
+                  placeholder="admin@example.com.br"
                   className="interactive block w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] py-3 pl-11 pr-4 text-sm text-[var(--ink)] shadow-xs placeholder:text-[var(--ink-soft)]/50 focus:border-[var(--plum)] focus:bg-white focus:ring-2 focus:ring-[var(--plum)]/10 focus:outline-hidden"
                 />
               </div>

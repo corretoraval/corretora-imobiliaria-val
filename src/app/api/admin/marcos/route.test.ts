@@ -53,7 +53,13 @@ describe("API /api/admin/marcos route handlers", () => {
   it("GET returns items list when admin", async () => {
     mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
     prismaMock.prisma.marcoHistorico.findMany.mockResolvedValue([
-      { id: "1", year: 1989, title: "Início", description: "História", sortOrder: 0 },
+      {
+        id: "1",
+        year: 1989,
+        title: "Início",
+        description: "História",
+        sortOrder: 0,
+      },
     ]);
     const res = await route.GET();
     expect(res.status).toBe(200);
