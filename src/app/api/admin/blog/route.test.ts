@@ -3,6 +3,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/prisma", () => {
   const postBlog = {
     findMany: vi.fn(),
+    findFirst: vi.fn(),
     create: vi.fn(),
     findUnique: vi.fn(),
     update: vi.fn(),
@@ -21,6 +22,7 @@ let blogIdRoute: typeof import("./[id]/route");
 
 type PostBlogMock = {
   findMany: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
   create: ReturnType<typeof vi.fn>;
   findUnique: ReturnType<typeof vi.fn>;
   update: ReturnType<typeof vi.fn>;

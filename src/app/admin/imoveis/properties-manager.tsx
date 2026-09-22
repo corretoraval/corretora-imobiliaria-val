@@ -21,6 +21,7 @@ import {
   useState,
 } from "react";
 import { AdminModal } from "@/components/admin/admin-modal";
+import { toSlug } from "@/lib/identifiers";
 import { formatPrice } from "@/lib/format-price";
 
 type Purpose = "VENDA" | "LOCACAO_ANUAL" | "TEMPORADA";
@@ -74,7 +75,7 @@ type PhotoEntry = {
 };
 
 type PropertyPayload = {
-  code: string;
+  code?: string;
   slug: string;
   title: string;
   propertyType: string;
@@ -138,15 +139,6 @@ function parseCurrencyInput(value: string): number | null {
   return digits ? Number(digits) : null;
 }
 
-function toSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
 export function AdminPropertiesManager() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [draft, setDraft] = useState<Draft>(initialDraft);
@@ -155,6 +147,7 @@ export function AdminPropertiesManager() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
+  const [userEditedSlug, setUserEditedSlug] = useState(false);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -198,6 +191,7 @@ export function AdminPropertiesManager() {
     setEditingId(null);
     setDraft(initialDraft);
     setPhotos([]);
+    setUserEditedSlug(false);
     setShowMoreDetails(false);
     setMessage(null);
     setIsModalOpen(true);
@@ -241,6 +235,7 @@ export function AdminPropertiesManager() {
         summary: full.summary || "",
         description: full.description || "",
       });
+      setUserEditedSlug(true);
 
       if (
         full.neighborhood ||
@@ -290,7 +285,7 @@ export function AdminPropertiesManager() {
 
     const numericPrice = parseCurrencyInput(draft.price);
     const payload: PropertyPayload = {
-      code: draft.code.trim().toUpperCase(),
+      code: draft.code.trim().toUpperCase() || undefined,
       slug: draft.slug || toSlug(draft.title),
       title: draft.title.trim(),
       propertyType: draft.propertyType.trim(),
@@ -355,7 +350,7 @@ export function AdminPropertiesManager() {
 
     const numericPrice = parseCurrencyInput(draft.price);
     const payload: PropertyPayload = {
-      code: draft.code.trim().toUpperCase(),
+      code: draft.code.trim().toUpperCase() || undefined,
       slug: draft.slug || toSlug(draft.title),
       title: draft.title.trim(),
       propertyType: draft.propertyType.trim(),
@@ -642,15 +637,14 @@ export function AdminPropertiesManager() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
-                Código do Imóvel *
+                Código do Imóvel (gerado automaticamente)
                 <input
                   className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm font-bold text-[var(--plum)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
-                  minLength={3}
-                  placeholder="Ex: VAL-004"
+                  placeholder="Gerado ao salvar (VAL-001, VAL-002...)"
+                  readOnly={!isEditing}
                   onChange={(e) =>
                     setDraft({ ...draft, code: e.target.value.toUpperCase() })
                   }
-                  required
                   value={draft.code}
                 />
               </label>
@@ -665,7 +659,9 @@ export function AdminPropertiesManager() {
                     setDraft({
                       ...draft,
                       title: e.target.value,
-                      slug: draft.slug || toSlug(e.target.value),
+                      slug: userEditedSlug
+                        ? draft.slug
+                        : toSlug(e.target.value),
                     })
                   }
                   required
@@ -675,14 +671,14 @@ export function AdminPropertiesManager() {
             </div>
 
             <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
-              URL Amigável (Slug) *
+              URL Amigável (Slug)
               <input
                 className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-xs font-mono text-[var(--ink)] placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
                 placeholder="ex: apartamento-vista-mar-barra-sul"
-                onChange={(e) =>
-                  setDraft({ ...draft, slug: toSlug(e.target.value) })
-                }
-                required
+                onChange={(e) => {
+                  setUserEditedSlug(true);
+                  setDraft({ ...draft, slug: toSlug(e.target.value) });
+                }}
                 value={draft.slug}
               />
             </label>

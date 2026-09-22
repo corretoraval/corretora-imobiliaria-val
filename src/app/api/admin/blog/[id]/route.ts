@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { ZodError } from "zod";
 import { authOptions } from "@/lib/auth";
+import { findAvailableSlug } from "@/lib/identifiers";
 import { prisma } from "@/lib/prisma";
 import { sanitizeBlogPostContent } from "@/lib/sanitize-blog";
 import { blogPostSchema } from "../route";
@@ -81,6 +82,19 @@ export async function PUT(
     const data = blogPostUpdateSchema.parse(body);
 
     const updatePayload: Record<string, unknown> = { ...data };
+
+    if (data.title && !data.slug) {
+      updatePayload.slug = await findAvailableSlug(
+        data.title,
+        async (candidate) =>
+          Boolean(
+            await prisma.postBlog.findFirst({
+              where: { slug: candidate, NOT: { id } },
+              select: { id: true },
+            }),
+          ),
+      );
+    }
 
     if (data.content) {
       updatePayload.content = sanitizeBlogPostContent(data.content);

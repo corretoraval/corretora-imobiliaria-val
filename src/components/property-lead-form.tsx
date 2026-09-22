@@ -16,7 +16,7 @@ export function PropertyLeadForm({
   propertyTitle,
   propertyAddress,
   propertyType,
-  whatsappNumber = "5547974007301",
+  whatsappNumber = "5547974007391",
 }: PropertyLeadFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,7 +29,7 @@ export function PropertyLeadForm({
   const [error, setError] = useState<string | null>(null);
 
   // Link direto do WhatsApp
-  const cleanPhone = (whatsappNumber || "5547974007301").replace(/\D/g, "");
+  const cleanPhone = (whatsappNumber || "5547974007391").replace(/\D/g, "");
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
     `Olá! Tenho interesse no imóvel ${propertyCode} - ${propertyTitle}. Poderia me passar mais detalhes?`,
   )}`;

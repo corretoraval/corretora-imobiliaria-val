@@ -18,7 +18,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Quem Somos | Corretora Val",
   description:
-    "Conheça a história de Valdete Gonçalves de Melo e a trajetória da Corretora Val em Balneário Camboriú e Camboriú: trabalho, família, compromisso e confiança desde 1989.",
+    "Conheça a história de Valdete Gonçalves de Melo e a trajetória da Corretora Val em Balneário Camboriú e Camboriú: trabalho, família, compromisso e confiança desde 1990.",
 };
 
 export default async function QuemSomosPage() {
@@ -51,7 +51,7 @@ export default async function QuemSomosPage() {
       <PageHero
         eyebrow="QUEM SOMOS"
         title="Minha História. Meu Compromisso."
-        subtitle="Desde 1989, uma trajetória construída com trabalho, família e confiança."
+        subtitle="Desde 1990, uma trajetória construída com trabalho, família e confiança."
       />
 
       {/* ═══════════════════════════════════════════════════════════

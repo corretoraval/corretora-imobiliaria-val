@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { ZodError, z } from "zod";
 import { authOptions } from "@/lib/auth";
+import { findAvailableSlug, nextPropertyCode } from "@/lib/identifiers";
 import { prisma } from "@/lib/prisma";
 
 const purposes = ["VENDA", "LOCACAO_ANUAL", "TEMPORADA"] as const;
@@ -40,13 +41,14 @@ type PropertyPhotoInput = {
 };
 
 const propertyFields = z.object({
-  code: z.string().trim().min(3).max(32),
+  code: z.string().trim().min(3).max(32).optional(),
   slug: z
     .string()
     .trim()
     .min(3)
     .max(180)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
   title: z.string().trim().min(3).max(160),
   summary: optionalText,
   description: optionalText,
@@ -155,7 +157,24 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const data = propertySchema.parse(body);
-    const created = await prisma.imovel.create({ data });
+    const slug = await findAvailableSlug(
+      data.slug || data.title,
+      async (candidate) =>
+        Boolean(
+          await prisma.imovel.findUnique({
+            where: { slug: candidate },
+            select: { id: true },
+          }),
+        ),
+    );
+    const existingCodes = await prisma.imovel.findMany({
+      select: { code: true },
+    });
+    const nextCode =
+      data.code || nextPropertyCode(existingCodes.map((item) => item.code));
+    const created = await prisma.imovel.create({
+      data: { ...data, code: nextCode, slug },
+    });
 
     // handle photos if provided in payload (uploaded earlier via /api/uploads)
     if (Array.isArray(body.photos) && body.photos.length > 0) {

@@ -271,14 +271,17 @@ export default async function Home() {
                   Uma trajetória guiada pela confiança
                 </h3>
                 <p className="text-sm md:text-base text-[var(--ink-soft)] leading-relaxed">
-                  Desde <strong>1989</strong>, quando o primeiro convite abriu
-                  as portas no mercado imobiliário em Curitiba, e com início
-                  oficial da carreira em <strong>1990</strong>, uma sólida
-                  trajetória foi construída com trabalho, superação e
-                  compromisso ético. Hoje, à frente da Corretora Val em
-                  Balneário Camboriú e Camboriú, unimos experiência e gestão
-                  familiar para transformar cada negociação em uma relação de
-                  confiança e cuidado real.
+                  Com uma trajetória no mercado imobiliário iniciada em{" "}
+                  <strong>1990</strong>, a Corretora Val une experiência,
+                  atendimento humano, gestão responsável e compromisso real com
+                  o seu patrimônio. O primeiro convite havia acontecido em{" "}
+                  <strong>1989</strong>, abrindo as portas para a profissão em
+                  Curitiba; o início oficial da carreira veio em{" "}
+                  <strong>1990</strong>, uma sólida trajetória foi construída
+                  com trabalho, superação e compromisso ético. Hoje, à frente da
+                  Corretora Val em Balneário Camboriú e Camboriú, unimos
+                  experiência e gestão familiar para transformar cada negociação
+                  em uma relação de confiança e cuidado real.
                 </p>
                 <div className="pt-2">
                   <Link

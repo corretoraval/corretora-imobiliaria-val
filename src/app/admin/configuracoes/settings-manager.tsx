@@ -427,9 +427,9 @@ export function SettingsManager() {
                           ?.style ?? "Arial, sans-serif",
                     }}
                   >
-                    Há mais de três décadas, transformamos imóveis em histórias
-                    bem cuidadas — com atendimento humano, gestão responsável e
-                    compromisso real com o seu patrimônio.
+                    Com uma trajetória no mercado imobiliário iniciada em 1990,
+                    a Corretora Val une experiência, atendimento humano, gestão
+                    responsável e compromisso real com o seu patrimônio.
                   </p>
                 </div>
               </div>

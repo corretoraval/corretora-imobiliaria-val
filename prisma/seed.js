@@ -77,7 +77,7 @@ const pages = [
     title: "Confiança que abre portas.",
     heading: "Tudo o que seu imóvel precisa, com o cuidado que você espera.",
     intro:
-      "Há mais de três décadas, transformamos imóveis em histórias bem cuidadas — com atendimento humano, gestão responsável e compromisso real com o seu patrimônio.",
+      "Com uma trajetória no mercado imobiliário iniciada em 1990, a Corretora Val une experiência, atendimento humano, gestão responsável e compromisso real com o seu patrimônio.",
     body: "Uma empresa construída em família, para relações que permanecem muito depois da entrega das chaves.",
     ctaLabel: "Conheça nossos imóveis",
     ctaHref: "/imoveis",
@@ -102,7 +102,7 @@ const pages = [
   {
     slug: "quem-somos",
     navigationLabel: "Quem Somos",
-    eyebrow: "Desde 1989",
+    eyebrow: "Desde 1990",
     title: "Quem somos",
     heading: "Experiência regional, relações duradouras e atendimento humano.",
     intro:
@@ -166,7 +166,7 @@ const pages = [
     intro: "Fale com a Corretora Val por WhatsApp, telefone ou e-mail.",
     body: "Estamos em Balneário Camboriú e atendemos também Camboriú e região.",
     ctaLabel: "Falar pelo WhatsApp",
-    ctaHref: "https://wa.me/5547974007301",
+    ctaHref: "https://wa.me/5547974007391",
     sortOrder: 7,
   },
 ];
@@ -263,11 +263,11 @@ async function main() {
     update: {},
     create: {
       id: "principal",
-      phone: "(47) 97400-7301",
-      whatsapp: "5547974007301",
+      phone: "(47) 97400-7391",
+      whatsapp: "5547974007391",
       email: "contato@corretoraval.com.br",
       address: "Balneário Camboriú — SC",
-      instagramUrl: "https://www.instagram.com/",
+      instagramUrl: null,
       // Tema padrão: Ametista & Ouro Real
       themePreset: "ametista-ouro",
       primaryColor: "#35104f",

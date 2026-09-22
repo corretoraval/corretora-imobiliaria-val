@@ -70,7 +70,7 @@ export default async function ContatoPage() {
                       WhatsApp
                     </span>
                     <strong className="text-base text-[var(--plum)] font-bold">
-                      {settings.phone || "(47) 97400-7301"}
+                      {settings.phone || "(47) 97400-7391"}
                     </strong>
                   </div>
                 </a>
@@ -87,7 +87,7 @@ export default async function ContatoPage() {
                       Telefone Comercial
                     </span>
                     <strong className="text-base text-[var(--plum)] font-bold">
-                      {settings.phone || "(47) 97400-7301"}
+                      {settings.phone || "(47) 97400-7391"}
                     </strong>
                   </div>
                 </a>

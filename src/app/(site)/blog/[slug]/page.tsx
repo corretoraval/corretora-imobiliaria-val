@@ -114,7 +114,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   para o seu imóvel ou investimento.
                 </p>
                 <a
-                  href="https://wa.me/5547974007301"
+                  href="https://wa.me/5547974007391"
                   target="_blank"
                   rel="noreferrer"
                   className="interactive flex items-center justify-center gap-2 rounded-full bg-[var(--plum)] py-3 text-xs font-extrabold text-white uppercase shadow-md hover:bg-[var(--plum-bright)] transition-all"

@@ -112,7 +112,7 @@ instalada e disponível no ambiente. Nunca usar movimento apenas como decoraçã
 - Fundação/trajetória: distinguir as datas históricas conforme esclarecimento direto da fundadora (Valdete):
   - **1989**: entrada informal no mercado imobiliário e o primeiro convite na Imobiliária Gonzaga em Curitiba ("o convite que abriu a primeira porta").
   - **1990**: início oficial da trajetória profissional e registro formal.
-  - Para menções genéricas de "Desde X" / início da trajetória → adotar **1989**.
+  - Para menções genéricas de "Desde X" / início profissional oficial → adotar **1990**.
   - Para início oficial / registro formal → manter **1990**.
 - Depoimentos: os depoimentos anteriores eram fictícios/placeholders e foram removidos. A seção de depoimentos na página Autoridade foi convertida em estado visual de "Em breve", aguardando relatos reais e autorizados por escrito.
 - Comunicação e tom: uso de 1ª pessoa ("Estou à disposição", "Fale comigo", assinado por Valdete Gonçalves de Melo) nas páginas de Contato e institucionais, refletindo o posicionamento humano e pessoal da fundadora.

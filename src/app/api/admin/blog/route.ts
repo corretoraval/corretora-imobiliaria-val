@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth/next";
 import { ZodError, z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { BLOG_CATEGORIES } from "@/lib/blog-constants";
+import { findAvailableSlug } from "@/lib/identifiers";
 import { prisma } from "@/lib/prisma";
 import { sanitizeBlogPostContent } from "@/lib/sanitize-blog";
 
@@ -16,7 +17,8 @@ export const blogPostSchema = z.object({
     .trim()
     .min(3, "O slug deve ter pelo menos 3 caracteres")
     .max(200, "O slug não pode ter mais de 200 caracteres")
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Formato de URL amigável inválido"),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Formato de URL amigável inválido")
+    .optional(),
   title: z
     .string()
     .trim()
@@ -105,6 +107,16 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const data = blogPostSchema.parse(body);
+    const slug = await findAvailableSlug(
+      data.slug || data.title,
+      async (candidate) =>
+        Boolean(
+          await prisma.postBlog.findUnique({
+            where: { slug: candidate },
+            select: { id: true },
+          }),
+        ),
+    );
 
     const seoTitle = data.seoTitle?.trim() || data.title;
     const seoDescription = data.seoDescription?.trim() || data.summary;
@@ -114,6 +126,7 @@ export async function POST(req: Request) {
     const created = await prisma.postBlog.create({
       data: {
         ...data,
+        slug,
         content,
         seoTitle,
         seoDescription,

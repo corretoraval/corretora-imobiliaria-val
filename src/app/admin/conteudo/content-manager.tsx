@@ -176,12 +176,12 @@ const DEFAULT_HOME: HomeContentState = {
   hero_eyebrow: "Balneário Camboriú e Camboriú",
   hero_title: "Confiança que abre portas.",
   hero_text:
-    "Há mais de três décadas, transformamos imóveis em histórias bem cuidadas — com atendimento humano, gestão responsável e compromisso real com o seu patrimônio.",
+    "Com uma trajetória no mercado imobiliário iniciada em 1990, a Corretora Val une experiência, atendimento humano, gestão responsável e compromisso real com o seu patrimônio.",
   hero_primaryCtaText: "Conheça nossos imóveis",
   hero_primaryCtaHref: "/imoveis",
   hero_secondaryCtaText: "Administrar meu imóvel",
   hero_secondaryCtaHref: "/administracao",
-  hero_cardEyebrow: "Desde 1989",
+  hero_cardEyebrow: "Desde 1990",
   hero_cardTitle: "Mais que imóveis, cuidamos de histórias.",
   hero_cardText:
     "Uma empresa construída em família, para relações que permanecem muito depois da entrega das chaves.",
@@ -288,7 +288,7 @@ const DEFAULT_QUEM_SOMOS: QuemSomosContentState = {
   biographyLead:
     "Meu nome é Valdete Gonçalves de Melo, fundadora da Corretora Val, especialista em Administração de Imóveis, Locação Anual, Temporada e Compra e Venda, com atuação em Balneário Camboriú e Camboriú.",
   biographyParagraphsText:
-    "Minha história no mercado imobiliário teve início em 1989, com o convite que abriu a primeira porta para trabalhar na tradicional Imobiliária Gonzaga, em Curitiba.\nA vida me levou por outros caminhos durante muitos anos, mas nunca apagou o sonho de voltar ao mercado imobiliário.\nDurante 25 anos, trabalhei como motoboy para sustentar minha família, sempre acreditando que o trabalho honesto abriria novas portas.\nTambém tive a honra de presidir a AMAE – Associação de Apoio à Criança e ao Adolescente com Mobilidade Reduzida e com Câncer.\nEm 2019, já em Balneário Camboriú, retornei ao mercado imobiliário e reencontrei a profissão que sempre fez parte da minha essência.\nFoi dessa trajetória que nasceu a Corretora Val.",
+    "O convite de 1989 abriu a primeira porta para trabalhar na tradicional Imobiliária Gonzaga, em Curitiba. Em 1990, iniciei oficialmente minha trajetória profissional no setor.\nA vida me levou por outros caminhos durante muitos anos, mas nunca apagou o sonho de voltar ao mercado imobiliário.\nDurante 25 anos, trabalhei como motoboy para sustentar minha família, sempre acreditando que o trabalho honesto abriria novas portas.\nTambém tive a honra de presidir a AMAE – Associação de Apoio à Criança e ao Adolescente com Mobilidade Reduzida e com Câncer.\nEm 2019, já em Balneário Camboriú, retornei ao mercado imobiliário e reencontrei a profissão que sempre fez parte da minha essência.\nFoi dessa trajetória que nasceu a Corretora Val.",
   quoteText:
     "Quero agradecer primeiramente por me ajudar a realizar um sonho guardado desde que resolvi caminhar aqui sozinha. Na pandemia fui dispensada do trabalho, sem rumo. A Michely e o Felipe me mostraram que eu era capaz — as palavras deles e o presente da Michely, me presenteando com o curso do CRECI, me fizeram acreditar que sou capaz.",
   quoteAuthor: "— Valdete Gonçalves de Melo · CRECI/SC 56372-F",

@@ -29,6 +29,7 @@ import {
 } from "react";
 import { AdminModal } from "@/components/admin/admin-modal";
 import { BLOG_CATEGORIES, type BlogCategory } from "@/lib/blog-constants";
+import { toSlug } from "@/lib/identifiers";
 import { BlogEditor } from "./blog-editor";
 
 export const categories = BLOG_CATEGORIES;
@@ -82,15 +83,6 @@ const initialDraft: DraftPost = {
   seoTitle: "",
   seoDescription: "",
 };
-
-function toSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 function calculateReadingTime(html: string): number {
   const text = html
@@ -331,7 +323,7 @@ export function AdminBlogManager() {
       setSubmitting(true);
       const payload = {
         title: draft.title.trim(),
-        slug: draft.slug.trim(),
+        slug: draft.slug.trim() || undefined,
         summary: draft.summary.trim(),
         content: draft.content.trim(),
         category: draft.category,
@@ -739,10 +731,10 @@ export function AdminBlogManager() {
               <input
                 id="post-title"
                 type="text"
-                required
                 maxLength={200}
                 placeholder="Ex: Como escolher o imóvel ideal para temporada"
                 value={draft.title}
+                required
                 onChange={(e) => handleTitleChange(e.target.value)}
                 className="w-full rounded-xl border border-[var(--border,#d4cec4)] px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--plum)] bg-white"
               />
@@ -753,7 +745,7 @@ export function AdminBlogManager() {
                 htmlFor="post-slug"
                 className="block text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-1.5"
               >
-                URL Amigável (Slug) *
+                URL Amigável (Slug)
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-[var(--ink-soft)]">
