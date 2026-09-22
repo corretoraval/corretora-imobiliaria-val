@@ -44,6 +44,20 @@ beforeEach(() => {
 });
 
 describe("API /api/admin/blog route handlers", () => {
+  it("GET lists posts for an administrator", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.postBlog.findMany.mockResolvedValue([
+      { id: "post-1", title: "Artigo", isPublished: false },
+    ]);
+
+    const res = await blogRoute.GET();
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual([
+      { id: "post-1", title: "Artigo", isPublished: false },
+    ]);
+  });
+
   it("POST creates a post and sanitizes malicious HTML script tags", async () => {
     mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
     prismaMock.prisma.postBlog.create.mockImplementation(({ data }) =>
@@ -150,5 +164,77 @@ describe("API /api/admin/blog route handlers", () => {
     expect(updateCall.data.publishedAt.getTime()).toBeGreaterThan(
       originalDraftDate.getTime(),
     );
+  });
+
+  it("supports the complete draft, edit, publish and delete flow", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+
+    prismaMock.prisma.postBlog.create.mockImplementation(({ data }) =>
+      Promise.resolve({
+        id: "post-flow",
+        ...data,
+      }),
+    );
+    prismaMock.prisma.postBlog.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: "post-flow",
+        slug: "fluxo-de-rascunho",
+        title: "Rascunho",
+        isPublished: false,
+      })
+      .mockResolvedValueOnce({
+        id: "post-flow",
+        slug: "fluxo-de-rascunho",
+        title: "Rascunho editado",
+        isPublished: true,
+      });
+    prismaMock.prisma.postBlog.update.mockImplementation(({ data }) =>
+      Promise.resolve({ id: "post-flow", ...data }),
+    );
+    prismaMock.prisma.postBlog.delete.mockResolvedValue({ id: "post-flow" });
+
+    const createResponse = await blogRoute.POST(
+      new Request("http://localhost/api/admin/blog", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Rascunho",
+          slug: "fluxo-de-rascunho",
+          summary: "Resumo válido para o fluxo de rascunho.",
+          content: "<p>Conteúdo inicial</p>",
+          category: "Mercado",
+          isPublished: false,
+        }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    expect(createResponse.status).toBe(201);
+
+    const updateResponse = await blogIdRoute.PUT(
+      new Request("http://localhost/api/admin/blog/post-flow", {
+        method: "PUT",
+        body: JSON.stringify({
+          title: "Rascunho editado",
+          isPublished: true,
+        }),
+        headers: { "Content-Type": "application/json" },
+      }),
+      { params: Promise.resolve({ id: "post-flow" }) },
+    );
+    expect(updateResponse.status).toBe(200);
+    expect(
+      prismaMock.prisma.postBlog.update.mock.calls.at(-1)?.[0].data.isPublished,
+    ).toBe(true);
+
+    const deleteResponse = await blogIdRoute.DELETE(
+      new Request("http://localhost/api/admin/blog/post-flow", {
+        method: "DELETE",
+      }),
+      { params: Promise.resolve({ id: "post-flow" }) },
+    );
+    expect(deleteResponse.status).toBe(200);
+    expect(prismaMock.prisma.postBlog.delete).toHaveBeenCalledWith({
+      where: { id: "post-flow" },
+    });
   });
 });

@@ -126,13 +126,25 @@ export function AdminBlogManager() {
     try {
       setLoading(true);
       const res = await fetch("/api/admin/blog", { cache: "no-store" });
-      if (!res.ok) throw new Error("Falha ao carregar artigos do blog");
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        const detail =
+          typeof body?.error === "string"
+            ? body.error
+            : res.status === 401 || res.status === 403
+              ? "Sua sessão não tem permissão para acessar os artigos."
+              : `A API retornou o status ${res.status}.`;
+        throw new Error(`Falha ao carregar artigos do blog: ${detail}`);
+      }
       const data: BlogPost[] = await res.json();
       setPosts(data);
     } catch (err) {
       console.error(err);
       setMessage({
-        text: "Não foi possível carregar os artigos.",
+        text:
+          err instanceof Error
+            ? err.message
+            : "Não foi possível carregar os artigos.",
         type: "error",
       });
     } finally {
