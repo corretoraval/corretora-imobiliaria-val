@@ -26,9 +26,13 @@ npm run db:deploy
 npm run seed
 ```
 
-O painel está em `http://localhost:3000/admin/imoveis`. O seed de desenvolvimento
-cria o acesso `admin@example.com` com a senha `senha123`; troque essa senha antes
-de qualquer ambiente compartilhado ou de produção.
+O painel está em `http://localhost:3000/admin/imoveis`. O seed não cria usuários
+administrativos; provisione uma conta de desenvolvimento explicitamente e nunca
+reutilize credenciais de teste em ambientes compartilhados ou de produção.
+
+Para verificar/remover com confirmação uma conta de teste legada em um banco
+existente, use `npm run remove:test-admin -- --confirm`. Sem `--confirm`, o
+script apenas verifica a conta e seus contratos associados.
 
 Observação sobre ambiente Windows/OneDrive: alguns usuários relataram um aviso EPERM ao gerar o cliente Prisma (arquivo em `node_modules/.prisma`) quando o repositório está em pastas sincronizadas pelo OneDrive ou quando antivírus bloqueia arquivos temporários. Se ocorrer `EPERM` durante `npm install` ou `npx prisma generate`, recomenda-se mover o projeto para uma pasta local não sincronizada (por exemplo `C:\repos`), pausar a sincronização do OneDrive para a pasta do projeto, ou configurar exclusões no antivírus. Essa alteração não é obrigatória, mas reduz problemas de desenvolvimento no Windows.
 

@@ -1,4 +1,3 @@
-const bcrypt = require("bcryptjs");
 const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
@@ -249,15 +248,6 @@ O valor do metro quadrado em Camboriú permite adquirir imóveis com área priva
 ];
 
 async function main() {
-  const adminEmail = "admin@example.com";
-  const hash = await bcrypt.hash("senha123", 10);
-
-  await prisma.usuario.upsert({
-    where: { email: adminEmail },
-    update: {},
-    create: { email: adminEmail, name: "Admin", password: hash, role: "admin" },
-  });
-
   await prisma.configuracaoSite.upsert({
     where: { id: "principal" },
     update: {},
@@ -418,7 +408,7 @@ async function main() {
     }
   }
 
-  console.log(`Seed complete. Admin: ${adminEmail} / senha123`);
+  console.log("Seed complete.");
 }
 
 main()

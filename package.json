@@ -24,7 +24,8 @@
     "prisma:validate": "prisma validate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "migrate:property-codes": "node scripts/renumber-property-codes.js"
+    "migrate:property-codes": "node scripts/renumber-property-codes.js",
+    "remove:test-admin": "node scripts/remove-test-admin.js"
   },
   "dependencies": {
     "@prisma/client": "5.6.0",
