@@ -13,6 +13,7 @@ import {
   Maximize2,
   ShieldCheck,
   Sparkles,
+  Users,
   Waves,
   Wifi,
   Wind,
@@ -290,6 +291,17 @@ export default async function PropertyDetailPage({
 
           {/* Ficha Rápida / Especificações em Cartões */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {isSeason && property.guestCapacity ? (
+              <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-4 text-center shadow-xs">
+                <Users className="mx-auto mb-1 text-[var(--gold)]" size={24} />
+                <span className="text-xs text-[var(--ink-soft)] block">
+                  Hóspedes
+                </span>
+                <span className="font-extrabold text-[var(--plum)] text-lg">
+                  {property.guestCapacity}
+                </span>
+              </div>
+            ) : null}
             {property.bedrooms ? (
               <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-4 text-center shadow-xs">
                 <Bed className="mx-auto mb-1 text-[var(--gold)]" size={24} />
@@ -373,6 +385,37 @@ export default async function PropertyDetailPage({
               </div>
             ) : null}
           </div>
+
+          {isSeason &&
+            (property.availabilityStart ||
+              property.availabilityEnd ||
+              property.availabilityNotes) && (
+              <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface-muted,#faf8f5)] p-5">
+                <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-[var(--plum)]">
+                  Disponibilidade
+                </h3>
+                <p className="text-sm text-[var(--ink-soft)]">
+                  {property.availabilityStart
+                    ? `A partir de ${new Intl.DateTimeFormat("pt-BR").format(
+                        new Date(property.availabilityStart),
+                      )}`
+                    : ""}
+                  {property.availabilityStart && property.availabilityEnd
+                    ? " "
+                    : ""}
+                  {property.availabilityEnd
+                    ? `até ${new Intl.DateTimeFormat("pt-BR").format(
+                        new Date(property.availabilityEnd),
+                      )}`
+                    : ""}
+                </p>
+                {property.availabilityNotes && (
+                  <p className="mt-2 text-sm text-[var(--ink-soft)]">
+                    {property.availabilityNotes}
+                  </p>
+                )}
+              </div>
+            )}
 
           {/* Custos adicionais (Condomínio, IPTU) se cadastrados */}
           {(property.condoFee || property.iptu || property.cleaningFee) && (

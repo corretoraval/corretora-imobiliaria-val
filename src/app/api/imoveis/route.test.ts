@@ -110,6 +110,65 @@ describe("API /api/imoveis handlers", () => {
     expect(res.status).toBe(201);
   });
 
+  it("accepts seasonal properties with daily rate consultation", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.imovel.create.mockResolvedValue({
+      id: "seasonal-1",
+      slug: "casa-temporada",
+    });
+    prismaMock.prisma.imovel.findMany.mockResolvedValue([]);
+
+    const res = await route.POST(
+      new Request("http://localhost/api/imoveis", {
+        method: "POST",
+        body: JSON.stringify({
+          slug: "casa-temporada",
+          title: "Casa temporada",
+          propertyType: "Casa",
+          purpose: "TEMPORADA",
+          city: "Camboriú",
+          dailyRateConsultation: true,
+          guestCapacity: 6,
+          availabilityStart: "2026-12-01",
+          availabilityEnd: "2027-01-15",
+        }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(prismaMock.prisma.imovel.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        dailyRateConsultation: true,
+        guestCapacity: 6,
+      }),
+    });
+  });
+
+  it("rejects invalid seasonal availability and capacity", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    const res = await route.POST(
+      new Request("http://localhost/api/imoveis", {
+        method: "POST",
+        body: JSON.stringify({
+          slug: "casa-invalida",
+          title: "Casa inválida",
+          propertyType: "Casa",
+          purpose: "TEMPORADA",
+          city: "Camboriú",
+          dailyRate: 300,
+          guestCapacity: 0,
+          availabilityStart: "2027-01-15",
+          availabilityEnd: "2026-12-01",
+        }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(res.status).toBe(400);
+    expect(prismaMock.prisma.imovel.create).not.toHaveBeenCalled();
+  });
+
   it("saves photos and preserves their order and cover", async () => {
     mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
     prismaMock.prisma.imovel.create.mockResolvedValue({

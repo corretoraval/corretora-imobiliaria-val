@@ -32,6 +32,7 @@ const markers = [
 const optionalText = z.string().trim().max(4_000).optional().nullable();
 const optionalAmount = z.number().int().nonnegative().optional().nullable();
 const optionalInteger = z.number().int().nonnegative().optional().nullable();
+const optionalDate = z.coerce.date().optional().nullable();
 
 const propertyPhotoSchema = z.object({
   url: z.string().trim().min(1),
@@ -64,6 +65,11 @@ const propertyFields = z.object({
   salePrice: optionalAmount,
   monthlyRent: optionalAmount,
   dailyRate: optionalAmount,
+  guestCapacity: z.number().int().positive().optional().nullable(),
+  dailyRateConsultation: z.boolean().default(false),
+  availabilityStart: optionalDate,
+  availabilityEnd: optionalDate,
+  availabilityNotes: optionalText,
   bedrooms: optionalInteger,
   suites: optionalInteger,
   bathrooms: optionalInteger,
@@ -90,10 +96,26 @@ const propertySchema = propertyFields.superRefine((data, ctx) => {
   };
 
   if (priceByPurpose[data.purpose] == null) {
+    if (data.purpose === "TEMPORADA" && data.dailyRateConsultation) {
+      return;
+    }
     ctx.addIssue({
       code: "custom",
       path: ["purpose"],
       message: "Informe o valor principal para a finalidade do imóvel.",
+    });
+  }
+
+  if (
+    data.purpose === "TEMPORADA" &&
+    data.availabilityStart &&
+    data.availabilityEnd &&
+    data.availabilityEnd < data.availabilityStart
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["availabilityEnd"],
+      message: "A data final não pode ser anterior à data inicial.",
     });
   }
 });
@@ -102,6 +124,30 @@ const updateSchema = propertyFields
   .partial()
   .refine((data) => Object.keys(data).length > 0, {
     message: "Informe ao menos um campo para atualizar",
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.purpose === "TEMPORADA" &&
+      data.dailyRate == null &&
+      data.dailyRateConsultation !== true
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["dailyRate"],
+        message: "Informe a diária ou marque a opção sob consulta.",
+      });
+    }
+    if (
+      data.availabilityStart &&
+      data.availabilityEnd &&
+      data.availabilityEnd < data.availabilityStart
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["availabilityEnd"],
+        message: "A data final não pode ser anterior à data inicial.",
+      });
+    }
   });
 
 async function requireAdmin() {

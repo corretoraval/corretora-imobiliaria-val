@@ -74,6 +74,11 @@ model Imovel {
   garbageFee            Int?
   otherFees             Int?
   dailyRate             Int?
+  guestCapacity         Int?
+  dailyRateConsultation Boolean              @default(false)
+  availabilityStart     DateTime?
+  availabilityEnd       DateTime?
+  availabilityNotes     String?
   packageRate           Int?
   cleaningFee           Int?
   securityDeposit       Int?

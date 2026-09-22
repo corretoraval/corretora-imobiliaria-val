@@ -39,6 +39,11 @@ type Property = {
   salePrice: number | null;
   monthlyRent: number | null;
   dailyRate: number | null;
+  guestCapacity?: number | null;
+  dailyRateConsultation?: boolean;
+  availabilityStart?: string | null;
+  availabilityEnd?: string | null;
+  availabilityNotes?: string | null;
   bedrooms?: number | null;
   suites?: number | null;
   bathrooms?: number | null;
@@ -82,6 +87,11 @@ type Draft = {
   hasElevator: boolean;
   allowsPets: boolean;
   customFeatures: string;
+  guestCapacity: string;
+  dailyRateConsultation: boolean;
+  availabilityStart: string;
+  availabilityEnd: string;
+  availabilityNotes: string;
 };
 
 type PhotoEntry = {
@@ -104,6 +114,11 @@ type PropertyPayload = {
   salePrice?: number | null;
   monthlyRent?: number | null;
   dailyRate?: number | null;
+  guestCapacity?: number | null;
+  dailyRateConsultation?: boolean;
+  availabilityStart?: string | null;
+  availabilityEnd?: string | null;
+  availabilityNotes?: string | null;
   bedrooms?: number | null;
   suites?: number | null;
   bathrooms?: number | null;
@@ -154,6 +169,11 @@ const initialDraft: Draft = {
   hasElevator: false,
   allowsPets: false,
   customFeatures: "",
+  guestCapacity: "",
+  dailyRateConsultation: false,
+  availabilityStart: "",
+  availabilityEnd: "",
+  availabilityNotes: "",
 };
 
 function formatCurrencyInput(value: number | string): string {
@@ -281,6 +301,16 @@ export function AdminPropertiesManager() {
         customFeatures: Array.isArray(full.features)
           ? full.features.join(", ")
           : "",
+        guestCapacity:
+          full.guestCapacity != null ? String(full.guestCapacity) : "",
+        dailyRateConsultation: Boolean(full.dailyRateConsultation),
+        availabilityStart: full.availabilityStart
+          ? String(full.availabilityStart).slice(0, 10)
+          : "",
+        availabilityEnd: full.availabilityEnd
+          ? String(full.availabilityEnd).slice(0, 10)
+          : "",
+        availabilityNotes: full.availabilityNotes || "",
       });
       setUserEditedSlug(true);
 
@@ -345,6 +375,21 @@ export function AdminPropertiesManager() {
         ? { monthlyRent: numericPrice }
         : {}),
       ...(draft.purpose === "TEMPORADA" ? { dailyRate: numericPrice } : {}),
+      ...(draft.purpose === "TEMPORADA"
+        ? {
+            guestCapacity: draft.guestCapacity
+              ? Number(draft.guestCapacity)
+              : null,
+            dailyRateConsultation: draft.dailyRateConsultation,
+            availabilityStart: draft.availabilityStart
+              ? new Date(`${draft.availabilityStart}T00:00:00`).toISOString()
+              : null,
+            availabilityEnd: draft.availabilityEnd
+              ? new Date(`${draft.availabilityEnd}T00:00:00`).toISOString()
+              : null,
+            availabilityNotes: draft.availabilityNotes.trim() || null,
+          }
+        : {}),
       bedrooms: draft.bedrooms ? Number(draft.bedrooms) : null,
       suites: draft.suites ? Number(draft.suites) : null,
       bathrooms: draft.bathrooms ? Number(draft.bathrooms) : null,
@@ -426,6 +471,24 @@ export function AdminPropertiesManager() {
       salePrice: draft.purpose === "VENDA" ? numericPrice : null,
       monthlyRent: draft.purpose === "LOCACAO_ANUAL" ? numericPrice : null,
       dailyRate: draft.purpose === "TEMPORADA" ? numericPrice : null,
+      guestCapacity:
+        draft.purpose === "TEMPORADA" && draft.guestCapacity
+          ? Number(draft.guestCapacity)
+          : null,
+      dailyRateConsultation:
+        draft.purpose === "TEMPORADA" && draft.dailyRateConsultation,
+      availabilityStart:
+        draft.purpose === "TEMPORADA" && draft.availabilityStart
+          ? new Date(`${draft.availabilityStart}T00:00:00`).toISOString()
+          : null,
+      availabilityEnd:
+        draft.purpose === "TEMPORADA" && draft.availabilityEnd
+          ? new Date(`${draft.availabilityEnd}T00:00:00`).toISOString()
+          : null,
+      availabilityNotes:
+        draft.purpose === "TEMPORADA"
+          ? draft.availabilityNotes.trim() || null
+          : null,
       bedrooms: draft.bedrooms ? Number(draft.bedrooms) : null,
       suites: draft.suites ? Number(draft.suites) : null,
       bathrooms: draft.bathrooms ? Number(draft.bathrooms) : null,
@@ -808,11 +871,78 @@ export function AdminPropertiesManager() {
                       price: digits ? formatCurrencyInput(digits) : "",
                     });
                   }}
-                  required
+                  required={
+                    draft.purpose !== "TEMPORADA" ||
+                    !draft.dailyRateConsultation
+                  }
                   value={draft.price}
                 />
               </label>
             </div>
+
+            {draft.purpose === "TEMPORADA" && (
+              <div className="grid gap-4 rounded-xl border border-[var(--border,#d4cec4)] bg-white p-4 sm:grid-cols-2">
+                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                  <input
+                    checked={draft.dailyRateConsultation}
+                    className="h-4 w-4 rounded border-gray-300 text-[var(--plum)]"
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        dailyRateConsultation: e.target.checked,
+                      })
+                    }
+                    type="checkbox"
+                  />
+                  Diária sob consulta
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                  Capacidade de hóspedes
+                  <input
+                    className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                    min={1}
+                    onChange={(e) =>
+                      setDraft({ ...draft, guestCapacity: e.target.value })
+                    }
+                    type="number"
+                    value={draft.guestCapacity}
+                  />
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                  Disponível a partir de
+                  <input
+                    className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                    onChange={(e) =>
+                      setDraft({ ...draft, availabilityStart: e.target.value })
+                    }
+                    type="date"
+                    value={draft.availabilityStart}
+                  />
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                  Disponível até
+                  <input
+                    className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                    min={draft.availabilityStart || undefined}
+                    onChange={(e) =>
+                      setDraft({ ...draft, availabilityEnd: e.target.value })
+                    }
+                    type="date"
+                    value={draft.availabilityEnd}
+                  />
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)] sm:col-span-2">
+                  Observações de disponibilidade
+                  <textarea
+                    className="min-h-20 rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                    onChange={(e) =>
+                      setDraft({ ...draft, availabilityNotes: e.target.value })
+                    }
+                    value={draft.availabilityNotes}
+                  />
+                </label>
+              </div>
+            )}
           </div>
 
           {/* Seção: Localização */}
