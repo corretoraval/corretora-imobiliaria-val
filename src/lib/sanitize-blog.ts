@@ -1,12 +1,12 @@
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 /**
  * Sanitiza o conteúdo HTML de artigos do blog gerados pelo editor visual (Tiptap).
  * Remove scripts, event handlers inline e tags maliciosas, preservando a formatação rica.
  */
 export function sanitizeBlogPostContent(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
+  return sanitizeHtml(html, {
+    allowedTags: [
       "h2",
       "h3",
       "p",
@@ -23,8 +23,11 @@ export function sanitizeBlogPostContent(html: string): string {
       "img",
       "br",
     ],
-    ALLOWED_ATTR: ["href", "target", "rel", "src", "alt", "title", "class"],
-    ALLOWED_URI_REGEXP:
-      /^(?:(?:(?:f|ht)tps?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
+    allowedAttributes: {
+      a: ["href", "target", "rel", "title", "class"],
+      img: ["src", "alt", "title", "class"],
+    },
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowProtocolRelative: false,
   });
 }
