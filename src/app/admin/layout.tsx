@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
+import type { ReactNode } from "react";
 import { authOptions } from "@/lib/auth";
 import { SignOutButton } from "./sign-out-button";
 
@@ -26,7 +27,11 @@ const navigation = [
   { href: "/admin/usuarios", label: "Usuários", icon: Users },
 ];
 
-export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const session = await getServerSession(authOptions);
   if (session?.user?.role !== "admin")
     redirect("/auth/signin?callbackUrl=/admin");

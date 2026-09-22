@@ -171,6 +171,7 @@ model PaginaSite {
   ctaHref        String?
   seoTitle       String?
   seoDescription String?
+  content        Json?
   isPublished    Boolean  @default(true)
   sortOrder      Int      @default(0)
   createdAt      DateTime @default(now())
@@ -233,4 +234,3 @@ model PostBlog {
   @@index([isPublished, category])
   @@index([isFeatured])
 }
-

@@ -2,6 +2,18 @@
 
 import { LoaderCircle, Save } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import {
+  fallbackAdministracao,
+  fallbackHome,
+  fallbackMemoriaViva,
+  fallbackQuemSomos,
+  type AdministracaoContent,
+  type HomeContent,
+  type MemoriaVivaContent,
+  type QuemSomosContent,
+} from "@/lib/site-content";
+
+const STRUCTURED_SLUGS = ["home", "administracao", "quem-somos", "memoria-viva"];
 
 type Page = {
   slug: string;
@@ -17,6 +29,7 @@ type Page = {
   seoDescription: string | null;
   isPublished: boolean;
   sortOrder: number;
+  content: Record<string, unknown> | null;
 };
 
 function emptyToNull(value: string) {
@@ -45,6 +58,101 @@ function Input({
         value={value ?? ""}
       />
     </label>
+  );
+}
+
+function StructuredEditor({
+  slug,
+  content,
+  onChange,
+  onSave,
+  saving,
+}: {
+  slug: string;
+  content: Record<string, unknown> | null;
+  onChange: (patch: Record<string, unknown>) => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  const fallback =
+    slug === "home"
+      ? fallbackHome
+      : slug === "administracao"
+        ? fallbackAdministracao
+        : slug === "quem-somos"
+          ? fallbackQuemSomos
+          : fallbackMemoriaViva;
+  const value = { ...fallback, ...(content ?? {}) } as
+    | HomeContent
+    | AdministracaoContent
+    | QuemSomosContent
+    | MemoriaVivaContent;
+  const set = (key: string, next: unknown) => onChange({ [key]: next });
+
+  return (
+    <section className="mt-8 border-t pt-7">
+      <h3 className="display text-2xl text-[var(--plum)]">Conteúdo específico da página</h3>
+      {slug === "home" && "hero" in value && (
+        <div className="mt-4 grid gap-4">
+          <Input label="Hero — eyebrow" value={value.hero.eyebrow} onChange={(v) => set("hero", { ...value.hero, eyebrow: v })} />
+          <Textarea label="Hero — título" value={value.hero.title} onChange={(v) => set("hero", { ...value.hero, title: v })} />
+          <Input label="Hero — palavra destacada" value={value.hero.emphasis} onChange={(v) => set("hero", { ...value.hero, emphasis: v })} />
+          <Textarea label="Hero — texto" value={value.hero.description} onChange={(v) => set("hero", { ...value.hero, description: v })} />
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input label="Botão principal" value={value.hero.primaryLabel} onChange={(v) => set("hero", { ...value.hero, primaryLabel: v })} />
+            <Input label="Link principal" value={value.hero.primaryHref} onChange={(v) => set("hero", { ...value.hero, primaryHref: v })} />
+            <Input label="Botão secundário" value={value.hero.secondaryLabel} onChange={(v) => set("hero", { ...value.hero, secondaryLabel: v })} />
+            <Input label="Link secundário" value={value.hero.secondaryHref} onChange={(v) => set("hero", { ...value.hero, secondaryHref: v })} />
+          </div>
+          <Input label="Título da seção Áreas de Atuação" value={value.areasTitle} onChange={(v) => set("areasTitle", v)} />
+          {value.areas.map((area, index) => (
+            <div className="grid gap-3 rounded-xl border p-4 md:grid-cols-3" key={area.title}>
+              <Input label={`Área ${index + 1} — título`} value={area.title} onChange={(v) => set("areas", value.areas.map((item, i) => i === index ? { ...item, title: v } : item))} />
+              <Input label="Descrição" value={area.text} onChange={(v) => set("areas", value.areas.map((item, i) => i === index ? { ...item, text: v } : item))} />
+              <Input label="Link" value={area.href} onChange={(v) => set("areas", value.areas.map((item, i) => i === index ? { ...item, href: v } : item))} />
+            </div>
+          ))}
+        </div>
+      )}
+      {slug === "administracao" && "benefits" in value && (
+        <div className="mt-4 grid gap-4">
+          <Input label="Título dos benefícios" value={value.benefitsTitle} onChange={(v) => set("benefitsTitle", v)} />
+          <Textarea label="Subtítulo dos benefícios" value={value.benefitsSubtitle} onChange={(v) => set("benefitsSubtitle", v)} />
+          {value.benefits.map((benefit) => (
+            <div className="grid gap-3 rounded-xl border p-4 md:grid-cols-2" key={benefit.title}>
+              <Input label="Benefício — título" value={benefit.title} onChange={(v) => set("benefits", value.benefits.map((item) => item.title === benefit.title ? { ...item, title: v } : item))} />
+              <Textarea label="Descrição" value={benefit.description} onChange={(v) => set("benefits", value.benefits.map((item) => item.title === benefit.title ? { ...item, description: v } : item))} />
+            </div>
+          ))}
+          <Input label="Título do passo a passo" value={value.stepsTitle} onChange={(v) => set("stepsTitle", v)} />
+          <Textarea label="Subtítulo do passo a passo" value={value.stepsSubtitle} onChange={(v) => set("stepsSubtitle", v)} />
+          {value.steps.map((step) => (
+            <div className="grid gap-3 rounded-xl border p-4 md:grid-cols-3" key={step.number}>
+              <Input label="Número" value={step.number} onChange={(v) => set("steps", value.steps.map((item) => item.number === step.number ? { ...item, number: v } : item))} />
+              <Input label="Título" value={step.title} onChange={(v) => set("steps", value.steps.map((item) => item.number === step.number ? { ...item, title: v } : item))} />
+              <Textarea label="Descrição" value={step.desc} onChange={(v) => set("steps", value.steps.map((item) => item.number === step.number ? { ...item, desc: v } : item))} />
+            </div>
+          ))}
+        </div>
+      )}
+      {slug === "quem-somos" && "biography" in value && (
+        <div className="mt-4 grid gap-4">
+          {value.biography.map((paragraph, index) => (
+            <Textarea label={`Biografia — parágrafo ${index + 1}`} value={paragraph} key={paragraph} onChange={(v) => set("biography", value.biography.map((item, i) => i === index ? v : item))} />
+          ))}
+          <Textarea label="Citação em destaque" value={value.quote} onChange={(v) => set("quote", v)} rows={6} />
+        </div>
+      )}
+      {slug === "memoria-viva" && "quoteDescription" in value && (
+        <div className="mt-4 grid gap-4">
+          <Textarea label="Banner — citação" value={value.quote} onChange={(v) => set("quote", v)} />
+          <Textarea label="Banner — descrição" value={value.quoteDescription} onChange={(v) => set("quoteDescription", v)} />
+        </div>
+      )}
+      <button className="interactive mt-5 inline-flex items-center gap-2 rounded-full border border-[var(--plum)] px-5 py-3 text-sm font-extrabold text-[var(--plum)] disabled:opacity-60" disabled={saving} onClick={onSave} type="button">
+        <Save size={17} /> {saving ? "Salvando…" : "Salvar conteúdo específico"}
+      </button>
+    </section>
   );
 }
 
@@ -78,6 +186,9 @@ export function ContentManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [structured, setStructured] = useState<Record<string, unknown> | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -103,6 +214,11 @@ export function ContentManager() {
   }, [load]);
 
   const selectedPage = pages.find((page) => page.slug === selectedSlug) ?? null;
+  const structuredContent = selectedPage?.content ?? structured;
+
+  useEffect(() => {
+    if (selectedPage?.content) setStructured(selectedPage.content);
+  }, [selectedPage]);
 
   async function savePage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -130,6 +246,34 @@ export function ContentManager() {
         page.slug === selectedSlug ? { ...page, ...patch } : page,
       ),
     );
+  }
+
+  function patchStructured(patch: Record<string, unknown>) {
+    setStructured((current) => ({ ...(current ?? {}), ...patch }));
+  }
+
+  async function saveStructured() {
+    if (!selectedPage || !structuredContent) return;
+    setSaving(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/admin/conteudo", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "page-content",
+          slug: selectedPage.slug,
+          content: structuredContent,
+        }),
+      });
+      if (!response.ok) throw new Error("Não foi possível salvar o conteúdo estruturado.");
+      patchPage({ content: structuredContent });
+      setMessage("Conteúdo estruturado salvo com sucesso.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Ocorreu um erro.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading)
@@ -271,6 +415,15 @@ export function ContentManager() {
             >
               <Save size={17} /> {saving ? "Salvando…" : "Salvar página"}
             </button>
+            {STRUCTURED_SLUGS.includes(selectedPage.slug) && (
+              <StructuredEditor
+                slug={selectedPage.slug}
+                content={structuredContent}
+                onChange={patchStructured}
+                onSave={saveStructured}
+                saving={saving}
+              />
+            )}
           </form>
         )}
       </section>

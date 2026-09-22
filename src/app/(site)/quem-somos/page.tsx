@@ -6,6 +6,7 @@ import { ValuesGrid } from "@/components/institutional/values-grid";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
+import { getQuemSomosContent } from "@/lib/site-content";
 
 export const metadata: Metadata = {
   title: "Quem Somos | Corretora Val",
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
     "Conheça a história de Valdete Gonçalves de Melo e a trajetória da Corretora Val em Balneário Camboriú e Camboriú: trabalho, família, compromisso e confiança desde 1989.",
 };
 
-export default function QuemSomosPage() {
+export default async function QuemSomosPage() {
+  const content = await getQuemSomosContent();
   return (
     <main className="min-h-screen">
       <PageHero
@@ -37,63 +39,10 @@ export default function QuemSomosPage() {
                 Valdete Gonçalves de Melo
               </h2>
 
-              <p className="text-base md:text-lg text-[var(--ink)] leading-relaxed font-semibold">
-                Meu nome é Valdete Gonçalves de Melo, fundadora da Corretora
-                Val, especialista em Administração de Imóveis, Locação Anual,
-                Temporada e Compra e Venda, com atuação em Balneário Camboriú e
-                Camboriú.
-              </p>
-
               <div className="space-y-4 text-sm md:text-base text-[var(--ink-soft)] leading-relaxed">
-                <p>
-                  Minha história no mercado imobiliário teve início em{" "}
-                  <strong className="text-[var(--plum)] font-bold">1989</strong>
-                  , com o convite que abriu a primeira porta para trabalhar na
-                  tradicional Imobiliária Gonzaga, em Curitiba. Foi em{" "}
-                  <strong className="text-[var(--plum)] font-bold">1990</strong>{" "}
-                  que iniciei oficialmente minha trajetória profissional no
-                  setor, começando como secretária e, com o tempo, passando a
-                  apresentar imóveis, realizar vistorias e intermediar relações
-                  entre proprietários e locatários.
-                </p>
-                <p>
-                  A vida me levou por outros caminhos durante muitos anos, mas
-                  nunca apagou o sonho de voltar ao mercado imobiliário.
-                </p>
-                <p>
-                  Durante 25 anos, trabalhei como motoboy para sustentar minha
-                  família, sempre acreditando que o trabalho honesto abriria
-                  novas portas.
-                </p>
-                <p>
-                  Também tive a honra de presidir a{" "}
-                  <strong className="text-[var(--plum)] font-bold">
-                    AMAE – Associação de Apoio à Criança e ao Adolescente com
-                    Mobilidade Reduzida e com Câncer
-                  </strong>
-                  , uma experiência que fortaleceu ainda mais meu compromisso
-                  com o cuidado, a responsabilidade e o respeito pelas pessoas.
-                </p>
-                <p>
-                  Em{" "}
-                  <strong className="text-[var(--plum)] font-bold">2019</strong>
-                  , já em Balneário Camboriú, retornei ao mercado imobiliário e
-                  reencontrei a profissão que sempre fez parte da minha
-                  essência.
-                </p>
-                <p className="font-bold text-[var(--plum)] text-base md:text-lg pt-2">
-                  Foi dessa trajetória que nasceu a Corretora Val.
-                </p>
-                <p>
-                  Hoje, atuamos com foco na administração de patrimônios,
-                  locação anual, temporada e compra e venda de imóveis,
-                  oferecendo um atendimento próximo, transparente e organizado.
-                </p>
-                <p>
-                  Mais do que intermediar negócios, acreditamos em construir
-                  relacionamentos duradouros, baseados na confiança e no
-                  respeito.
-                </p>
+                {content.biography.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
               </div>
 
               {/* Personal Gratitude & Overcoming Highlight */}
@@ -107,13 +56,7 @@ export default function QuemSomosPage() {
                       Palavras da Fundadora
                     </span>
                     <p className="text-base text-[var(--plum)] font-medium italic leading-relaxed">
-                      &ldquo;Quero agradecer primeiramente por me ajudar a
-                      realizar um sonho guardado desde que resolvi caminhar aqui
-                      sozinha. Na pandemia fui dispensada do trabalho, sem rumo.
-                      A Michely e o Felipe me mostraram que eu era capaz — as
-                      palavras deles e o presente da Michely, me presenteando
-                      com o curso do CRECI, me fizeram acreditar que sou
-                      capaz.&rdquo;
+                      {content.quote}
                     </p>
                     <p className="text-xs font-bold text-[var(--ink-soft)]">
                       — Valdete Gonçalves de Melo · CRECI/SC 56372-F

@@ -4,6 +4,7 @@ import { Timeline } from "@/components/institutional/timeline";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
+import { getMemoriaVivaContent } from "@/lib/site-content";
 
 export const metadata: Metadata = {
   title: "Memória Viva | Corretora Val",
@@ -11,7 +12,8 @@ export const metadata: Metadata = {
     "Explore a trajetória da Corretora Val ao longo dos anos. Um memorial digital sobre nossas origens, momentos marcantes e o legado imobiliário em Balneário Camboriú.",
 };
 
-export default function MemoriaVivaPage() {
+export default async function MemoriaVivaPage() {
+  const content = await getMemoriaVivaContent();
   return (
     <main className="min-h-screen">
       <PageHero
@@ -42,12 +44,10 @@ export default function MemoriaVivaPage() {
             <HeartHandshake size={24} />
           </div>
           <h2 className="display text-3xl md:text-4xl text-[var(--plum)] italic">
-            &ldquo;Cada imóvel carrega uma história. A nossa também.&rdquo;
+            {content.quote}
           </h2>
           <p className="text-sm text-[var(--ink-soft)] leading-relaxed">
-            Preservamos com carinho as amizades e contatos que iniciaram lá nos
-            primeiros anos e continuam confiando no nosso trabalho até os dias
-            de hoje.
+            {content.quoteDescription}
           </p>
         </div>
       </section>

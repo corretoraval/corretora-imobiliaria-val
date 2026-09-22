@@ -15,35 +15,11 @@ import { PropertyCard } from "@/components/property-card";
 import { CTASection } from "@/components/site/cta-section";
 import { SectionTitle } from "@/components/site/section-title";
 import { prisma } from "@/lib/prisma";
+import { getHomeContent } from "@/lib/site-content";
 
 export const revalidate = 60;
 
-const services = [
-  {
-    icon: ShoppingBag,
-    title: "Comprar",
-    text: "Oportunidades selecionadas de imóveis para compra com análise documental completa e segurança jurídica.",
-    href: "/imoveis",
-  },
-  {
-    icon: KeyRound,
-    title: "Alugar",
-    text: "Locação anual transparente, com análise rigorosa e contratos seguros para inquilinos e proprietários.",
-    href: "/imoveis",
-  },
-  {
-    icon: CalendarDays,
-    title: "Temporada",
-    text: "Imóveis exclusivos para desfrutar o litoral de Balneário Camboriú com conforto em cada temporada.",
-    href: "/imoveis",
-  },
-  {
-    icon: Building2,
-    title: "Administrar",
-    text: "Gestão patrimonial dedicada, com vistorias criteriosas, repasses pontuais e suporte completo.",
-    href: "/administracao",
-  },
-];
+const serviceIcons = [ShoppingBag, KeyRound, CalendarDays, Building2];
 
 async function getFeaturedProperties() {
   try {
@@ -89,35 +65,38 @@ async function getFeaturedProperties() {
 }
 
 export default async function Home() {
-  const featuredProperties = await getFeaturedProperties();
+  const [featuredProperties, content] = await Promise.all([
+    getFeaturedProperties(),
+    getHomeContent(),
+  ]);
 
   return (
     <main>
       {/* Hero Section */}
       <section className="shell grid min-h-[calc(100dvh-5rem)] items-center gap-12 py-16 lg:grid-cols-[1fr_0.92fr] lg:py-20">
         <div className="max-w-2xl">
-          <p className="eyebrow fade-up">Balneário Camboriú e Camboriú</p>
+          <p className="eyebrow fade-up">{content.hero.eyebrow}</p>
           <h1 className="display fade-up-delay mt-5 text-5xl leading-[0.92] text-[var(--plum)] sm:text-6xl lg:text-8xl">
-            Confiança que{" "}
-            <em className="font-normal text-[var(--gold)]">abre</em> portas.
+            {content.hero.title.replace(content.hero.emphasis, "")}
+            <em className="font-normal text-[var(--gold)]">
+              {content.hero.emphasis}
+            </em>
           </h1>
           <p className="fade-up-delay mt-7 max-w-xl text-base leading-8 text-[var(--ink-soft)] sm:text-lg">
-            Há mais de três décadas, transformamos imóveis em histórias bem
-            cuidadas — com atendimento humano, gestão responsável e compromisso
-            real com o seu patrimônio.
+            {content.hero.description}
           </p>
           <div className="fade-up-delay mt-9 flex flex-col gap-3 sm:flex-row">
             <Link
               className="interactive inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--plum)] px-6 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(53,16,79,0.18)] hover:-translate-y-0.5 hover:bg-[var(--plum-bright)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--gold)]"
-              href="/imoveis"
+              href={content.hero.primaryHref}
             >
-              Conheça nossos imóveis <ArrowRight aria-hidden="true" size={17} />
+              {content.hero.primaryLabel} <ArrowRight aria-hidden="true" size={17} />
             </Link>
             <Link
               className="interactive inline-flex min-h-12 items-center justify-center gap-2 rounded-full border bg-[var(--surface)] px-6 text-sm font-extrabold text-[var(--plum)] hover:border-[var(--gold)] hover:bg-[var(--surface-muted)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--gold)]"
-              href="/administracao"
+              href={content.hero.secondaryHref}
             >
-              Administrar meu imóvel
+              {content.hero.secondaryLabel}
             </Link>
           </div>
         </div>
@@ -127,23 +106,22 @@ export default async function Home() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_15%,rgba(216,189,130,0.28),transparent_30%),radial-gradient(circle_at_10%_100%,rgba(255,255,255,0.13),transparent_35%)]" />
             <div className="relative">
               <span className="eyebrow text-[var(--gold-light)]">
-                Desde 1989
+                {content.hero.cardEyebrow}
               </span>
               <p className="display mt-10 max-w-sm text-4xl leading-none sm:text-5xl">
-                Mais que imóveis, cuidamos de histórias.
+                {content.hero.cardTitle}
               </p>
               <div className="mt-12 border-t border-white/20 pt-5">
                 <p className="text-sm leading-6 text-white/75">
-                  Uma empresa construída em família, para relações que
-                  permanecem muito depois da entrega das chaves.
+                  {content.hero.cardDescription}
                 </p>
               </div>
             </div>
           </div>
           <div className="absolute -right-3 -bottom-5 hidden w-48 rounded-2xl border border-[var(--gold-light)] bg-[var(--surface)] p-5 text-[var(--plum)] shadow-[0_14px_35px_rgba(53,16,79,0.16)] sm:block">
-            <p className="eyebrow">Atendimento próximo</p>
+            <p className="eyebrow">{content.hero.attentionEyebrow}</p>
             <p className="display mt-2 text-2xl leading-tight">
-              Cada chave, um novo começo.
+              {content.hero.attentionTitle}
             </p>
           </div>
         </div>
@@ -155,12 +133,12 @@ export default async function Home() {
           <div className="max-w-2xl">
             <p className="eyebrow">Áreas de Atuação</p>
             <h2 className="display mt-4 text-4xl leading-none text-[var(--plum)] sm:text-5xl">
-              Tudo o que seu imóvel precisa, com o cuidado que você espera.
+              {content.areasTitle}
             </h2>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {services.map((service) => {
-              const Icon = service.icon;
+            {content.areas.map((service, index) => {
+              const Icon = serviceIcons[index] ?? ShoppingBag;
               return (
                 <Link
                   href={service.href}

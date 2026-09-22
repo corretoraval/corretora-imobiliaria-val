@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { ZodError, z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 const settingsSchema = z.object({
   brandName: z.string().trim().min(2).max(80),
@@ -31,6 +32,7 @@ const pageSchema = z.object({
   ctaHref: z.string().trim().max(500).nullable(),
   seoTitle: z.string().trim().max(160).nullable(),
   seoDescription: z.string().trim().max(320).nullable(),
+  content: z.record(z.string(), z.unknown()).nullable().optional(),
   isPublished: z.boolean(),
   sortOrder: z.number().int().nonnegative(),
 });
@@ -38,6 +40,11 @@ const pageSchema = z.object({
 const requestSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("settings"), settings: settingsSchema }),
   z.object({ type: z.literal("page"), page: pageSchema }),
+  z.object({
+    type: z.literal("page-content"),
+    slug: z.string().trim().min(1),
+    content: z.record(z.string(), z.unknown()),
+  }),
 ]);
 
 async function isAdmin() {
@@ -81,10 +88,37 @@ export async function PUT(request: Request) {
       return NextResponse.json({ settings });
     }
 
+    if (payload.type === "page-content") {
+      const page = await prisma.paginaSite.update({
+        where: { slug: payload.slug },
+        data: { content: payload.content as Prisma.InputJsonValue },
+      });
+      revalidatePath("/");
+      revalidatePath(`/${payload.slug}`);
+      return NextResponse.json({ page });
+    }
+
+    const { content, ...pageData } = payload.page;
+    const normalizedContent =
+      content === undefined
+        ? undefined
+        : content === null
+          ? Prisma.JsonNull
+          : (content as Prisma.InputJsonValue);
     const page = await prisma.paginaSite.upsert({
       where: { slug: payload.page.slug },
-      update: payload.page,
-      create: payload.page,
+      update: {
+        ...pageData,
+        ...(normalizedContent === undefined
+          ? {}
+          : { content: normalizedContent }),
+      },
+      create: {
+        ...pageData,
+        ...(normalizedContent === undefined
+          ? {}
+          : { content: normalizedContent }),
+      },
     });
 
     try {

@@ -14,6 +14,7 @@ import { PropertyOwnerForm } from "@/components/forms/property-owner-form";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
+import { getAdministracaoContent } from "@/lib/site-content";
 
 export const metadata: Metadata = {
   title: "Administração de Imóveis | Corretora Val",
@@ -21,66 +22,7 @@ export const metadata: Metadata = {
     "Gestão profissional de imóveis em Balneário Camboriú e Camboriú. Divulgação estratégica, seleção rigorosa de inquilinos e segurança total para o seu patrimônio.",
 };
 
-const benefits = [
-  {
-    icon: ShieldCheck,
-    title: "Gestão Profissional",
-    description:
-      "Administração completa com relatórios transparentes, suporte jurídico e acompanhamento de cada contrato.",
-  },
-  {
-    icon: Megaphone,
-    title: "Divulgação Estratégica",
-    description:
-      "Anúncios em portais de destaque, fotos de qualidade e atendimento ágil para atrair interessados qualificados.",
-  },
-  {
-    icon: Users,
-    title: "Seleção de Inquilinos",
-    description:
-      "Análise criteriosa de crédito e comprovantes de renda para garantir morada responsável e adimplência.",
-  },
-  {
-    icon: LineChart,
-    title: "Acompanhamento Contínuo",
-    description:
-      "Monitoramento de reajustes contratuais, vistorias periódicas de entrada e saída e renovações orientadas.",
-  },
-  {
-    icon: Lock,
-    title: "Segurança Jurídica",
-    description:
-      "Contratos estruturados sob a Lei do Inquilinato com garantias locatícias sólidas para proteção do imóvel.",
-  },
-];
-
-const steps = [
-  {
-    number: "01",
-    title: "Você apresenta o imóvel",
-    desc: "Entre em contato conosco e compartilhe as características do seu bem.",
-  },
-  {
-    number: "02",
-    title: "Avaliamos e cadastramos",
-    desc: "Realizamos estudo de mercado para precificação justa e cadastro completo.",
-  },
-  {
-    number: "03",
-    title: "Divulgamos",
-    desc: "Publicamos seu imóvel nas nossas redes, portal exclusivo e parceiros estratégicos.",
-  },
-  {
-    number: "04",
-    title: "Encontramos o perfil ideal",
-    desc: "Filtramos propostas e selecionamos inquilinos qualificados.",
-  },
-  {
-    number: "05",
-    title: "Administramos",
-    desc: "Gestão completa de recebimentos, manutenção e atendimento durante todo o contrato.",
-  },
-];
+const benefitIcons = [ShieldCheck, Megaphone, Users, LineChart, Lock];
 
 const careItems = [
   {
@@ -105,7 +47,8 @@ const careItems = [
   },
 ];
 
-export default function AdministracaoPage() {
+export default async function AdministracaoPage() {
+  const content = await getAdministracaoContent();
   return (
     <main className="min-h-screen">
       <PageHero
@@ -119,13 +62,13 @@ export default function AdministracaoPage() {
         <div className="shell">
           <SectionTitle
             eyebrow="Por que escolher a Corretora Val?"
-            title="Tranquilidade para você aproveitar os frutos do seu investimento."
-            subtitle="Conheça os diferenciais que tornam a nossa gestão de imóveis uma escolha segura e livre de dores de cabeça."
+            title={content.benefitsTitle}
+            subtitle={content.benefitsSubtitle}
           />
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {benefits.map((b) => {
-              const Icon = b.icon;
+            {content.benefits.map((b, index) => {
+              const Icon = benefitIcons[index] ?? ShieldCheck;
               return (
                 <div
                   key={b.title}
@@ -152,12 +95,12 @@ export default function AdministracaoPage() {
         <div className="shell">
           <SectionTitle
             eyebrow="Processo Simples"
-            title="Como funciona a nossa administração?"
-            subtitle="Um fluxo transparente e organizado em 5 etapas claras para você colocar seu imóvel para render."
+            title={content.stepsTitle}
+            subtitle={content.stepsSubtitle}
           />
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-            {steps.map((s) => (
+            {content.steps.map((s) => (
               <div
                 key={s.number}
                 className="rounded-2xl border bg-white p-6 relative flex flex-col justify-between"
