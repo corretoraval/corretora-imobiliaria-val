@@ -4,6 +4,8 @@ export const BLOG_CATEGORIES = [
   "Comprar",
   "Mercado",
   "Temporada",
+  "Administração de Imóveis",
+  "Dicas ao Proprietário",
 ] as const;
 
 export type BlogCategory = (typeof BLOG_CATEGORIES)[number];

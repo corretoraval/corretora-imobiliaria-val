@@ -86,6 +86,31 @@ describe("API /api/admin/blog route handlers", () => {
     expect(createCall.data.content).toContain('href="https://val.com"');
   });
 
+  it("POST accepts the new property management category", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.postBlog.create.mockImplementation(({ data }) =>
+      Promise.resolve({ id: "post-management", ...data }),
+    );
+
+    const res = await blogRoute.POST(
+      new Request("http://localhost/api/admin/blog", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Como administrar seu imóvel",
+          summary: "Orientações práticas para cuidar do seu patrimônio.",
+          content: "<p>Conteúdo sobre administração.</p>",
+          category: "Administração de Imóveis",
+        }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(
+      prismaMock.prisma.postBlog.create.mock.calls[0][0].data.category,
+    ).toBe("Administração de Imóveis");
+  });
+
   it("PUT does NOT change publishedAt when already published post is edited", async () => {
     mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
     const originalPublishedAt = new Date("2025-01-15T10:00:00Z");

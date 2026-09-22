@@ -33,6 +33,16 @@ const mockPosts = [
     readingTimeMinutes: 5,
     publishedAt: new Date("2026-08-10"),
   },
+  {
+    id: "post-4",
+    slug: "dicas-proprietario",
+    title: "Dicas ao Proprietário",
+    summary: "Cuidados simples para valorizar seu imóvel.",
+    category: "Dicas ao Proprietário",
+    authorName: "Corretora Val",
+    readingTimeMinutes: 4,
+    publishedAt: new Date("2026-08-12"),
+  },
 ];
 
 afterEach(() => cleanup());
@@ -104,6 +114,23 @@ describe("BlogClientWrapper — sem flash de carregamento", () => {
     expect(
       screen.getByText("Morar em Camboriú: Qualidade de Vida"),
     ).toBeTruthy();
+  });
+
+  it("filtra pelas novas categorias de conteúdo", () => {
+    render(<BlogClientWrapper initialPosts={mockPosts} />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /^dicas ao proprietário$/i }),
+    );
+
+    expect(screen.getAllByText("Dicas ao Proprietário").length).toBeGreaterThan(
+      0,
+    );
+    expect(
+      screen.queryByText(
+        "Guia de Investimento Imobiliário em Balneário Camboriú",
+      ),
+    ).toBeNull();
   });
 
   it("filtra instantaneamente por texto no campo de busca sem loading", () => {
