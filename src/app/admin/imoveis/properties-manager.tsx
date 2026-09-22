@@ -45,6 +45,15 @@ type Property = {
   parkingSpaces?: number | null;
   privateArea?: number | null;
   isFeatured: boolean;
+  furnished?: boolean;
+  hasAirConditioning?: boolean;
+  hasBarbecue?: boolean;
+  hasBalcony?: boolean;
+  seaView?: boolean;
+  oceanFront?: boolean;
+  hasElevator?: boolean;
+  allowsPets?: boolean;
+  features?: string[] | null;
 };
 
 type Draft = {
@@ -64,6 +73,15 @@ type Draft = {
   privateArea: string;
   summary: string;
   description: string;
+  furnished: boolean;
+  hasAirConditioning: boolean;
+  hasBarbecue: boolean;
+  hasBalcony: boolean;
+  seaView: boolean;
+  oceanFront: boolean;
+  hasElevator: boolean;
+  allowsPets: boolean;
+  customFeatures: string;
 };
 
 type PhotoEntry = {
@@ -93,6 +111,15 @@ type PropertyPayload = {
   privateArea?: number | null;
   summary?: string | null;
   description?: string | null;
+  furnished: boolean;
+  hasAirConditioning: boolean;
+  hasBarbecue: boolean;
+  hasBalcony: boolean;
+  seaView: boolean;
+  oceanFront: boolean;
+  hasElevator: boolean;
+  allowsPets: boolean;
+  features?: string[] | null;
   photos?: Array<{
     url: string;
     alt?: string | null;
@@ -118,6 +145,15 @@ const initialDraft: Draft = {
   privateArea: "",
   summary: "",
   description: "",
+  furnished: false,
+  hasAirConditioning: false,
+  hasBarbecue: false,
+  hasBalcony: false,
+  seaView: false,
+  oceanFront: false,
+  hasElevator: false,
+  allowsPets: false,
+  customFeatures: "",
 };
 
 function formatCurrencyInput(value: number | string): string {
@@ -234,6 +270,17 @@ export function AdminPropertiesManager() {
         privateArea: full.privateArea != null ? String(full.privateArea) : "",
         summary: full.summary || "",
         description: full.description || "",
+        furnished: Boolean(full.furnished),
+        hasAirConditioning: Boolean(full.hasAirConditioning),
+        hasBarbecue: Boolean(full.hasBarbecue),
+        hasBalcony: Boolean(full.hasBalcony),
+        seaView: Boolean(full.seaView),
+        oceanFront: Boolean(full.oceanFront),
+        hasElevator: Boolean(full.hasElevator),
+        allowsPets: Boolean(full.allowsPets),
+        customFeatures: Array.isArray(full.features)
+          ? full.features.join(", ")
+          : "",
       });
       setUserEditedSlug(true);
 
@@ -305,6 +352,18 @@ export function AdminPropertiesManager() {
       privateArea: draft.privateArea ? Number(draft.privateArea) : null,
       summary: draft.summary.trim() || null,
       description: draft.description.trim() || null,
+      furnished: draft.furnished,
+      hasAirConditioning: draft.hasAirConditioning,
+      hasBarbecue: draft.hasBarbecue,
+      hasBalcony: draft.hasBalcony,
+      seaView: draft.seaView,
+      oceanFront: draft.oceanFront,
+      hasElevator: draft.hasElevator,
+      allowsPets: draft.allowsPets,
+      features: draft.customFeatures
+        .split(",")
+        .map((feature) => feature.trim())
+        .filter(Boolean),
       photos: photos.map((p, i) => ({
         url: p.url,
         alt: p.alt ?? null,
@@ -374,6 +433,18 @@ export function AdminPropertiesManager() {
       privateArea: draft.privateArea ? Number(draft.privateArea) : null,
       summary: draft.summary.trim() || null,
       description: draft.description.trim() || null,
+      furnished: draft.furnished,
+      hasAirConditioning: draft.hasAirConditioning,
+      hasBarbecue: draft.hasBarbecue,
+      hasBalcony: draft.hasBalcony,
+      seaView: draft.seaView,
+      oceanFront: draft.oceanFront,
+      hasElevator: draft.hasElevator,
+      allowsPets: draft.allowsPets,
+      features: draft.customFeatures
+        .split(",")
+        .map((feature) => feature.trim())
+        .filter(Boolean),
     };
 
     try {
@@ -856,6 +927,54 @@ export function AdminPropertiesManager() {
                     />
                   </label>
                 </div>
+
+                <div className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                  <span>Diferenciais</span>
+                  <div className="grid grid-cols-2 gap-2 rounded-xl border border-[var(--border,#d4cec4)] bg-white p-3 sm:grid-cols-4">
+                    {(
+                      [
+                        ["furnished", "Mobiliado"],
+                        ["hasAirConditioning", "Ar-condicionado"],
+                        ["hasBarbecue", "Churrasqueira"],
+                        ["hasBalcony", "Sacada"],
+                        ["seaView", "Vista para o mar"],
+                        ["oceanFront", "Frente-mar"],
+                        ["hasElevator", "Elevador"],
+                        ["allowsPets", "Aceita pet"],
+                      ] as const
+                    ).map(([field, label]) => (
+                      <label
+                        className="flex items-center gap-2 text-xs font-semibold normal-case tracking-normal text-[var(--ink)]"
+                        key={field}
+                      >
+                        <input
+                          checked={draft[field]}
+                          className="h-4 w-4 rounded border-gray-300 text-[var(--plum)]"
+                          onChange={(e) =>
+                            setDraft({
+                              ...draft,
+                              [field]: e.target.checked,
+                            })
+                          }
+                          type="checkbox"
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                  Outros diferenciais
+                  <input
+                    className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
+                    placeholder="Ex.: home office, lavanderia (separe por vírgulas)"
+                    onChange={(e) =>
+                      setDraft({ ...draft, customFeatures: e.target.value })
+                    }
+                    value={draft.customFeatures}
+                  />
+                </label>
 
                 <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
                   Resumo Curto

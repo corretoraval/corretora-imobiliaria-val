@@ -192,6 +192,68 @@ describe("API /api/imoveis handlers", () => {
     });
   });
 
+  it("persists mapped boolean features and custom JSON features", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.imovel.create.mockResolvedValue({
+      id: "feature-1",
+      slug: "casa-completa",
+    });
+    prismaMock.prisma.imovel.findMany.mockResolvedValue([]);
+
+    const req = new Request("http://localhost/api/imoveis", {
+      method: "POST",
+      body: JSON.stringify({
+        slug: "casa-completa",
+        title: "Casa completa",
+        propertyType: "Casa",
+        purpose: "VENDA",
+        city: "Camboriú",
+        salePrice: 500000,
+        furnished: true,
+        hasBalcony: true,
+        features: ["home office"],
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    await route.POST(req);
+
+    expect(prismaMock.prisma.imovel.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        furnished: true,
+        hasBalcony: true,
+        features: ["home office"],
+      }),
+    });
+  });
+
+  it("updates mapped and custom features", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.imovel.update.mockResolvedValue({
+      id: "feature-1",
+      slug: "casa-completa",
+    });
+
+    const req = new Request("http://localhost/api/imoveis?id=feature-1", {
+      method: "PUT",
+      body: JSON.stringify({
+        hasElevator: true,
+        features: ["varanda gourmet"],
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    await route.PUT(req);
+
+    expect(prismaMock.prisma.imovel.update).toHaveBeenCalledWith({
+      where: { id: "feature-1" },
+      data: expect.objectContaining({
+        hasElevator: true,
+        features: ["varanda gourmet"],
+      }),
+    });
+  });
+
   it("PUT requires id and admin", async () => {
     mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
     const req = new Request("http://localhost/api/imoveis", {

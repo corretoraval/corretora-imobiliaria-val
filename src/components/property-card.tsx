@@ -36,6 +36,7 @@ export interface PropertyCardProps {
     isFeatured?: boolean;
     photos?: Array<{ url: string; alt?: string | null; isCover?: boolean }>;
     coverImage?: string | null;
+    features?: unknown;
   };
 }
 
@@ -98,7 +99,6 @@ export function PropertyCard({ property }: PropertyCardProps) {
               </div>
             </div>
           )}
-
           {/* Gradiente de sobreposição para legibilidade das tags */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
 
@@ -184,6 +184,18 @@ export function PropertyCard({ property }: PropertyCardProps) {
                   {property.privateArea} m²
                 </span>
               ) : null}
+            </div>
+          )}
+          {Array.isArray(property.features) && property.features.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {property.features.slice(0, 3).map((feature) => (
+                <span
+                  className="rounded-full bg-[var(--surface-muted,#faf8f5)] px-2 py-1 text-[10px] font-semibold text-[var(--plum)]"
+                  key={String(feature)}
+                >
+                  {String(feature)}
+                </span>
+              ))}
             </div>
           )}
         </div>

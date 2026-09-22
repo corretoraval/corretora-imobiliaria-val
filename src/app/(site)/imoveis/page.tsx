@@ -51,6 +51,7 @@ async function loadProperties(finalidadeFilter?: string) {
       parkingSpaces: r.parkingSpaces,
       privateArea: r.privateArea,
       isFeatured: r.isFeatured,
+      features: r.features,
       photos: r.photos,
     }));
   } catch (error) {

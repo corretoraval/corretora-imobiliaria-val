@@ -95,6 +95,7 @@ async function getRelatedProperties(
       parkingSpaces: r.parkingSpaces,
       privateArea: r.privateArea,
       isFeatured: r.isFeatured,
+      features: r.features,
       photos: r.photos,
     }));
   } catch {
@@ -194,6 +195,11 @@ export default async function PropertyDetailPage({
     { label: "Elevador", active: property.hasElevator, icon: Layers },
     { label: "Wi-Fi", active: property.hasWifi, icon: Wifi },
   ].filter((a) => a.active);
+  const customFeatures = Array.isArray(property.features)
+    ? property.features.filter(
+        (feature): feature is string => typeof feature === "string",
+      )
+    : [];
 
   return (
     <main className="shell py-10 sm:py-14">
@@ -428,7 +434,7 @@ export default async function PropertyDetailPage({
           </div>
 
           {/* Comodidades e Diferenciais */}
-          {amenities.length > 0 && (
+          {(amenities.length > 0 || customFeatures.length > 0) && (
             <div className="rounded-3xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] p-6 sm:p-8 shadow-xs">
               <h2 className="display text-2xl text-[var(--plum)] mb-5">
                 Diferenciais e Comodidades
@@ -446,6 +452,15 @@ export default async function PropertyDetailPage({
                     </div>
                   );
                 })}
+                {customFeatures.map((feature) => (
+                  <div
+                    key={feature}
+                    className="flex items-center gap-2.5 rounded-xl bg-[var(--surface-muted,#faf8f5)] p-3 text-xs font-semibold text-[var(--plum)]"
+                  >
+                    <Check size={16} className="text-[var(--gold)] shrink-0" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}

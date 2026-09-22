@@ -40,6 +40,10 @@ const propertyPhotoSchema = z.object({
   isCover: z.boolean().optional().nullable(),
 });
 
+const propertyFeaturesSchema = z
+  .array(z.string().trim().min(1).max(80))
+  .max(30);
+
 const propertyFields = z.object({
   code: z.string().trim().min(3).max(32).optional(),
   slug: z
@@ -67,6 +71,15 @@ const propertyFields = z.object({
   privateArea: optionalInteger,
   isFeatured: z.boolean().default(false),
   markers: z.array(z.enum(markers)).default([]),
+  furnished: z.boolean().default(false),
+  hasAirConditioning: z.boolean().default(false),
+  hasBarbecue: z.boolean().default(false),
+  hasBalcony: z.boolean().default(false),
+  seaView: z.boolean().default(false),
+  oceanFront: z.boolean().default(false),
+  hasElevator: z.boolean().default(false),
+  allowsPets: z.boolean().default(false),
+  features: propertyFeaturesSchema.optional(),
 });
 
 const propertySchema = propertyFields.superRefine((data, ctx) => {

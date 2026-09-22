@@ -96,6 +96,7 @@ model Imovel {
   seaView               Boolean              @default(false)
   oceanFront            Boolean              @default(false)
   beachBlock            Boolean              @default(false)
+  features              Json?
   videoUrl              String?
   isFeatured            Boolean              @default(false)
   markers               MarcadorImovel[]
