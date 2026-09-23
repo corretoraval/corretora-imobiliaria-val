@@ -1,16 +1,32 @@
 import type { NextConfig } from "next";
 
+const configuredHostname = process.env.SUPABASE_URL
+  ? (() => {
+      try {
+        return new URL(process.env.SUPABASE_URL).hostname;
+      } catch {
+        return null;
+      }
+    })()
+  : null;
+
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   images: {
-    remotePatterns: process.env.SUPABASE_URL
-      ? [
-          {
-            protocol: "https",
-            hostname: new URL(process.env.SUPABASE_URL).hostname,
-          },
-        ]
-      : [],
+    remotePatterns: [
+      ...(configuredHostname
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: configuredHostname,
+            },
+          ]
+        : []),
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+    ],
   },
 };
 

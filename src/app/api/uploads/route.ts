@@ -6,17 +6,31 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   try {
     const provider = getStorageProvider();
-    if (
-      req.headers.get("content-type")?.includes("application/json") &&
-      provider.createSignedUploadUrl
-    ) {
-      const body = (await req.json()) as {
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      if (!provider.createSignedUploadUrl) {
+        return NextResponse.json(
+          {
+            ok: false,
+            directUpload: false,
+            error:
+              "Signed upload URLs are not supported by the current storage provider",
+          },
+          { status: 200 },
+        );
+      }
+
+      const body = (await req.json().catch(() => ({}))) as {
         filename?: unknown;
         contentType?: unknown;
       };
+
       if (
         typeof body.filename !== "string" ||
-        typeof body.contentType !== "string"
+        !body.filename.trim() ||
+        typeof body.contentType !== "string" ||
+        !body.contentType.trim()
       ) {
         return NextResponse.json(
           { error: "Filename and content type are required" },
@@ -25,11 +39,13 @@ export async function POST(req: Request) {
       }
 
       const signed = await provider.createSignedUploadUrl(
-        body.filename,
-        body.contentType,
+        body.filename.trim(),
+        body.contentType.trim(),
       );
+
       return NextResponse.json({
         ok: true,
+        directUpload: true,
         url: signed.url,
         path: signed.path,
         uploadUrl: signed.uploadUrl,

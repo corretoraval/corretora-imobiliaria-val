@@ -24,7 +24,7 @@ import {
 import { AdminModal } from "@/components/admin/admin-modal";
 import { toSlug } from "@/lib/identifiers";
 import { formatPrice } from "@/lib/format-price";
-import { uploadFile } from "@/lib/upload-file";
+import { type UploadProgress, uploadFile } from "@/lib/upload-file";
 
 type Purpose = "VENDA" | "LOCACAO_ANUAL" | "TEMPORADA";
 
@@ -229,6 +229,14 @@ export function AdminPropertiesManager() {
     title: string;
   } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+    currentFileName: string;
+    percent: number;
+  } | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const loadProperties = useCallback(async () => {
@@ -265,6 +273,9 @@ export function AdminPropertiesManager() {
     setPhotos([]);
     setUserEditedSlug(false);
     setShowMoreDetails(false);
+    setUploadingPhotos(false);
+    setUploadProgress(null);
+    setUploadError(null);
     setMessage(null);
     setIsModalOpen(true);
   }
@@ -274,6 +285,9 @@ export function AdminPropertiesManager() {
     setDraft(initialDraft);
     setPhotos([]);
     setShowMoreDetails(false);
+    setUploadingPhotos(false);
+    setUploadProgress(null);
+    setUploadError(null);
     setIsModalOpen(false);
   }
 
@@ -354,6 +368,9 @@ export function AdminPropertiesManager() {
           })),
         );
       }
+      setUploadingPhotos(false);
+      setUploadProgress(null);
+      setUploadError(null);
       setEditingId(property.id);
       setIsModalOpen(true);
     } catch (error) {
@@ -1250,14 +1267,36 @@ export function AdminPropertiesManager() {
                 type="file"
                 accept="image/*"
                 multiple
-                className="block w-full text-xs text-[var(--ink-soft)] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-extrabold file:bg-[var(--plum)] file:text-white hover:file:bg-[var(--plum-bright)] file:cursor-pointer"
+                disabled={uploadingPhotos}
+                className="block w-full text-xs text-[var(--ink-soft)] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-extrabold file:bg-[var(--plum)] file:text-white hover:file:bg-[var(--plum-bright)] file:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 onChange={async (e) => {
                   const files = Array.from(e.target.files || []);
                   if (files.length === 0) return;
 
-                  for (const file of files) {
+                  setUploadingPhotos(true);
+                  setUploadError(null);
+
+                  for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    setUploadProgress({
+                      current: i + 1,
+                      total: files.length,
+                      currentFileName: file.name,
+                      percent: 0,
+                    });
+
                     try {
-                      const uploaded = await uploadFile(file);
+                      const uploaded = await uploadFile(file, {
+                        onProgress: (p: UploadProgress) => {
+                          setUploadProgress({
+                            current: i + 1,
+                            total: files.length,
+                            currentFileName: file.name,
+                            percent: p.percent,
+                          });
+                        },
+                      });
+
                       if (uploaded.url) {
                         setPhotos((current) => [
                           ...current,
@@ -1272,11 +1311,64 @@ export function AdminPropertiesManager() {
                       }
                     } catch (err) {
                       console.error("Upload error:", err);
+                      const errMsg =
+                        err instanceof Error
+                          ? err.message
+                          : "Erro ao enviar o arquivo.";
+                      setUploadError(
+                        `Erro ao enviar a foto "${file.name}": ${errMsg}. Tente novamente.`,
+                      );
                     }
                   }
+
+                  setUploadingPhotos(false);
+                  setUploadProgress(null);
                   e.target.value = "";
                 }}
               />
+
+              {uploadError && (
+                <div className="mt-3 flex items-start justify-between gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+                  <span>{uploadError}</span>
+                  <button
+                    type="button"
+                    onClick={() => setUploadError(null)}
+                    className="text-red-500 hover:text-red-700 font-bold ml-2 cursor-pointer"
+                    aria-label="Fechar alerta de erro de upload"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {uploadingPhotos && uploadProgress && (
+                <div className="mt-3 rounded-xl border border-[var(--border,#d4cec4)] bg-white p-3 space-y-2 shadow-xs">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[var(--plum)]">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <LoaderCircle
+                        size={14}
+                        className="animate-spin text-[var(--gold)] shrink-0"
+                      />
+                      <span className="truncate">
+                        Enviando foto {uploadProgress.current} de{" "}
+                        {uploadProgress.total}:{" "}
+                        <span className="font-normal text-[var(--ink-soft)]">
+                          {uploadProgress.currentFileName}
+                        </span>
+                      </span>
+                    </div>
+                    <span className="font-bold text-[var(--gold)] ml-2 shrink-0">
+                      {uploadProgress.percent}%
+                    </span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--surface-sunken,#e8e3d9)]">
+                    <div
+                      className="h-full bg-[var(--plum)] transition-all duration-200 rounded-full"
+                      style={{ width: `${uploadProgress.percent}%` }}
+                    />
+                  </div>
+                </div>
+              )}
 
               {photos.length > 0 && (
                 <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -1383,12 +1475,17 @@ export function AdminPropertiesManager() {
             </button>
             <button
               type="submit"
-              disabled={submitting}
-              className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-2.5 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60"
+              disabled={submitting || uploadingPhotos}
+              className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-2.5 text-sm font-extrabold text-white shadow-md hover:bg-[var(--plum-bright)] disabled:opacity-60 cursor-pointer"
             >
               {submitting ? (
                 <>
                   <LoaderCircle className="animate-spin" size={16} /> Salvando…
+                </>
+              ) : uploadingPhotos ? (
+                <>
+                  <LoaderCircle className="animate-spin" size={16} /> Enviando
+                  fotos…
                 </>
               ) : isEditing ? (
                 <>

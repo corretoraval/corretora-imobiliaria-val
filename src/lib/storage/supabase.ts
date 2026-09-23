@@ -1,15 +1,16 @@
 import type { StorageProvider, UploadResult } from "./types";
 
-const SUPABASE_URL = process.env.SUPABASE_URL?.replace(/\/+$/, "");
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_STORAGE_BUCKET =
-  process.env.SUPABASE_STORAGE_BUCKET || "property-photos";
-
 export function isSupabaseStorageConfigured() {
-  return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+  return Boolean(
+    process.env.SUPABASE_URL?.trim() &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY?.trim(),
+  );
 }
 
-function objectPath(value: string) {
+function objectPath(
+  value: string,
+  bucket = process.env.SUPABASE_STORAGE_BUCKET || "property-photos",
+) {
   if (!value.startsWith("http")) {
     return value.replace(/^\/+/, "");
   }
@@ -19,13 +20,18 @@ function objectPath(value: string) {
   if (markerIndex < 0) return value;
 
   const path = value.slice(markerIndex + marker.length);
-  const publicPrefix = `public/${SUPABASE_STORAGE_BUCKET}/`;
+  const publicPrefix = `public/${bucket}/`;
   return path.startsWith(publicPrefix)
     ? decodeURIComponent(path.slice(publicPrefix.length))
     : path;
 }
 
 export function SupabaseStorageProvider(): StorageProvider {
+  const SUPABASE_URL = process.env.SUPABASE_URL?.replace(/\/+$/, "");
+  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const SUPABASE_STORAGE_BUCKET =
+    process.env.SUPABASE_STORAGE_BUCKET || "property-photos";
+
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error(
       "Supabase Storage requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
@@ -65,19 +71,29 @@ export function SupabaseStorageProvider(): StorageProvider {
 
       const result = (await response.json()) as {
         signedURL?: string;
+        url?: string;
         token?: string;
       };
-      const signedUrl = result.signedURL;
+      const signedUrl = result.signedURL || result.url;
       if (!signedUrl) {
         throw new Error("Supabase did not return a signed upload URL.");
+      }
+
+      let uploadUrl = signedUrl;
+      if (!uploadUrl.startsWith("http")) {
+        if (uploadUrl.startsWith("/storage/v1")) {
+          uploadUrl = `${SUPABASE_URL}${uploadUrl}`;
+        } else if (uploadUrl.startsWith("/")) {
+          uploadUrl = `${baseUrl}${uploadUrl}`;
+        } else {
+          uploadUrl = `${baseUrl}/${uploadUrl}`;
+        }
       }
 
       return {
         path,
         url: `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/${path}`,
-        uploadUrl: signedUrl.startsWith("http")
-          ? signedUrl
-          : `${SUPABASE_URL}${signedUrl}`,
+        uploadUrl,
       };
     },
 
