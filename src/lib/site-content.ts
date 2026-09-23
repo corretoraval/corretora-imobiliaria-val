@@ -1,24 +1,6 @@
 import { prisma } from "@/lib/prisma";
-
-export type HomeContent = {
-  hero: {
-    eyebrow: string;
-    title: string;
-    emphasis: string;
-    description: string;
-    primaryLabel: string;
-    primaryHref: string;
-    secondaryLabel: string;
-    secondaryHref: string;
-    cardEyebrow: string;
-    cardTitle: string;
-    cardDescription: string;
-    attentionEyebrow: string;
-    attentionTitle: string;
-  };
-  areasTitle: string;
-  areas: { title: string; text: string; href: string }[];
-};
+import { normalizeHomeContent } from "@/lib/home-content";
+export type { HomeContent } from "@/lib/home-content";
 
 export type AdministracaoContent = {
   benefitsTitle: string;
@@ -37,49 +19,6 @@ export type QuemSomosContent = {
 export type MemoriaVivaContent = {
   quote: string;
   quoteDescription: string;
-};
-
-export const fallbackHome: HomeContent = {
-  hero: {
-    eyebrow: "Balneário Camboriú e Camboriú",
-    title: "Confiança que abre portas.",
-    emphasis: "abre",
-    description:
-      "Com uma trajetória no mercado imobiliário iniciada em 1990, a Corretora Val une experiência, atendimento humano, gestão responsável e compromisso real com o seu patrimônio.",
-    primaryLabel: "Conheça nossos imóveis",
-    primaryHref: "/imoveis",
-    secondaryLabel: "Administrar meu imóvel",
-    secondaryHref: "/administracao",
-    cardEyebrow: "Desde 1990",
-    cardTitle: "Mais que imóveis, cuidamos de histórias.",
-    cardDescription:
-      "Uma empresa construída em família, para relações que permanecem muito depois da entrega das chaves.",
-    attentionEyebrow: "Atendimento próximo",
-    attentionTitle: "Cada chave, um novo começo.",
-  },
-  areasTitle: "Tudo o que seu imóvel precisa, com o cuidado que você espera.",
-  areas: [
-    {
-      title: "Comprar",
-      text: "Oportunidades selecionadas de imóveis para compra com análise documental completa e segurança jurídica.",
-      href: "/imoveis",
-    },
-    {
-      title: "Alugar",
-      text: "Locação anual transparente, com análise rigorosa e contratos seguros para inquilinos e proprietários.",
-      href: "/imoveis",
-    },
-    {
-      title: "Temporada",
-      text: "Imóveis exclusivos para desfrutar o litoral de Balneário Camboriú com conforto em cada temporada.",
-      href: "/imoveis",
-    },
-    {
-      title: "Administrar",
-      text: "Gestão patrimonial dedicada, com vistorias criteriosas, repasses pontuais e suporte completo.",
-      href: "/administracao",
-    },
-  ],
 };
 
 export const fallbackAdministracao: AdministracaoContent = {
@@ -202,57 +141,7 @@ async function getPageContent(slug: string) {
 
 export async function getHomeContent() {
   const raw = await getPageContent("home");
-  const content = merge(fallbackHome, raw);
-  if (isRecord(raw)) {
-    const hero = isRecord(raw.hero) ? raw.hero : {};
-    const services = Array.isArray(raw.services) ? raw.services : [];
-    return {
-      ...content,
-      hero: {
-        ...content.hero,
-        description:
-          typeof hero.text === "string" ? hero.text : content.hero.description,
-        primaryLabel:
-          typeof hero.primaryCtaText === "string"
-            ? hero.primaryCtaText
-            : content.hero.primaryLabel,
-        primaryHref:
-          typeof hero.primaryCtaHref === "string"
-            ? hero.primaryCtaHref
-            : content.hero.primaryHref,
-        secondaryLabel:
-          typeof hero.secondaryCtaText === "string"
-            ? hero.secondaryCtaText
-            : content.hero.secondaryLabel,
-        secondaryHref:
-          typeof hero.secondaryCtaHref === "string"
-            ? hero.secondaryCtaHref
-            : content.hero.secondaryHref,
-        cardDescription:
-          typeof hero.cardText === "string"
-            ? hero.cardText
-            : content.hero.cardDescription,
-      },
-      areas:
-        services.length === 4
-          ? services.map((service) => ({
-              title:
-                isRecord(service) && typeof service.title === "string"
-                  ? service.title
-                  : "",
-              text:
-                isRecord(service) && typeof service.text === "string"
-                  ? service.text
-                  : "",
-              href:
-                isRecord(service) && typeof service.href === "string"
-                  ? service.href
-                  : "/imoveis",
-            }))
-          : content.areas,
-    };
-  }
-  return content;
+  return normalizeHomeContent(raw);
 }
 
 export async function getAdministracaoContent() {
@@ -399,99 +288,7 @@ export async function getMembrosEquipe() {
 // CONTEÚDO ESTRUTURADO ESPECÍFICO POR PÁGINA COM FALLBACK HARDCODED
 // ═════════════════════════════════════════════════════════════════════════════
 
-// ── 1. HOME ──────────────────────────────────────────────────────────────────
-export interface HomeHeroContent {
-  eyebrow: string;
-  title: string;
-  text: string;
-  primaryCtaText: string;
-  primaryCtaHref: string;
-  secondaryCtaText: string;
-  secondaryCtaHref: string;
-  cardEyebrow: string;
-  cardTitle: string;
-  cardText: string;
-}
-
-export interface HomeServiceItem {
-  key: string;
-  title: string;
-  text: string;
-  href: string;
-}
-
-export interface HomePageContent {
-  hero: HomeHeroContent;
-  services: HomeServiceItem[];
-}
-
-export const fallbackHomeContent: HomePageContent = {
-  hero: {
-    eyebrow: "Balneário Camboriú e Camboriú",
-    title: "Confiança que abre portas.",
-    text: "Com uma trajetória no mercado imobiliário iniciada em 1990, a Corretora Val une experiência, atendimento humano, gestão responsável e compromisso real com o seu patrimônio.",
-    primaryCtaText: "Conheça nossos imóveis",
-    primaryCtaHref: "/imoveis",
-    secondaryCtaText: "Administrar meu imóvel",
-    secondaryCtaHref: "/administracao",
-    cardEyebrow: "Desde 1990",
-    cardTitle: "Mais que imóveis, cuidamos de histórias.",
-    cardText:
-      "Uma empresa construída em família, para relações que permanecem muito depois da entrega das chaves.",
-  },
-  services: [
-    {
-      key: "comprar",
-      title: "Comprar",
-      text: "Oportunidades selecionadas de imóveis para compra com análise documental completa e segurança jurídica.",
-      href: "/imoveis",
-    },
-    {
-      key: "alugar",
-      title: "Alugar",
-      text: "Locação anual transparente, com análise rigorosa e contratos seguros para inquilinos e proprietários.",
-      href: "/imoveis",
-    },
-    {
-      key: "temporada",
-      title: "Temporada",
-      text: "Imóveis exclusivos para desfrutar o litoral de Balneário Camboriú com conforto em cada temporada.",
-      href: "/imoveis",
-    },
-    {
-      key: "administrar",
-      title: "Administrar Imóvel",
-      text: "Gestão completa do seu patrimônio com vistorias, prestação de contas e atendimento próximo.",
-      href: "/administracao",
-    },
-  ],
-};
-
-export async function getHomePageContent(): Promise<HomePageContent> {
-  try {
-    const page = await prisma.paginaSite.findUnique({
-      where: { slug: "home" },
-    });
-    if (!page?.content || typeof page.content !== "object") {
-      return fallbackHomeContent;
-    }
-    const c = page.content as Partial<HomePageContent>;
-    return {
-      hero: {
-        ...fallbackHomeContent.hero,
-        ...(c.hero || {}),
-      },
-      services:
-        Array.isArray(c.services) && c.services.length === 4
-          ? c.services
-          : fallbackHomeContent.services,
-    };
-  } catch {
-    return fallbackHomeContent;
-  }
-}
-
-// ── 2. ADMINISTRAÇÃO ────────────────────────────────────────────────────────
+// ── ADMINISTRAÇÃO ────────────────────────────────────────────────────────────
 export interface BenefitItem {
   title: string;
   description: string;

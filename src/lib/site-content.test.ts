@@ -4,7 +4,7 @@ vi.mock("@/lib/prisma", () => {
   return {
     prisma: {
       configuracaoSite: { findUnique: vi.fn() },
-      paginaSite: { findMany: vi.fn() },
+      paginaSite: { findMany: vi.fn(), findUnique: vi.fn() },
       depoimento: { findMany: vi.fn() },
       marcoHistorico: { findMany: vi.fn() },
       membroEquipe: { findMany: vi.fn() },
@@ -17,7 +17,10 @@ let siteContent: typeof import("./site-content");
 type SiteContentPrismaMock = {
   prisma: {
     configuracaoSite: { findUnique: ReturnType<typeof vi.fn> };
-    paginaSite: { findMany: ReturnType<typeof vi.fn> };
+    paginaSite: {
+      findMany: ReturnType<typeof vi.fn>;
+      findUnique: ReturnType<typeof vi.fn>;
+    };
     depoimento: { findMany: ReturnType<typeof vi.fn> };
     marcoHistorico: { findMany: ReturnType<typeof vi.fn> };
     membroEquipe: { findMany: ReturnType<typeof vi.fn> };
@@ -46,6 +49,49 @@ describe("site-content helpers and fallback behavior", () => {
       expect(settings.themePreset).toBe("ametista-ouro");
       expect(settings.primaryColor).toBe("#35104f");
       expect(settings.brandName).toBe("Corretora Val");
+    });
+
+    describe("getHomeContent", () => {
+      it("normalizes the persisted legacy hero without replacing saved values", async () => {
+        prismaMock.prisma.paginaSite.findUnique.mockResolvedValue({
+          content: {
+            hero: {
+              title: "Título salvo",
+              text: "Descrição salva",
+            },
+          },
+        });
+
+        const content = await siteContent.getHomeContent();
+
+        expect(content.hero.title).toBe("Título salvo");
+        expect(content.hero.description).toBe("Descrição salva");
+        expect(content.hero.attentionTitle).toBe("Cada chave, um novo começo.");
+        expect(content.services).toHaveLength(4);
+      });
+
+      it("uses the fallback only for missing Home fields", async () => {
+        prismaMock.prisma.paginaSite.findUnique.mockResolvedValue({
+          content: {
+            hero: { title: "Confiança editorial" },
+            services: [
+              {
+                key: "comprar",
+                title: "Comprar agora",
+                text: "Texto editorial",
+                href: "/imoveis",
+              },
+            ],
+          },
+        });
+
+        const content = await siteContent.getHomeContent();
+
+        expect(content.hero.title).toBe("Confiança editorial");
+        expect(content.hero.description).toContain("trajetória");
+        expect(content.services[0].title).toBe("Comprar agora");
+        expect(content.services[1].title).toBe("Alugar");
+      });
     });
 
     it("returns default fallback settings when database throws", async () => {

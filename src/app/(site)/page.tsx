@@ -14,6 +14,7 @@ import { TestimonialsPlaceholder } from "@/components/institutional/testimonials
 import { PropertyCard } from "@/components/property-card";
 import { CTASection } from "@/components/site/cta-section";
 import { SectionTitle } from "@/components/site/section-title";
+import { splitHighlightedText } from "@/lib/home-content";
 import { prisma } from "@/lib/prisma";
 import { getDepoimentos, getHomeContent } from "@/lib/site-content";
 
@@ -68,6 +69,10 @@ export default async function Home() {
     getHomeContent(),
     getDepoimentos(),
   ]);
+  const heroTitle = splitHighlightedText(
+    content.hero.title,
+    content.hero.emphasis,
+  );
 
   return (
     <main>
@@ -76,10 +81,13 @@ export default async function Home() {
         <div className="max-w-2xl">
           <p className="eyebrow fade-up">{content.hero.eyebrow}</p>
           <h1 className="display fade-up-delay mt-5 text-5xl leading-[0.92] text-[var(--plum)] sm:text-6xl lg:text-8xl">
-            {content.hero.title.replace(content.hero.emphasis, "")}
-            <em className="font-normal text-[var(--gold)]">
-              {content.hero.emphasis}
-            </em>
+            {heroTitle.before}
+            {heroTitle.highlighted && (
+              <em className="font-normal text-[var(--gold)]">
+                {heroTitle.highlighted}
+              </em>
+            )}
+            {heroTitle.after}
           </h1>
           <p className="fade-up-delay mt-7 max-w-xl text-base leading-8 text-[var(--ink-soft)] sm:text-lg">
             {content.hero.description}
@@ -131,13 +139,13 @@ export default async function Home() {
       <section className="border-y bg-[var(--surface)] py-20">
         <div className="shell">
           <div className="max-w-2xl">
-            <p className="eyebrow">Áreas de Atuação</p>
+            <p className="eyebrow">{content.servicesEyebrow}</p>
             <h2 className="display mt-4 text-4xl leading-none text-[var(--plum)] sm:text-5xl">
-              {content.areasTitle}
+              {content.servicesTitle}
             </h2>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {content.areas.map((service, index) => {
+            {content.services.map((service, index) => {
               const Icon =
                 [ShoppingBag, KeyRound, CalendarDays, Building2][index] ??
                 ShoppingBag;
@@ -173,15 +181,15 @@ export default async function Home() {
         <div className="shell">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <SectionTitle
-              eyebrow="Oportunidades Selecionadas"
-              title="Imóveis em Destaque"
-              subtitle="Unidades exclusivas com documentação rigorosa em Balneário Camboriú e Camboriú."
+              eyebrow={content.featuredProperties.eyebrow}
+              title={content.featuredProperties.title}
+              subtitle={content.featuredProperties.subtitle}
             />
             <Link
               href="/imoveis"
               className="interactive inline-flex items-center gap-2 text-sm font-extrabold text-[var(--plum)] hover:text-[var(--gold)] transition-colors self-start md:self-end"
             >
-              Ver todos os imóveis <ArrowRight size={16} />
+              {content.featuredProperties.viewAllLabel} <ArrowRight size={16} />
             </Link>
           </div>
 
@@ -191,19 +199,18 @@ export default async function Home() {
                 <Sparkles size={22} />
               </div>
               <h3 className="display text-2xl text-[var(--plum)]">
-                Novos destaques em preparação
+                {content.featuredProperties.emptyTitle}
               </h3>
               <p className="text-sm text-[var(--ink-soft)] max-w-md mx-auto">
-                Estamos selecionando novas oportunidades de alto padrão.
-                Consulte nosso catálogo completo para encontrar seu próximo
-                imóvel.
+                {content.featuredProperties.emptyDescription}
               </p>
               <div className="pt-2">
                 <Link
                   href="/imoveis"
                   className="interactive inline-flex items-center gap-2 rounded-full bg-[var(--plum)] px-6 py-3 text-xs font-bold text-white hover:bg-[var(--plum-bright)] transition-all"
                 >
-                  Explorar Catálogo de Imóveis <ArrowRight size={14} />
+                  {content.featuredProperties.emptyActionLabel}{" "}
+                  <ArrowRight size={14} />
                 </Link>
               </div>
             </div>
@@ -220,7 +227,8 @@ export default async function Home() {
                   href="/imoveis"
                   className="interactive inline-flex items-center gap-2 rounded-full border border-[var(--plum)] px-8 py-3.5 text-xs font-extrabold uppercase tracking-wider text-[var(--plum)] hover:bg-[var(--plum)] hover:text-white transition-all shadow-xs"
                 >
-                  Ver todos os imóveis <ArrowRight size={15} />
+                  {content.featuredProperties.gridActionLabel}{" "}
+                  <ArrowRight size={15} />
                 </Link>
               </div>
             </>
@@ -232,9 +240,9 @@ export default async function Home() {
       <section className="py-20 md:py-24 bg-[var(--surface-muted)] border-t">
         <div className="shell space-y-16">
           <SectionTitle
-            eyebrow="Tradição & Solidez"
-            title="Credibilidade construída com trabalho e presença local"
-            subtitle="Estrutura profissional e dedicação para cuidar com excelência do seu patrimônio imobiliário."
+            eyebrow={content.authority.eyebrow}
+            title={content.authority.title}
+            subtitle={content.authority.subtitle}
           />
 
           <AuthorityStats />
@@ -254,10 +262,10 @@ export default async function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[var(--plum)]/70 via-transparent to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4 text-white">
                     <p className="display text-xl font-bold">
-                      Valdete Gonçalves de Melo
+                      {content.authority.founderName}
                     </p>
                     <p className="text-xs font-extrabold tracking-wider text-[var(--gold-light)] uppercase">
-                      CRECI/SC 56372-F
+                      {content.authority.founderCredential}
                     </p>
                   </div>
                 </div>
@@ -265,30 +273,20 @@ export default async function Home() {
 
               <div className="lg:col-span-8 space-y-4">
                 <div className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-muted)] px-3.5 py-1 text-xs font-bold text-[var(--gold)]">
-                  <UserCheck size={16} /> Fundadora da Corretora Val
+                  <UserCheck size={16} /> {content.authority.badgeLabel}
                 </div>
                 <h3 className="display text-3xl md:text-4xl text-[var(--plum)]">
-                  Uma trajetória guiada pela confiança
+                  {content.authority.storyTitle}
                 </h3>
                 <p className="text-sm md:text-base text-[var(--ink-soft)] leading-relaxed">
-                  Com uma trajetória no mercado imobiliário iniciada em{" "}
-                  <strong>1990</strong>, a Corretora Val une experiência,
-                  atendimento humano, gestão responsável e compromisso real com
-                  o seu patrimônio. O primeiro convite havia acontecido em{" "}
-                  <strong>1989</strong>, abrindo as portas para a profissão em
-                  Curitiba; o início oficial da carreira veio em{" "}
-                  <strong>1990</strong>, uma sólida trajetória foi construída
-                  com trabalho, superação e compromisso ético. Hoje, à frente da
-                  Corretora Val em Balneário Camboriú e Camboriú, unimos
-                  experiência e gestão familiar para transformar cada negociação
-                  em uma relação de confiança e cuidado real.
+                  {content.authority.storyText}
                 </p>
                 <div className="pt-2">
                   <Link
-                    href="/autoridade"
+                    href={content.authority.storyLinkHref}
                     className="interactive inline-flex items-center gap-2 text-sm font-extrabold text-[var(--plum)] hover:text-[var(--gold)] transition-colors"
                   >
-                    Conheça minha história <ArrowRight size={16} />
+                    {content.authority.storyLinkLabel} <ArrowRight size={16} />
                   </Link>
                 </div>
               </div>
@@ -304,11 +302,11 @@ export default async function Home() {
 
       {/* CTA Final */}
       <CTASection
-        title="Confiança que abre portas para o seu patrimônio."
-        description="Fale diretamente com a Corretora Val para compra, administração, locação anual ou temporada em Balneário Camboriú e região."
-        primaryButtonText="Falar pelo WhatsApp"
-        secondaryButtonText="Ver Nossos Imóveis"
-        secondaryButtonHref="/imoveis"
+        title={content.cta.title}
+        description={content.cta.description}
+        primaryButtonText={content.cta.primaryLabel}
+        secondaryButtonText={content.cta.secondaryLabel}
+        secondaryButtonHref={content.cta.secondaryHref}
       />
     </main>
   );

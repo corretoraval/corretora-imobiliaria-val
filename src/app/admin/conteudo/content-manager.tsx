@@ -20,6 +20,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { AdminModal } from "@/components/admin/admin-modal";
+import {
+  defaultHomeContent,
+  normalizeHomeContent,
+  type HomeContent,
+} from "@/lib/home-content";
 import { uploadFile } from "@/lib/upload-file";
 
 type Page = {
@@ -135,19 +140,7 @@ function Textarea({
 // ─────────────────────────────────────────────────────────────────────────────
 // Tipos para o conteúdo estruturado por página
 // ─────────────────────────────────────────────────────────────────────────────
-type HomeContentState = {
-  hero_eyebrow: string;
-  hero_title: string;
-  hero_text: string;
-  hero_primaryCtaText: string;
-  hero_primaryCtaHref: string;
-  hero_secondaryCtaText: string;
-  hero_secondaryCtaHref: string;
-  hero_cardEyebrow: string;
-  hero_cardTitle: string;
-  hero_cardText: string;
-  services: Array<{ key: string; title: string; text: string; href: string }>;
-};
+type HomeContentState = HomeContent;
 
 type AdminContentState = {
   benefitsEyebrow: string;
@@ -171,47 +164,6 @@ type QuemSomosContentState = {
 type MemoriaVivaContentState = {
   quoteBannerText: string;
   quoteBannerDescription: string;
-};
-
-const DEFAULT_HOME: HomeContentState = {
-  hero_eyebrow: "Balneário Camboriú e Camboriú",
-  hero_title: "Confiança que abre portas.",
-  hero_text:
-    "Com uma trajetória no mercado imobiliário iniciada em 1990, a Corretora Val une experiência, atendimento humano, gestão responsável e compromisso real com o seu patrimônio.",
-  hero_primaryCtaText: "Conheça nossos imóveis",
-  hero_primaryCtaHref: "/imoveis",
-  hero_secondaryCtaText: "Administrar meu imóvel",
-  hero_secondaryCtaHref: "/administracao",
-  hero_cardEyebrow: "Desde 1990",
-  hero_cardTitle: "Mais que imóveis, cuidamos de histórias.",
-  hero_cardText:
-    "Uma empresa construída em família, para relações que permanecem muito depois da entrega das chaves.",
-  services: [
-    {
-      key: "comprar",
-      title: "Comprar",
-      text: "Oportunidades selecionadas de imóveis para compra com análise documental completa e segurança jurídica.",
-      href: "/imoveis",
-    },
-    {
-      key: "alugar",
-      title: "Alugar",
-      text: "Locação anual transparente, com análise rigorosa e contratos seguros para inquilinos e proprietários.",
-      href: "/imoveis",
-    },
-    {
-      key: "temporada",
-      title: "Temporada",
-      text: "Imóveis exclusivos para desfrutar o litoral de Balneário Camboriú com conforto em cada temporada.",
-      href: "/imoveis",
-    },
-    {
-      key: "administrar",
-      title: "Administrar Imóvel",
-      text: "Gestão completa do seu patrimônio com vistorias, prestação de contas e atendimento próximo.",
-      href: "/administracao",
-    },
-  ],
 };
 
 const DEFAULT_ADMIN: AdminContentState = {
@@ -309,7 +261,7 @@ export function ContentManager() {
   const [message, setMessage] = useState<string | null>(null);
   // ─── Structured Content State ─────────────────────────────────────
   const [homeContent, setHomeContent] =
-    useState<HomeContentState>(DEFAULT_HOME);
+    useState<HomeContentState>(defaultHomeContent);
   const [adminContent, setAdminContent] =
     useState<AdminContentState>(DEFAULT_ADMIN);
   const [quemSomosContent, setQuemSomosContent] =
@@ -402,28 +354,7 @@ export function ContentManager() {
       const data = await res.json();
       const c = data.content ?? {};
       if (slug === "home") {
-        const hero = c.hero ?? {};
-        const services =
-          Array.isArray(c.services) && c.services.length === 4
-            ? c.services
-            : DEFAULT_HOME.services;
-        setHomeContent({
-          hero_eyebrow: hero.eyebrow ?? DEFAULT_HOME.hero_eyebrow,
-          hero_title: hero.title ?? DEFAULT_HOME.hero_title,
-          hero_text: hero.text ?? DEFAULT_HOME.hero_text,
-          hero_primaryCtaText:
-            hero.primaryCtaText ?? DEFAULT_HOME.hero_primaryCtaText,
-          hero_primaryCtaHref:
-            hero.primaryCtaHref ?? DEFAULT_HOME.hero_primaryCtaHref,
-          hero_secondaryCtaText:
-            hero.secondaryCtaText ?? DEFAULT_HOME.hero_secondaryCtaText,
-          hero_secondaryCtaHref:
-            hero.secondaryCtaHref ?? DEFAULT_HOME.hero_secondaryCtaHref,
-          hero_cardEyebrow: hero.cardEyebrow ?? DEFAULT_HOME.hero_cardEyebrow,
-          hero_cardTitle: hero.cardTitle ?? DEFAULT_HOME.hero_cardTitle,
-          hero_cardText: hero.cardText ?? DEFAULT_HOME.hero_cardText,
-          services,
-        });
+        setHomeContent(normalizeHomeContent(c));
       } else if (slug === "administracao") {
         setAdminContent({
           benefitsEyebrow: c.benefitsEyebrow ?? DEFAULT_ADMIN.benefitsEyebrow,
@@ -507,21 +438,7 @@ export function ContentManager() {
   function handleSaveHomeContent(e: FormEvent) {
     e.preventDefault();
     const c = homeContent;
-    saveStructuredContent("home", {
-      hero: {
-        eyebrow: c.hero_eyebrow,
-        title: c.hero_title,
-        text: c.hero_text,
-        primaryCtaText: c.hero_primaryCtaText,
-        primaryCtaHref: c.hero_primaryCtaHref,
-        secondaryCtaText: c.hero_secondaryCtaText,
-        secondaryCtaHref: c.hero_secondaryCtaHref,
-        cardEyebrow: c.hero_cardEyebrow,
-        cardTitle: c.hero_cardTitle,
-        cardText: c.hero_cardText,
-      },
-      services: c.services,
-    });
+    saveStructuredContent("home", c);
   }
 
   function handleSaveAdminContent(e: FormEvent) {
@@ -1485,65 +1402,84 @@ export function ContentManager() {
                       <div className="grid gap-4 md:grid-cols-2">
                         <Input
                           label="Eyebrow do Hero"
-                          value={homeContent.hero_eyebrow}
+                          value={homeContent.hero.eyebrow}
                           onChange={(v) =>
-                            setHomeContent((p) => ({ ...p, hero_eyebrow: v }))
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero: { ...p.hero, eyebrow: v },
+                            }))
                           }
                         />
                         <Input
                           label="Título principal"
-                          value={homeContent.hero_title}
+                          value={homeContent.hero.title}
                           onChange={(v) =>
-                            setHomeContent((p) => ({ ...p, hero_title: v }))
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero: { ...p.hero, title: v },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Palavra destacada"
+                          value={homeContent.hero.emphasis}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero: { ...p.hero, emphasis: v },
+                            }))
                           }
                         />
                       </div>
                       <Textarea
                         label="Texto do hero"
                         rows={3}
-                        value={homeContent.hero_text}
+                        value={homeContent.hero.description}
                         onChange={(v) =>
-                          setHomeContent((p) => ({ ...p, hero_text: v }))
+                          setHomeContent((p) => ({
+                            ...p,
+                            hero: { ...p.hero, description: v },
+                          }))
                         }
                       />
                       <div className="grid gap-4 md:grid-cols-2">
                         <Input
                           label="Botão primário — texto"
-                          value={homeContent.hero_primaryCtaText}
+                          value={homeContent.hero.primaryLabel}
                           onChange={(v) =>
                             setHomeContent((p) => ({
                               ...p,
-                              hero_primaryCtaText: v,
+                              hero: { ...p.hero, primaryLabel: v },
                             }))
                           }
                         />
                         <Input
                           label="Botão primário — URL"
-                          value={homeContent.hero_primaryCtaHref}
+                          value={homeContent.hero.primaryHref}
                           onChange={(v) =>
                             setHomeContent((p) => ({
                               ...p,
-                              hero_primaryCtaHref: v,
+                              hero: { ...p.hero, primaryHref: v },
                             }))
                           }
                         />
                         <Input
                           label="Botão secundário — texto"
-                          value={homeContent.hero_secondaryCtaText}
+                          value={homeContent.hero.secondaryLabel}
                           onChange={(v) =>
                             setHomeContent((p) => ({
                               ...p,
-                              hero_secondaryCtaText: v,
+                              hero: { ...p.hero, secondaryLabel: v },
                             }))
                           }
                         />
                         <Input
                           label="Botão secundário — URL"
-                          value={homeContent.hero_secondaryCtaHref}
+                          value={homeContent.hero.secondaryHref}
                           onChange={(v) =>
                             setHomeContent((p) => ({
                               ...p,
-                              hero_secondaryCtaHref: v,
+                              hero: { ...p.hero, secondaryHref: v },
                             }))
                           }
                         />
@@ -1554,36 +1490,89 @@ export function ContentManager() {
                       <div className="grid gap-4 md:grid-cols-2">
                         <Input
                           label="Eyebrow do card"
-                          value={homeContent.hero_cardEyebrow}
+                          value={homeContent.hero.cardEyebrow}
                           onChange={(v) =>
                             setHomeContent((p) => ({
                               ...p,
-                              hero_cardEyebrow: v,
+                              hero: { ...p.hero, cardEyebrow: v },
                             }))
                           }
                         />
                         <Input
                           label="Título do card"
-                          value={homeContent.hero_cardTitle}
+                          value={homeContent.hero.cardTitle}
                           onChange={(v) =>
-                            setHomeContent((p) => ({ ...p, hero_cardTitle: v }))
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero: { ...p.hero, cardTitle: v },
+                            }))
                           }
                         />
                       </div>
                       <Textarea
                         label="Texto do card"
                         rows={2}
-                        value={homeContent.hero_cardText}
+                        value={homeContent.hero.cardDescription}
                         onChange={(v) =>
-                          setHomeContent((p) => ({ ...p, hero_cardText: v }))
+                          setHomeContent((p) => ({
+                            ...p,
+                            hero: { ...p.hero, cardDescription: v },
+                          }))
                         }
                       />
+                      <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2 pt-2">
+                        Atendimento
+                      </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Eyebrow do atendimento"
+                          value={homeContent.hero.attentionEyebrow}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero: { ...p.hero, attentionEyebrow: v },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Título do atendimento"
+                          value={homeContent.hero.attentionTitle}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              hero: { ...p.hero, attentionTitle: v },
+                            }))
+                          }
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-4">
                       <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
-                        Áreas de Atuação (4 cards)
+                        Áreas de Atuação
                       </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Eyebrow da seção"
+                          value={homeContent.servicesEyebrow}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              servicesEyebrow: v,
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Título da seção"
+                          value={homeContent.servicesTitle}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              servicesTitle: v,
+                            }))
+                          }
+                        />
+                      </div>
                       {homeContent.services.map((svc, idx) => (
                         <div
                           key={svc.key}
@@ -1633,6 +1622,298 @@ export function ContentManager() {
                           />
                         </div>
                       ))}
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
+                        Imóveis em Destaque
+                      </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Eyebrow"
+                          value={homeContent.featuredProperties.eyebrow}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              featuredProperties: {
+                                ...p.featuredProperties,
+                                eyebrow: v,
+                              },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Título"
+                          value={homeContent.featuredProperties.title}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              featuredProperties: {
+                                ...p.featuredProperties,
+                                title: v,
+                              },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Link para todos"
+                          value={homeContent.featuredProperties.viewAllLabel}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              featuredProperties: {
+                                ...p.featuredProperties,
+                                viewAllLabel: v,
+                              },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Ação quando há imóveis"
+                          value={homeContent.featuredProperties.gridActionLabel}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              featuredProperties: {
+                                ...p.featuredProperties,
+                                gridActionLabel: v,
+                              },
+                            }))
+                          }
+                        />
+                      </div>
+                      <Textarea
+                        label="Subtítulo"
+                        value={homeContent.featuredProperties.subtitle}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({
+                            ...p,
+                            featuredProperties: {
+                              ...p.featuredProperties,
+                              subtitle: v,
+                            },
+                          }))
+                        }
+                        rows={2}
+                      />
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Título sem destaques"
+                          value={homeContent.featuredProperties.emptyTitle}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              featuredProperties: {
+                                ...p.featuredProperties,
+                                emptyTitle: v,
+                              },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Ação sem destaques"
+                          value={
+                            homeContent.featuredProperties.emptyActionLabel
+                          }
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              featuredProperties: {
+                                ...p.featuredProperties,
+                                emptyActionLabel: v,
+                              },
+                            }))
+                          }
+                        />
+                      </div>
+                      <Textarea
+                        label="Descrição sem destaques"
+                        value={homeContent.featuredProperties.emptyDescription}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({
+                            ...p,
+                            featuredProperties: {
+                              ...p.featuredProperties,
+                              emptyDescription: v,
+                            },
+                          }))
+                        }
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
+                        Autoridade
+                      </h4>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Eyebrow"
+                          value={homeContent.authority.eyebrow}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              authority: { ...p.authority, eyebrow: v },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Nome da fundadora"
+                          value={homeContent.authority.founderName}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              authority: { ...p.authority, founderName: v },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Credencial"
+                          value={homeContent.authority.founderCredential}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              authority: {
+                                ...p.authority,
+                                founderCredential: v,
+                              },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Selo"
+                          value={homeContent.authority.badgeLabel}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              authority: { ...p.authority, badgeLabel: v },
+                            }))
+                          }
+                        />
+                      </div>
+                      <Input
+                        label="Título"
+                        value={homeContent.authority.title}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({
+                            ...p,
+                            authority: { ...p.authority, title: v },
+                          }))
+                        }
+                      />
+                      <Textarea
+                        label="Subtítulo"
+                        value={homeContent.authority.subtitle}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({
+                            ...p,
+                            authority: { ...p.authority, subtitle: v },
+                          }))
+                        }
+                        rows={2}
+                      />
+                      <Input
+                        label="Título da história"
+                        value={homeContent.authority.storyTitle}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({
+                            ...p,
+                            authority: { ...p.authority, storyTitle: v },
+                          }))
+                        }
+                      />
+                      <Textarea
+                        label="Texto da história"
+                        value={homeContent.authority.storyText}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({
+                            ...p,
+                            authority: { ...p.authority, storyText: v },
+                          }))
+                        }
+                        rows={5}
+                      />
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Texto do link"
+                          value={homeContent.authority.storyLinkLabel}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              authority: { ...p.authority, storyLinkLabel: v },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="URL do link"
+                          value={homeContent.authority.storyLinkHref}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              authority: { ...p.authority, storyLinkHref: v },
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-extrabold text-[var(--plum)] uppercase tracking-wider border-b pb-2">
+                        CTA final
+                      </h4>
+                      <Input
+                        label="Título"
+                        value={homeContent.cta.title}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({
+                            ...p,
+                            cta: { ...p.cta, title: v },
+                          }))
+                        }
+                      />
+                      <Textarea
+                        label="Descrição"
+                        value={homeContent.cta.description}
+                        onChange={(v) =>
+                          setHomeContent((p) => ({
+                            ...p,
+                            cta: { ...p.cta, description: v },
+                          }))
+                        }
+                        rows={3}
+                      />
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Input
+                          label="Botão principal"
+                          value={homeContent.cta.primaryLabel}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              cta: { ...p.cta, primaryLabel: v },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="Botão secundário"
+                          value={homeContent.cta.secondaryLabel}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              cta: { ...p.cta, secondaryLabel: v },
+                            }))
+                          }
+                        />
+                        <Input
+                          label="URL do botão secundário"
+                          value={homeContent.cta.secondaryHref}
+                          onChange={(v) =>
+                            setHomeContent((p) => ({
+                              ...p,
+                              cta: { ...p.cta, secondaryHref: v },
+                            }))
+                          }
+                        />
+                      </div>
                     </div>
 
                     <div className="flex justify-end">
