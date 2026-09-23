@@ -280,14 +280,15 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const data = updateSchema.parse(body);
     const photos = z.array(propertyPhotoSchema).optional().parse(body.photos);
-    const previousPhotos =
+    // Capture existing photo URLs before the transaction so we can diff later.
+    const previousPhotoUrls: string[] =
       photos !== undefined
         ? ((
             await prisma.imovel.findUnique({
               where: { id },
               select: { photos: { select: { url: true } } },
             })
-          )?.photos ?? [])
+          )?.photos.map((p) => p.url) ?? [])
         : [];
     const updated = await prisma.$transaction(async (tx) => {
       const property = await tx.imovel.update({ where: { id }, data });
@@ -312,22 +313,28 @@ export async function PUT(req: Request) {
 
       return property;
     });
-    if (previousPhotos.length > 0) {
-      const storage = getStorageProvider();
-      const results = await Promise.allSettled(
-        previousPhotos.map((photo) => storage.deleteFile(photo.url)),
-      );
-      results
-        .filter(
-          (result): result is PromiseRejectedResult =>
-            result.status === "rejected",
-        )
-        .forEach((result) => {
-          console.error(
-            "Photo cleanup after property update failed:",
-            result.reason,
-          );
-        });
+
+    // Only delete from storage the photos that were truly removed (not kept).
+    if (previousPhotoUrls.length > 0 && photos !== undefined) {
+      const keptUrls = new Set(photos.map((p) => p.url));
+      const removedUrls = previousPhotoUrls.filter((url) => !keptUrls.has(url));
+      if (removedUrls.length > 0) {
+        const storage = getStorageProvider();
+        const results = await Promise.allSettled(
+          removedUrls.map((url) => storage.deleteFile(url)),
+        );
+        results
+          .filter(
+            (result): result is PromiseRejectedResult =>
+              result.status === "rejected",
+          )
+          .forEach((result) => {
+            console.error(
+              "Photo cleanup after property update failed:",
+              result.reason,
+            );
+          });
+      }
     }
     try {
       revalidatePath("/imoveis");

@@ -541,6 +541,12 @@ export function AdminPropertiesManager() {
         .split(",")
         .map((feature) => feature.trim())
         .filter(Boolean),
+      photos: photos.map((p, i) => ({
+        url: p.url,
+        alt: p.alt ?? null,
+        position: i,
+        isCover: i === 0 || !!p.isCover,
+      })),
     };
 
     try {

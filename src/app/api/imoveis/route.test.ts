@@ -260,6 +260,86 @@ describe("API /api/imoveis handlers", () => {
     });
   });
 
+  it("PUT with mixed photos: keeps existing photo, persists new one, only deletes removed from storage", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.imovel.update.mockResolvedValue({
+      id: "abc",
+      slug: "apartamento-teste",
+    });
+    // Two photos already in the database: kept.jpg (kept) and removed.jpg (removed)
+    prismaMock.prisma.imovel.findUnique.mockResolvedValue({
+      photos: [
+        { url: "https://storage.example.com/kept.jpg" },
+        { url: "https://storage.example.com/removed.jpg" },
+      ],
+    });
+
+    const mockDeleteFile = vi.fn().mockResolvedValue(undefined);
+    vi.doMock("@/lib/storage", () => ({
+      getStorageProvider: () => ({ deleteFile: mockDeleteFile }),
+    }));
+
+    const req = new Request("http://localhost/api/imoveis?id=abc", {
+      method: "PUT",
+      body: JSON.stringify({
+        title: "Apartamento atualizado",
+        photos: [
+          // kept.jpg is still in the list (user did not remove it)
+          { url: "https://storage.example.com/kept.jpg", isCover: true },
+          // new.jpg is a brand-new photo uploaded via signed URL
+          { url: "https://storage.example.com/new.jpg", isCover: false },
+        ],
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await route.PUT(req);
+    expect(res.status).toBe(200);
+
+    // All old DB records deleted and the new list created
+    expect(prismaMock.prisma.foto.deleteMany).toHaveBeenCalledWith({
+      where: { imovelId: "abc" },
+    });
+    expect(prismaMock.prisma.foto.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          url: "https://storage.example.com/kept.jpg",
+          alt: null,
+          position: 0,
+          isCover: true,
+          imovelId: "abc",
+        },
+        {
+          url: "https://storage.example.com/new.jpg",
+          alt: null,
+          position: 1,
+          isCover: false,
+          imovelId: "abc",
+        },
+      ],
+    });
+  });
+
+  it("PUT without photos field does not touch photo records", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.imovel.update.mockResolvedValue({
+      id: "abc",
+      slug: "apartamento-teste",
+    });
+    prismaMock.prisma.imovel.findUnique.mockResolvedValue(null);
+
+    const req = new Request("http://localhost/api/imoveis?id=abc", {
+      method: "PUT",
+      body: JSON.stringify({ title: "Só o título atualizado" }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await route.PUT(req);
+    expect(res.status).toBe(200);
+    expect(prismaMock.prisma.foto.deleteMany).not.toHaveBeenCalled();
+    expect(prismaMock.prisma.foto.createMany).not.toHaveBeenCalled();
+  });
+
   it("persists mapped boolean features and custom JSON features", async () => {
     mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
     prismaMock.prisma.imovel.create.mockResolvedValue({
