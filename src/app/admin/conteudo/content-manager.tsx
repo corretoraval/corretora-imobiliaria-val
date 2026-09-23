@@ -345,7 +345,7 @@ export function ContentManager() {
   // Load structured content when slug changes for the 4 structured pages
   const loadStructuredContent = useCallback(async (slug: string) => {
     setLoadingContent(true);
-    setContentExpanded(false);
+    setContentExpanded(slug === "home");
     try {
       const res = await fetch(`/api/admin/conteudo/page-content?slug=${slug}`, {
         cache: "no-store",
@@ -906,7 +906,7 @@ export function ContentManager() {
             </div>
           )}
 
-          {/* Formulário Base de Cabeçalho & SEO da Página */}
+          {/* Metadados e compatibilidade da página */}
           {selectedPage && (
             <form
               className="rounded-3xl border bg-[var(--surface)] p-6 shadow-xs sm:p-8"
@@ -915,7 +915,7 @@ export function ContentManager() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b pb-5">
                 <div>
                   <span className="text-[0.65rem] font-extrabold uppercase tracking-widest text-[var(--gold)]">
-                    Cabeçalho & SEO
+                    Metadados da página e SEO
                   </span>
                   <h2 className="display text-2xl sm:text-3xl font-bold text-[var(--plum)]">
                     {selectedPage.navigationLabel}
@@ -923,6 +923,11 @@ export function ContentManager() {
                   <p className="mt-0.5 text-xs text-[var(--ink-soft)]">
                     Rota pública: /
                     {selectedPage.slug === "home" ? "" : selectedPage.slug}
+                  </p>
+                  <p className="mt-2 max-w-2xl text-xs leading-5 text-[var(--ink-soft)]">
+                    {selectedSlug === "home"
+                      ? "Esses campos não controlam diretamente o conteúdo visual da Home. Para editar o Hero e as demais seções exibidas no site, utilize o bloco Conteúdo Estruturado."
+                      : "Esses campos são metadados, SEO e informações de compatibilidade da página selecionada."}
                   </p>
                 </div>
                 <label className="inline-flex items-center gap-2 text-sm font-bold text-[var(--plum)] bg-[var(--surface-muted)] px-4 py-2 rounded-full cursor-pointer">
@@ -950,55 +955,65 @@ export function ContentManager() {
                     patchPage({ eyebrow: emptyToNull(value) })
                   }
                 />
-                <div className="md:col-span-2">
-                  <Input
-                    label="Título da página"
-                    value={selectedPage.title}
-                    onChange={(value) => patchPage({ title: value })}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Textarea
-                    label="Título principal (Heading)"
-                    value={selectedPage.heading}
-                    onChange={(value) => patchPage({ heading: value })}
-                    rows={2}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Textarea
-                    label="Texto de introdução"
-                    value={selectedPage.intro}
-                    onChange={(value) =>
-                      patchPage({ intro: emptyToNull(value) })
-                    }
-                    rows={3}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Textarea
-                    label="Conteúdo complementar"
-                    value={selectedPage.body}
-                    onChange={(value) =>
-                      patchPage({ body: emptyToNull(value) })
-                    }
-                    rows={4}
-                  />
-                </div>
-                <Input
-                  label="Texto do botão (CTA)"
-                  value={selectedPage.ctaLabel}
-                  onChange={(value) =>
-                    patchPage({ ctaLabel: emptyToNull(value) })
-                  }
-                />
-                <Input
-                  label="Destino do botão (URL / Rota)"
-                  value={selectedPage.ctaHref}
-                  onChange={(value) =>
-                    patchPage({ ctaHref: emptyToNull(value) })
-                  }
-                />
+                <details
+                  className="md:col-span-2 rounded-2xl border border-dashed border-[var(--border,#d4cec4)] bg-[var(--surface-muted)]/40 p-4"
+                  open={selectedSlug !== "home"}
+                >
+                  <summary className="cursor-pointer text-xs font-extrabold uppercase tracking-wider text-[var(--plum)]">
+                    Campos legados / compatibilidade
+                  </summary>
+                  <div className="mt-4 grid gap-5 md:grid-cols-2">
+                    <div className="md:col-span-2">
+                      <Input
+                        label="Título da página"
+                        value={selectedPage.title}
+                        onChange={(value) => patchPage({ title: value })}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Textarea
+                        label="Título principal (Heading)"
+                        value={selectedPage.heading}
+                        onChange={(value) => patchPage({ heading: value })}
+                        rows={2}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Textarea
+                        label="Texto de introdução"
+                        value={selectedPage.intro}
+                        onChange={(value) =>
+                          patchPage({ intro: emptyToNull(value) })
+                        }
+                        rows={3}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Textarea
+                        label="Conteúdo complementar"
+                        value={selectedPage.body}
+                        onChange={(value) =>
+                          patchPage({ body: emptyToNull(value) })
+                        }
+                        rows={4}
+                      />
+                    </div>
+                    <Input
+                      label="Texto do botão (CTA)"
+                      value={selectedPage.ctaLabel}
+                      onChange={(value) =>
+                        patchPage({ ctaLabel: emptyToNull(value) })
+                      }
+                    />
+                    <Input
+                      label="Destino do botão (URL / Rota)"
+                      value={selectedPage.ctaHref}
+                      onChange={(value) =>
+                        patchPage({ ctaHref: emptyToNull(value) })
+                      }
+                    />
+                  </div>
+                </details>
                 <Input
                   label="Título para motores de busca (SEO Title)"
                   value={selectedPage.seoTitle}
