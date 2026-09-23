@@ -428,4 +428,114 @@ describe("API /api/imoveis handlers", () => {
     });
     expect(res.status).toBe(200);
   });
+
+  it("GET lists properties including photos ordered by isCover desc, then position asc", async () => {
+    prismaMock.prisma.imovel.findMany.mockResolvedValue([]);
+    const res = await route.GET(new Request("http://localhost/api/imoveis"));
+    expect(res.status).toBe(200);
+    expect(prismaMock.prisma.imovel.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: {
+          photos: {
+            orderBy: [{ isCover: "desc" }, { position: "asc" }],
+            take: 1,
+          },
+        },
+      }),
+    );
+  });
+
+  it("PUT changing cover photo: assigns isCover true to the user-selected photo and false to the others", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.imovel.update.mockResolvedValue({
+      id: "abc",
+      slug: "apartamento-teste",
+    });
+    prismaMock.prisma.imovel.findUnique.mockResolvedValue({
+      photos: [
+        { url: "https://storage.example.com/photo-0.jpg" },
+        { url: "https://storage.example.com/photo-1.jpg" },
+      ],
+    });
+
+    const req = new Request("http://localhost/api/imoveis?id=abc", {
+      method: "PUT",
+      body: JSON.stringify({
+        title: "Apartamento com capa alterada",
+        photos: [
+          // User chose photo-1 as cover, photo-0 is now not cover
+          { url: "https://storage.example.com/photo-0.jpg", isCover: false },
+          { url: "https://storage.example.com/photo-1.jpg", isCover: true },
+        ],
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await route.PUT(req);
+    expect(res.status).toBe(200);
+    expect(prismaMock.prisma.foto.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          url: "https://storage.example.com/photo-0.jpg",
+          alt: null,
+          position: 0,
+          isCover: false,
+          imovelId: "abc",
+        },
+        {
+          url: "https://storage.example.com/photo-1.jpg",
+          alt: null,
+          position: 1,
+          isCover: true,
+          imovelId: "abc",
+        },
+      ],
+    });
+  });
+
+  it("PUT removing a photo: removes record from DB and deletes file from storage", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+    prismaMock.prisma.imovel.update.mockResolvedValue({
+      id: "abc",
+      slug: "apartamento-teste",
+    });
+    // Two photos existed before
+    prismaMock.prisma.imovel.findUnique.mockResolvedValue({
+      photos: [
+        { url: "https://storage.example.com/keep.jpg" },
+        { url: "https://storage.example.com/remove.jpg" },
+      ],
+    });
+
+    const mockDeleteFile = vi.fn().mockResolvedValue(undefined);
+    vi.doMock("@/lib/storage", () => ({
+      getStorageProvider: () => ({ deleteFile: mockDeleteFile }),
+    }));
+
+    const req = new Request("http://localhost/api/imoveis?id=abc", {
+      method: "PUT",
+      body: JSON.stringify({
+        title: "Apartamento com foto removida",
+        photos: [
+          // Only keep.jpg remains
+          { url: "https://storage.example.com/keep.jpg", isCover: true },
+        ],
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const res = await route.PUT(req);
+    expect(res.status).toBe(200);
+    expect(prismaMock.prisma.foto.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          url: "https://storage.example.com/keep.jpg",
+          alt: null,
+          position: 0,
+          isCover: true,
+          imovelId: "abc",
+        },
+      ],
+    });
+  });
 });

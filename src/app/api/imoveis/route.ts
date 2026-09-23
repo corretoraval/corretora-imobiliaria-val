@@ -204,7 +204,12 @@ export async function GET(req: Request) {
         : {}),
     },
     orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
-    include: { photos: { orderBy: { position: "asc" }, take: 1 } },
+    include: {
+      photos: {
+        orderBy: [{ isCover: "desc" }, { position: "asc" }],
+        take: 1,
+      },
+    },
   });
   return NextResponse.json(list);
 }
@@ -255,9 +260,11 @@ export async function POST(req: Request) {
     });
 
     try {
-      // on-demand revalidation for public listing and individual page
+      // on-demand revalidation for home, public listing and individual pages
+      revalidatePath("/", "layout");
       revalidatePath("/imoveis");
       if (created.slug) revalidatePath(`/imoveis/${created.slug}`);
+      if (created.code) revalidatePath(`/imoveis/${created.code}`);
     } catch (e) {
       console.error("Revalidate after create failed:", e);
     }
@@ -337,8 +344,10 @@ export async function PUT(req: Request) {
       }
     }
     try {
+      revalidatePath("/", "layout");
       revalidatePath("/imoveis");
       if (updated.slug) revalidatePath(`/imoveis/${updated.slug}`);
+      if (updated.code) revalidatePath(`/imoveis/${updated.code}`);
     } catch (e) {
       console.error("Revalidate after update failed:", e);
     }
@@ -363,8 +372,10 @@ export async function DELETE(req: Request) {
       data: { archivedAt: new Date(), status: "ARQUIVADO", isFeatured: false },
     });
     try {
+      revalidatePath("/", "layout");
       revalidatePath("/imoveis");
       if (archived.slug) revalidatePath(`/imoveis/${archived.slug}`);
+      if (archived.code) revalidatePath(`/imoveis/${archived.code}`);
     } catch (e) {
       console.error("Revalidate after archive failed:", e);
     }

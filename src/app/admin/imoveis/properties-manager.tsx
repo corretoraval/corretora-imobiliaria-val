@@ -545,7 +545,7 @@ export function AdminPropertiesManager() {
         url: p.url,
         alt: p.alt ?? null,
         position: i,
-        isCover: i === 0 || !!p.isCover,
+        isCover: !!p.isCover,
       })),
     };
 
@@ -1436,9 +1436,19 @@ export function AdminPropertiesManager() {
                       <button
                         type="button"
                         onClick={() =>
-                          setPhotos((current) =>
-                            current.filter((_, i) => i !== idx),
-                          )
+                          setPhotos((current) => {
+                            const next = current.filter((_, i) => i !== idx);
+                            if (
+                              next.length > 0 &&
+                              !next.some((p) => p.isCover)
+                            ) {
+                              next[0] = { ...next[0], isCover: true };
+                            }
+                            return next.map((item, position) => ({
+                              ...item,
+                              position,
+                            }));
+                          })
                         }
                         className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-white text-xs hover:bg-red-600 transition-colors"
                         title="Remover foto"
