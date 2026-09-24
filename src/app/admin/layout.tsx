@@ -14,6 +14,10 @@ import type { ReactNode } from "react";
 import { authOptions } from "@/lib/auth";
 import { SignOutButton } from "./sign-out-button";
 
+export const metadata = {
+  title: "Corretora Val | Admin",
+};
+
 const navigation = [
   { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { href: "/admin/imoveis", label: "Imóveis", icon: Building2 },
