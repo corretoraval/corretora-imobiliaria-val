@@ -70,10 +70,7 @@ const FONT_VAR: Record<string, string> = {
 };
 
 export const metadata: Metadata = {
-  title: {
-    default: "Corretora Val | Confiança que abre portas.",
-    template: "%s | Corretora Val",
-  },
+  title: "Corretora Val | Confiança que abre portas.",
   description:
     "Administração de imóveis, venda, locação anual e temporada em Balneário Camboriú e Camboriú.",
 };

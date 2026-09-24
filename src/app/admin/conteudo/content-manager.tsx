@@ -949,13 +949,6 @@ export function ContentManager() {
                   onChange={(value) => patchPage({ navigationLabel: value })}
                 />
                 <Input
-                  label="Texto de apoio (Eyebrow)"
-                  value={selectedPage.eyebrow}
-                  onChange={(value) =>
-                    patchPage({ eyebrow: emptyToNull(value) })
-                  }
-                />
-                <Input
                   label="Título para motores de busca (SEO Title)"
                   value={selectedPage.seoTitle}
                   onChange={(value) =>
@@ -1357,7 +1350,7 @@ export function ContentManager() {
                       </h4>
                       <div className="grid gap-4 md:grid-cols-2">
                         <Input
-                          label="Eyebrow do Hero"
+                          label="Texto de apoio / Eyebrow"
                           value={homeContent.hero.eyebrow}
                           onChange={(v) =>
                             setHomeContent((p) => ({
@@ -1367,7 +1360,7 @@ export function ContentManager() {
                           }
                         />
                         <Input
-                          label="Título principal"
+                          label="Título"
                           value={homeContent.hero.title}
                           onChange={(v) =>
                             setHomeContent((p) => ({
@@ -1377,7 +1370,7 @@ export function ContentManager() {
                           }
                         />
                         <Input
-                          label="Palavra destacada"
+                          label="Destaque"
                           value={homeContent.hero.emphasis}
                           onChange={(v) =>
                             setHomeContent((p) => ({
@@ -1388,7 +1381,7 @@ export function ContentManager() {
                         />
                       </div>
                       <Textarea
-                        label="Texto do hero"
+                        label="Descrição"
                         rows={3}
                         value={homeContent.hero.description}
                         onChange={(v) =>
