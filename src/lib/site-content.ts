@@ -253,6 +253,22 @@ export async function getPublishedPages() {
   }
 }
 
+export async function getPageSeo(slug: string) {
+  try {
+    const page = await prisma.paginaSite.findUnique({
+      where: { slug },
+      select: { seoTitle: true, seoDescription: true },
+    });
+
+    return {
+      title: page?.seoTitle ?? null,
+      description: page?.seoDescription ?? null,
+    };
+  } catch {
+    return { title: null, description: null };
+  }
+}
+
 export async function getDepoimentos() {
   try {
     return await prisma.depoimento.findMany({

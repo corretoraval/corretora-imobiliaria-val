@@ -9,17 +9,23 @@ import { SectionTitle } from "@/components/site/section-title";
 import {
   getMarcosHistoricos,
   getMembrosEquipe,
+  getPageSeo,
   getQuemSomosContent,
   getQuemSomosPageContent,
 } from "@/lib/site-content";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Quem Somos | Corretora Val",
-  description:
-    "Conheça a história de Valdete Gonçalves de Melo e a trajetória da Corretora Val em Balneário Camboriú e Camboriú: trabalho, família, compromisso e confiança desde 1990.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("quem-somos");
+
+  return {
+    title: seo.title ?? "Quem Somos | Corretora Val",
+    description:
+      seo.description ??
+      "Conheça a história de Valdete Gonçalves de Melo e a trajetória da Corretora Val em Balneário Camboriú e Camboriú: trabalho, família, compromisso e confiança desde 1990.",
+  };
+}
 
 export default async function QuemSomosPage() {
   const [dbMarcos, membros, content, quemSomosContent] = await Promise.all([

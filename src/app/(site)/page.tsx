@@ -7,6 +7,7 @@ import {
   Sparkles,
   UserCheck,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { AuthorityStats } from "@/components/institutional/authority-stats";
@@ -16,9 +17,20 @@ import { CTASection } from "@/components/site/cta-section";
 import { SectionTitle } from "@/components/site/section-title";
 import { splitHighlightedText } from "@/lib/home-content";
 import { prisma } from "@/lib/prisma";
-import { getDepoimentos, getHomeContent } from "@/lib/site-content";
+import { getDepoimentos, getHomeContent, getPageSeo } from "@/lib/site-content";
 
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("home");
+
+  return {
+    title: seo.title ?? "Corretora Val | Confiança que abre portas.",
+    description:
+      seo.description ??
+      "Administração de imóveis, venda, locação anual e temporada em Balneário Camboriú e Camboriú.",
+  };
+}
 
 async function getFeaturedProperties() {
   try {

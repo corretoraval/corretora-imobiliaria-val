@@ -14,15 +14,20 @@ import { PropertyOwnerForm } from "@/components/forms/property-owner-form";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
-import { getAdministracaoContent } from "@/lib/site-content";
+import { getAdministracaoContent, getPageSeo } from "@/lib/site-content";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Administração de Imóveis | Corretora Val",
-  description:
-    "Gestão profissional de imóveis em Balneário Camboriú e Camboriú. Divulgação estratégica, seleção rigorosa de inquilinos e segurança total para o seu patrimônio.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("administracao");
+
+  return {
+    title: seo.title ?? "Administração de Imóveis | Corretora Val",
+    description:
+      seo.description ??
+      "Gestão profissional de imóveis em Balneário Camboriú e Camboriú. Divulgação estratégica, seleção rigorosa de inquilinos e segurança total para o seu patrimônio.",
+  };
+}
 
 const benefitIcons = [ShieldCheck, Megaphone, Users, LineChart, Lock];
 

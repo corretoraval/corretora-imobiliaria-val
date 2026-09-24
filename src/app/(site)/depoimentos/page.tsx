@@ -2,15 +2,20 @@ import type { Metadata } from "next";
 import { TestimonialsPlaceholder } from "@/components/institutional/testimonials-placeholder";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
-import { getDepoimentos } from "@/lib/site-content";
+import { getDepoimentos, getPageSeo } from "@/lib/site-content";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Depoimentos de Clientes | Corretora Val",
-  description:
-    "Confira as avaliações e experiências reais de clientes que confiaram a compra, venda ou administração de seus imóveis à Corretora Val.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("depoimentos");
+
+  return {
+    title: seo.title ?? "Depoimentos de Clientes | Corretora Val",
+    description:
+      seo.description ??
+      "Confira as avaliações e experiências reais de clientes que confiaram a compra, venda ou administração de seus imóveis à Corretora Val.",
+  };
+}
 
 export default async function DepoimentosPage() {
   const depoimentos = await getDepoimentos();

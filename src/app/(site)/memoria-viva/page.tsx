@@ -4,15 +4,24 @@ import { Timeline } from "@/components/institutional/timeline";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
-import { getMarcosHistoricos, getMemoriaVivaContent } from "@/lib/site-content";
+import {
+  getMarcosHistoricos,
+  getMemoriaVivaContent,
+  getPageSeo,
+} from "@/lib/site-content";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Memória Viva | Corretora Val",
-  description:
-    "Explore a trajetória da Corretora Val ao longo dos anos. Um memorial digital sobre nossas origens, momentos marcantes e o legado imobiliário em Balneário Camboriú.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("memoria-viva");
+
+  return {
+    title: seo.title ?? "Memória Viva | Corretora Val",
+    description:
+      seo.description ??
+      "Explore a trajetória da Corretora Val ao longo dos anos. Um memorial digital sobre nossas origens, momentos marcantes e o legado imobiliário em Balneário Camboriú.",
+  };
+}
 
 export default async function MemoriaVivaPage() {
   const [dbMarcos, content] = await Promise.all([

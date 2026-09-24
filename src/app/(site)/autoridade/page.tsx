@@ -4,15 +4,20 @@ import { TestimonialsPlaceholder } from "@/components/institutional/testimonials
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
-import { getDepoimentos } from "@/lib/site-content";
+import { getDepoimentos, getPageSeo } from "@/lib/site-content";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Autoridade e Experiência | Corretora Val",
-  description:
-    "Confiança imobiliária em Balneário Camboriú e Camboriú. Mais de 35 anos de experiência, registro CRECI/SC 56372-F e sólida reputação na gestão patrimonial.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("autoridade");
+
+  return {
+    title: seo.title ?? "Autoridade e Experiência | Corretora Val",
+    description:
+      seo.description ??
+      "Confiança imobiliária em Balneário Camboriú e Camboriú. Mais de 35 anos de experiência, registro CRECI/SC 56372-F e sólida reputação na gestão patrimonial.",
+  };
+}
 
 export default async function AutoridadePage() {
   const depoimentos = await getDepoimentos();
