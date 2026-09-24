@@ -10,13 +10,18 @@ import type { Metadata } from "next";
 import { ContactForm } from "@/components/forms/contact-form";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
-import { getSiteSettings } from "@/lib/site-content";
+import { getPageSeo, getSiteSettings } from "@/lib/site-content";
 
-export const metadata: Metadata = {
-  title: "Contato | Corretora Val",
-  description:
-    "Fale com a Corretora Val por WhatsApp, telefone ou formulário. Atendimento especializado para compra, venda e administração de imóveis em Balneário Camboriú.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("contato");
+
+  return {
+    title: seo.title ?? "Contato | Corretora Val",
+    description:
+      seo.description ??
+      "Fale com a Corretora Val por WhatsApp, telefone ou formulário. Atendimento especializado para compra, venda e administração de imóveis em Balneário Camboriú.",
+  };
+}
 
 export default async function ContatoPage() {
   const settings = await getSiteSettings();

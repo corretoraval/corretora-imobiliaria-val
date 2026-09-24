@@ -41,6 +41,29 @@ beforeEach(() => {
 });
 
 describe("site-content helpers and fallback behavior", () => {
+  describe("getPageSeo", () => {
+    it("returns the persisted SEO values and treats blank values as missing", async () => {
+      prismaMock.prisma.paginaSite.findUnique
+        .mockResolvedValueOnce({
+          seoTitle: " Título sincronizado ",
+          seoDescription: " Descrição sincronizada ",
+        })
+        .mockResolvedValueOnce({
+          seoTitle: "   ",
+          seoDescription: "",
+        });
+
+      await expect(siteContent.getPageSeo("home")).resolves.toEqual({
+        title: "Título sincronizado",
+        description: "Descrição sincronizada",
+      });
+      await expect(siteContent.getPageSeo("contato")).resolves.toEqual({
+        title: null,
+        description: null,
+      });
+    });
+  });
+
   describe("getSiteSettings", () => {
     it("returns default fallback settings when database returns null", async () => {
       prismaMock.prisma.configuracaoSite.findUnique.mockResolvedValue(null);

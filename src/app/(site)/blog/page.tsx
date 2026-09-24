@@ -2,13 +2,19 @@ import type { Metadata } from "next";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { prisma } from "@/lib/prisma";
+import { getPageSeo } from "@/lib/site-content";
 import { BlogClientWrapper } from "./blog-client-wrapper";
 
-export const metadata: Metadata = {
-  title: "Blog Imobiliário | Corretora Val",
-  description:
-    "Conteúdos, guias de investimento, dicas de locação e análises do mercado imobiliário em Balneário Camboriú e Camboriú.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("blog");
+
+  return {
+    title: seo.title ?? "Blog Imobiliário | Corretora Val",
+    description:
+      seo.description ??
+      "Conteúdos, guias de investimento, dicas de locação e análises do mercado imobiliário em Balneário Camboriú e Camboriú.",
+  };
+}
 
 export default async function BlogPage() {
   let posts: Awaited<ReturnType<typeof prisma.postBlog.findMany>> = [];

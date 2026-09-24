@@ -261,8 +261,8 @@ export async function getPageSeo(slug: string) {
     });
 
     return {
-      title: page?.seoTitle ?? null,
-      description: page?.seoDescription ?? null,
+      title: page?.seoTitle?.trim() || null,
+      description: page?.seoDescription?.trim() || null,
     };
   } catch {
     return { title: null, description: null };
