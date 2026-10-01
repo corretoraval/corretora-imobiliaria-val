@@ -294,40 +294,6 @@ async function main() {
     });
   }
 
-  // Depoimentos
-  const depoimentos = [
-    {
-      clientName: "Márcia Oliveira",
-      text: "A Corretora Val cuidou do meu apartamento por anos com total transparência. Cada detalhe foi tratado com atenção e profissionalismo. Recomendo sem hesitar.",
-      role: "Proprietária · Balneário Camboriú",
-      sortOrder: 0,
-      isPublished: true,
-    },
-    {
-      clientName: "Roberto Fonseca",
-      text: "Encontrei minha casa em Camboriú com a ajuda da equipe. Eles entenderam exatamente o que eu precisava e me guiaram em cada passo da negociação.",
-      role: "Comprador · Camboriú",
-      sortOrder: 1,
-      isPublished: true,
-    },
-    {
-      clientName: "Ana Beatriz Lima",
-      text: "Confiei a locação do meu imóvel à Corretora Val e nunca me preocupei com vacância. A gestão é impecável e o atendimento é sempre humano.",
-      role: "Investidora · Balneário Camboriú",
-      sortOrder: 2,
-      isPublished: true,
-    },
-  ];
-
-  for (const depoimento of depoimentos) {
-    const existing = await prisma.depoimento.findFirst({
-      where: { clientName: depoimento.clientName },
-    });
-    if (!existing) {
-      await prisma.depoimento.create({ data: depoimento });
-    }
-  }
-
   // Marcos históricos reais alinhados à Linha do Tempo da Corretora Val
   const marcos = [
     {
