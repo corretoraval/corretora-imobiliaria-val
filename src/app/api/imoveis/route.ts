@@ -63,6 +63,14 @@ const propertyFields = z.object({
   status: z.enum(statuses).default("DISPONIVEL"),
   city: z.string().trim().min(2).max(80),
   neighborhood: z.string().trim().max(80).optional().nullable(),
+  address: optionalText,
+  postalCode: optionalText,
+  addressVisibility: z
+    .enum(["EXATA", "APROXIMADA", "OCULTA"])
+    .default("APROXIMADA"),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  pontosReferencia: optionalText,
   salePrice: optionalAmount,
   monthlyRent: optionalAmount,
   dailyRate: optionalAmount,

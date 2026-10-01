@@ -27,6 +27,7 @@ enum StatusImovel {
 enum VisibilidadeEndereco {
   EXATA
   APROXIMADA
+  OCULTA
 }
 
 enum StatusDocumentacao {
@@ -65,6 +66,7 @@ model Imovel {
   addressVisibility     VisibilidadeEndereco @default(APROXIMADA)
   latitude              Decimal?             @db.Decimal(10, 7)
   longitude             Decimal?             @db.Decimal(10, 7)
+  pontosReferencia      String?
   salePrice             Int?
   monthlyRent           Int?
   condoFee              Int?

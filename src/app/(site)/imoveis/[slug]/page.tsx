@@ -25,6 +25,7 @@ import type { Finalidade } from "@prisma/client";
 import { PropertyCard } from "@/components/property-card";
 import { PropertyGallery } from "@/components/property-gallery";
 import { PropertyLeadForm } from "@/components/property-lead-form";
+import { PropertyMap } from "@/components/property-map";
 import { formatPrice } from "@/lib/format-price";
 import { prisma } from "@/lib/prisma";
 
@@ -285,7 +286,7 @@ export default async function PropertyDetailPage({
       {/* Grid Principal: Galeria & Detalhes + Sidebar */}
       <div className="grid gap-10 lg:grid-cols-[1fr_22rem] xl:grid-cols-[1fr_25rem]">
         {/* Coluna da Esquerda */}
-        <div className="space-y-10">
+        <div className="min-w-0 w-full space-y-10">
           {/* Galeria de Fotos */}
           <PropertyGallery title={property.title} photos={property.photos} />
 
@@ -507,6 +508,18 @@ export default async function PropertyDetailPage({
               </div>
             </div>
           )}
+
+          {/* Seção: Localização (Exata ou Aproximada com mapa e pontos de referência) */}
+          <PropertyMap
+            address={property.address}
+            city={property.city}
+            latitude={property.latitude != null ? Number(property.latitude) : null}
+            longitude={property.longitude != null ? Number(property.longitude) : null}
+            neighborhood={property.neighborhood}
+            pontosReferencia={property.pontosReferencia}
+            title={property.title}
+            visibility={property.addressVisibility}
+          />
         </div>
 
         {/* Coluna da Direita (Sidebar de Conversão) */}

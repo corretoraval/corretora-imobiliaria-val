@@ -1,14 +1,21 @@
 "use client";
 
 import {
+  AlertCircle,
   Archive,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
+  Compass,
+  Eye,
+  EyeOff,
   LoaderCircle,
   MapPin,
+  MapPinned,
   Pencil,
   Plus,
   RefreshCw,
+  Search,
   Sparkles,
   Trash2,
 } from "lucide-react";
@@ -27,6 +34,7 @@ import { formatPrice } from "@/lib/format-price";
 import { type UploadProgress, uploadFile } from "@/lib/upload-file";
 
 type Purpose = "VENDA" | "LOCACAO_ANUAL" | "TEMPORADA";
+type Visibilidade = "EXATA" | "APROXIMADA" | "OCULTA";
 
 type Property = {
   id: string;
@@ -40,6 +48,12 @@ type Property = {
   status: string;
   city: string;
   neighborhood?: string | null;
+  address?: string | null;
+  postalCode?: string | null;
+  addressVisibility?: Visibilidade;
+  latitude?: number | null;
+  longitude?: number | null;
+  pontosReferencia?: string | null;
   salePrice: number | null;
   monthlyRent: number | null;
   dailyRate: number | null;
@@ -73,6 +87,12 @@ type Draft = {
   purpose: Purpose;
   city: string;
   neighborhood: string;
+  address: string;
+  postalCode: string;
+  addressVisibility: Visibilidade;
+  latitude: string;
+  longitude: string;
+  pontosReferencia: string;
   price: string;
   isFeatured: boolean;
   bedrooms: string;
@@ -114,6 +134,12 @@ type PropertyPayload = {
   purpose: Purpose;
   city: string;
   neighborhood?: string | null;
+  address?: string | null;
+  postalCode?: string | null;
+  addressVisibility?: Visibilidade;
+  latitude?: number | null;
+  longitude?: number | null;
+  pontosReferencia?: string | null;
   isFeatured: boolean;
   salePrice?: number | null;
   monthlyRent?: number | null;
@@ -165,6 +191,12 @@ const initialDraft: Draft = {
   purpose: "VENDA",
   city: "Balneário Camboriú",
   neighborhood: "",
+  address: "",
+  postalCode: "",
+  addressVisibility: "APROXIMADA",
+  latitude: "",
+  longitude: "",
+  pontosReferencia: "",
   price: "",
   isFeatured: false,
   bedrooms: "",
@@ -237,6 +269,11 @@ export function AdminPropertiesManager() {
     percent: number;
   } | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocodeFeedback, setGeocodeFeedback] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const loadProperties = useCallback(async () => {
@@ -276,6 +313,7 @@ export function AdminPropertiesManager() {
     setUploadingPhotos(false);
     setUploadProgress(null);
     setUploadError(null);
+    setGeocodeFeedback(null);
     setMessage(null);
     setIsModalOpen(true);
   }
@@ -288,7 +326,89 @@ export function AdminPropertiesManager() {
     setUploadingPhotos(false);
     setUploadProgress(null);
     setUploadError(null);
+    setGeocodeFeedback(null);
     setIsModalOpen(false);
+  }
+
+  async function handleGeocode() {
+    if (!draft.city.trim()) {
+      setGeocodeFeedback({
+        type: "error",
+        text: "Informe ao menos a Cidade antes de buscar as coordenadas.",
+      });
+      return;
+    }
+
+    setGeocoding(true);
+    setGeocodeFeedback(null);
+
+    try {
+      let query = "";
+      if (draft.addressVisibility === "EXATA" && draft.address.trim()) {
+        query = `${draft.address.trim()}, ${draft.neighborhood ? `${draft.neighborhood.trim()}, ` : ""}${draft.city.trim()}, Santa Catarina, Brasil`;
+      } else if (draft.neighborhood.trim()) {
+        query = `${draft.neighborhood.trim()}, ${draft.city.trim()}, Santa Catarina, Brasil`;
+      } else {
+        query = `${draft.city.trim()}, Santa Catarina, Brasil`;
+      }
+
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+        { headers: { "Accept-Language": "pt-BR" } },
+      );
+
+      if (!res.ok) throw new Error("Erro na busca");
+      const results = await res.json();
+
+      if (!Array.isArray(results) || results.length === 0) {
+        // Fallback: se endereço específico falhou, tenta só com bairro e cidade
+        if (draft.address.trim() && draft.neighborhood.trim()) {
+          const fallbackQuery = `${draft.neighborhood.trim()}, ${draft.city.trim()}, Santa Catarina, Brasil`;
+          const fallbackRes = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fallbackQuery)}&limit=1`,
+            { headers: { "Accept-Language": "pt-BR" } },
+          );
+          const fallbackResults = await fallbackRes.json();
+          if (Array.isArray(fallbackResults) && fallbackResults.length > 0) {
+            const item = fallbackResults[0];
+            setDraft((prev) => ({
+              ...prev,
+              latitude: Number(item.lat).toFixed(6),
+              longitude: Number(item.lon).toFixed(6),
+            }));
+            setGeocodeFeedback({
+              type: "success",
+              text: "Coordenadas aproximadas do bairro localizadas no mapa!",
+            });
+            return;
+          }
+        }
+
+        setGeocodeFeedback({
+          type: "error",
+          text: "Endereço não localizado automaticamente. Você pode preencher latitude e longitude manualmente.",
+        });
+        return;
+      }
+
+      const item = results[0];
+      setDraft((prev) => ({
+        ...prev,
+        latitude: Number(item.lat).toFixed(6),
+        longitude: Number(item.lon).toFixed(6),
+      }));
+      setGeocodeFeedback({
+        type: "success",
+        text: "Coordenadas encontradas e preenchidas com sucesso!",
+      });
+    } catch {
+      setGeocodeFeedback({
+        type: "error",
+        text: "Não foi possível conectar ao serviço de mapas. Preencha manualmente se desejar.",
+      });
+    } finally {
+      setGeocoding(false);
+    }
   }
 
   async function loadPropertyForEdit(property: Property) {
@@ -310,6 +430,12 @@ export function AdminPropertiesManager() {
         purpose: full.purpose || "VENDA",
         city: full.city || "Balneário Camboriú",
         neighborhood: full.neighborhood || "",
+        address: full.address || "",
+        postalCode: full.postalCode || "",
+        addressVisibility: full.addressVisibility || "APROXIMADA",
+        latitude: full.latitude != null ? String(full.latitude) : "",
+        longitude: full.longitude != null ? String(full.longitude) : "",
+        pontosReferencia: full.pontosReferencia || "",
         price: rawPrice !== "" ? formatCurrencyInput(rawPrice) : "",
         isFeatured: Boolean(full.isFeatured),
         bedrooms: full.bedrooms != null ? String(full.bedrooms) : "",
@@ -402,6 +528,16 @@ export function AdminPropertiesManager() {
       purpose: draft.purpose,
       city: draft.city.trim(),
       neighborhood: draft.neighborhood.trim() || null,
+      address: draft.address.trim() || null,
+      postalCode: draft.postalCode.trim() || null,
+      addressVisibility: draft.addressVisibility,
+      latitude: draft.latitude.trim()
+        ? Number(draft.latitude.trim().replace(",", "."))
+        : null,
+      longitude: draft.longitude.trim()
+        ? Number(draft.longitude.trim().replace(",", "."))
+        : null,
+      pontosReferencia: draft.pontosReferencia.trim() || null,
       isFeatured: draft.isFeatured,
       ...(draft.purpose === "VENDA" ? { salePrice: numericPrice } : {}),
       ...(draft.purpose === "LOCACAO_ANUAL"
@@ -500,6 +636,16 @@ export function AdminPropertiesManager() {
       purpose: draft.purpose,
       city: draft.city.trim(),
       neighborhood: draft.neighborhood.trim() || null,
+      address: draft.address.trim() || null,
+      postalCode: draft.postalCode.trim() || null,
+      addressVisibility: draft.addressVisibility,
+      latitude: draft.latitude.trim()
+        ? Number(draft.latitude.trim().replace(",", "."))
+        : null,
+      longitude: draft.longitude.trim()
+        ? Number(draft.longitude.trim().replace(",", "."))
+        : null,
+      pontosReferencia: draft.pontosReferencia.trim() || null,
       isFeatured: draft.isFeatured,
       salePrice: draft.purpose === "VENDA" ? numericPrice : null,
       monthlyRent: draft.purpose === "LOCACAO_ANUAL" ? numericPrice : null,
@@ -1055,10 +1201,18 @@ export function AdminPropertiesManager() {
           </div>
 
           {/* Seção: Localização */}
-          <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface-muted,#faf8f5)] p-5 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--gold)]">
-              Localização
-            </h3>
+          <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface-muted,#faf8f5)] p-5 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--gold)] flex items-center gap-1.5">
+                <MapPin size={15} />
+                Localização & Mapa
+              </h3>
+              <span className="text-[11px] font-semibold text-[var(--ink-soft)]">
+                Controle de exibição pública
+              </span>
+            </div>
+
+            {/* Cidade e Bairro */}
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
                 Cidade *
@@ -1082,6 +1236,234 @@ export function AdminPropertiesManager() {
                 />
               </label>
             </div>
+
+            {/* Seletor de Visibilidade do Mapa (3 opções) */}
+            <div className="grid gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                Exibição no Mapa Público *
+              </span>
+              <div className="grid gap-2 sm:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraft({ ...draft, addressVisibility: "EXATA" })
+                  }
+                  className={`flex flex-col items-start p-3.5 rounded-xl border text-left transition-all ${
+                    draft.addressVisibility === "EXATA"
+                      ? "border-[var(--plum)] bg-[var(--surface,#ffffff)] shadow-xs ring-2 ring-[var(--plum)]/10"
+                      : "border-[var(--border,#d4cec4)] bg-white/60 hover:bg-white text-[var(--ink-soft)]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <MapPinned
+                      size={16}
+                      className={
+                        draft.addressVisibility === "EXATA"
+                          ? "text-[var(--plum)]"
+                          : "text-gray-400"
+                      }
+                    />
+                    <span
+                      className={`text-xs font-extrabold ${
+                        draft.addressVisibility === "EXATA"
+                          ? "text-[var(--plum)]"
+                          : "text-[var(--ink)]"
+                      }`}
+                    >
+                      Localização exata
+                    </span>
+                  </div>
+                  <span className="text-[11px] leading-relaxed text-[var(--ink-soft)]">
+                    Exibe marcador no endereço preciso do imóvel.
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraft({ ...draft, addressVisibility: "APROXIMADA" })
+                  }
+                  className={`flex flex-col items-start p-3.5 rounded-xl border text-left transition-all ${
+                    draft.addressVisibility === "APROXIMADA"
+                      ? "border-[var(--gold)] bg-[var(--surface,#ffffff)] shadow-xs ring-2 ring-[var(--gold)]/20"
+                      : "border-[var(--border,#d4cec4)] bg-white/60 hover:bg-white text-[var(--ink-soft)]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Eye
+                      size={16}
+                      className={
+                        draft.addressVisibility === "APROXIMADA"
+                          ? "text-[var(--gold)]"
+                          : "text-gray-400"
+                      }
+                    />
+                    <span
+                      className={`text-xs font-extrabold ${
+                        draft.addressVisibility === "APROXIMADA"
+                          ? "text-[var(--plum)]"
+                          : "text-[var(--ink)]"
+                      }`}
+                    >
+                      Localização aproximada
+                    </span>
+                  </div>
+                  <span className="text-[11px] leading-relaxed text-[var(--ink-soft)]">
+                    Exibe área/bairro com círculo sem expor o endereço exato.
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraft({ ...draft, addressVisibility: "OCULTA" })
+                  }
+                  className={`flex flex-col items-start p-3.5 rounded-xl border text-left transition-all ${
+                    draft.addressVisibility === "OCULTA"
+                      ? "border-gray-400 bg-[var(--surface,#ffffff)] shadow-xs ring-2 ring-gray-400/20"
+                      : "border-[var(--border,#d4cec4)] bg-white/60 hover:bg-white text-[var(--ink-soft)]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <EyeOff
+                      size={16}
+                      className={
+                        draft.addressVisibility === "OCULTA"
+                          ? "text-gray-700"
+                          : "text-gray-400"
+                      }
+                    />
+                    <span
+                      className={`text-xs font-extrabold ${
+                        draft.addressVisibility === "OCULTA"
+                          ? "text-[var(--ink)]"
+                          : "text-[var(--ink)]"
+                      }`}
+                    >
+                      Não exibir mapa
+                    </span>
+                  </div>
+                  <span className="text-[11px] leading-relaxed text-[var(--ink-soft)]">
+                    Oculta totalmente a seção do mapa na página do imóvel.
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Campos Condicionais: se EXATA ou APROXIMADA */}
+            {draft.addressVisibility !== "OCULTA" && (
+              <div className="rounded-xl border border-[var(--border,#e8e3d9)] bg-white p-4 space-y-4">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)] sm:col-span-2">
+                    {draft.addressVisibility === "EXATA"
+                      ? "Endereço Completo (Rua / Av. e Número) *"
+                      : "Endereço (opcional, uso interno)"}
+                    <input
+                      className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
+                      placeholder="Ex: Rua, número"
+                      onChange={(e) =>
+                        setDraft({ ...draft, address: e.target.value })
+                      }
+                      value={draft.address}
+                    />
+                  </label>
+
+                  <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                    CEP (opcional)
+                    <input
+                      className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
+                      placeholder="00000-000"
+                      onChange={(e) =>
+                        setDraft({ ...draft, postalCode: e.target.value })
+                      }
+                      value={draft.postalCode}
+                    />
+                  </label>
+                </div>
+
+                {/* Coordenadas e Botão Geocoding */}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto] items-end">
+                  <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                    Latitude
+                    <input
+                      className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2 text-sm font-mono text-[var(--ink)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
+                      placeholder="-26.9926"
+                      onChange={(e) =>
+                        setDraft({ ...draft, latitude: e.target.value })
+                      }
+                      value={draft.latitude}
+                    />
+                  </label>
+
+                  <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                    Longitude
+                    <input
+                      className="rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2 text-sm font-mono text-[var(--ink)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
+                      placeholder="-48.6345"
+                      onChange={(e) =>
+                        setDraft({ ...draft, longitude: e.target.value })
+                      }
+                      value={draft.longitude}
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={handleGeocode}
+                    disabled={geocoding}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--plum)] hover:bg-[var(--plum-bright,#4a1768)] text-white px-4 py-2.5 text-xs font-bold transition-all shadow-xs disabled:opacity-50"
+                  >
+                    {geocoding ? (
+                      <LoaderCircle size={15} className="animate-spin" />
+                    ) : (
+                      <Search size={15} />
+                    )}
+                    <span>
+                      {geocoding
+                        ? "Buscando coordenadas..."
+                        : "Buscar coordenadas no mapa"}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Feedback do Geocoding */}
+                {geocodeFeedback && (
+                  <div
+                    className={`flex items-center gap-2 text-xs rounded-lg px-3 py-2 ${
+                      geocodeFeedback.type === "success"
+                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                        : "bg-amber-50 text-amber-800 border border-amber-200"
+                    }`}
+                  >
+                    {geocodeFeedback.type === "success" ? (
+                      <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertCircle size={15} className="text-amber-600 shrink-0" />
+                    )}
+                    <span>{geocodeFeedback.text}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Pontos de Referência / Proximidades */}
+            <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+              <span className="flex items-center gap-1.5">
+                <Compass size={14} className="text-[var(--gold)]" />
+                Pontos de Referência e Proximidades (opcional)
+              </span>
+              <textarea
+                className="min-h-20 rounded-xl border border-[var(--border,#d4cec4)] bg-white px-3.5 py-2.5 text-sm text-[var(--ink)] placeholder:font-normal placeholder:text-gray-400 focus:border-[var(--plum)] focus:outline-hidden"
+                placeholder="Ex: distância da praia, mercado, farmácia, escola etc."
+                onChange={(e) =>
+                  setDraft({ ...draft, pontosReferencia: e.target.value })
+                }
+                value={draft.pontosReferencia}
+              />
+              <span className="text-[11px] font-normal normal-case text-[var(--ink-soft)]">
+                Este texto será exibido na seção de Localização do imóvel para valorizar a vizinhança.
+              </span>
+            </label>
           </div>
 
           {/* Seção: Características e Lazer (Collapsible) */}
@@ -1387,6 +1769,7 @@ export function AdminPropertiesManager() {
                         src={photo.url}
                         alt={photo.alt || `Foto ${idx + 1}`}
                         fill
+                        sizes="150px"
                         className="object-cover"
                       />
                       <button
