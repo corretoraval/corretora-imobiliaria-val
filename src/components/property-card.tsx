@@ -77,10 +77,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
   }
 
   return (
-    <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] shadow-[0_4px_16px_rgba(53,16,79,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--gold)] hover:shadow-[0_12px_28px_rgba(53,16,79,0.12)]">
+    <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] shadow-[0_4px_16px_rgba(53,16,79,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--gold)] hover:shadow-[0_12px_28px_rgba(53,16,79,0.12)] min-w-0 w-full">
       <div>
-        {/* Imagem ou Capa com Degradê */}
-        <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-[var(--plum)] to-[var(--plum-bright)]">
+        {/* Imagem ou Capa com Proporção Consistente */}
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-[var(--plum)] to-[var(--plum-bright)]">
           {coverPhoto ? (
             <Image
               src={coverPhoto}

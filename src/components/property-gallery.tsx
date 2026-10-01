@@ -64,27 +64,42 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
   const currentPhoto = photos[selectedIndex] || photos[0];
 
   return (
-    <div className="space-y-3">
-      {/* Imagem Principal */}
-      <div className="group relative aspect-[16/10] w-full overflow-hidden rounded-3xl bg-neutral-950 shadow-xl sm:aspect-[16/9]">
+    <div className="space-y-3 w-full min-w-0 max-w-full">
+      {/* Imagem Principal com Contenção e Fundo Desfocado */}
+      <div className="group relative h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[540px] max-h-[70vh] w-full max-w-full overflow-hidden rounded-3xl bg-neutral-950 shadow-xl">
+        {/* Fundo Desfocado da Própria Foto para Preenchimento Elegante */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <Image
+            src={currentPhoto.url}
+            alt=""
+            fill
+            sizes="100vw"
+            className="scale-125 object-cover opacity-35 blur-2xl filter"
+            aria-hidden="true"
+            priority
+          />
+          <div className="absolute inset-0 bg-neutral-950/40 backdrop-blur-xs" />
+        </div>
+
+        {/* Imagem Principal Preservando 100% dos Ambientes sem Cortes */}
         <Image
           src={currentPhoto.url}
           alt={currentPhoto.alt || `${title} - Foto ${selectedIndex + 1}`}
           fill
           priority
-          sizes="(max-width: 1024px) 100vw, 70vw"
-          className="object-cover transition-all duration-300"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 850px"
+          className="relative z-10 object-contain p-1 sm:p-2 transition-all duration-300"
         />
 
         {/* Gradiente de proteção para controles */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
 
         {/* Botão de Expandir / Lightbox */}
         <button
           type="button"
           onClick={() => setLightboxOpen(true)}
           aria-label="Ver fotos em tela cheia"
-          className="interactive absolute right-4 top-4 flex items-center gap-2 rounded-full bg-black/60 px-3.5 py-2 text-xs font-bold text-white backdrop-blur-md hover:bg-black/80 transition-all"
+          className="interactive absolute right-4 top-4 z-30 flex items-center gap-2 rounded-full bg-black/65 px-3.5 py-2 text-xs font-bold text-white backdrop-blur-md hover:bg-black/85 transition-all shadow-md"
         >
           <Expand size={14} />
           <span>Ver todas as fotos ({photos.length})</span>
@@ -97,7 +112,7 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
               type="button"
               onClick={prevPhoto}
               aria-label="Foto anterior"
-              className="interactive absolute left-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
+              className="interactive absolute left-4 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/85 transition-all opacity-90 sm:opacity-0 group-hover:opacity-100 shadow-md"
             >
               <ChevronLeft size={22} />
             </button>
@@ -105,7 +120,7 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
               type="button"
               onClick={nextPhoto}
               aria-label="Próxima foto"
-              className="interactive absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
+              className="interactive absolute right-4 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/85 transition-all opacity-90 sm:opacity-0 group-hover:opacity-100 shadow-md"
             >
               <ChevronRight size={22} />
             </button>
@@ -114,7 +129,7 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
 
         {/* Indicador de fotos */}
         {photos.length > 1 && (
-          <div className="absolute bottom-4 left-4 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white/90 backdrop-blur-md">
+          <div className="absolute bottom-4 left-4 z-30 rounded-full bg-black/65 px-3 py-1 text-xs font-semibold text-white/95 backdrop-blur-md shadow-md">
             {selectedIndex + 1} / {photos.length}
           </div>
         )}
@@ -122,13 +137,13 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
 
       {/* Miniaturas */}
       {photos.length > 1 && (
-        <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
+        <div className="w-full min-w-0 max-w-full flex gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
           {photos.map((photo, index) => (
             <button
               key={photo.url || photo.id || index}
               type="button"
               onClick={() => setSelectedIndex(index)}
-              className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
+              className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-xl border-2 transition-all bg-neutral-900 ${
                 selectedIndex === index
                   ? "border-[var(--gold)] ring-2 ring-[var(--gold)]/40 scale-[1.02]"
                   : "border-transparent opacity-70 hover:opacity-100"
@@ -149,12 +164,25 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
       {/* Modal Lightbox em Tela Cheia */}
       {lightboxOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-md">
+          {/* Fundo Desfocado no Modal */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <Image
+              src={currentPhoto.url}
+              alt=""
+              fill
+              sizes="100vw"
+              className="scale-125 object-cover opacity-25 blur-3xl filter"
+              aria-hidden="true"
+            />
+            <div className="absolute inset-0 bg-black/70" />
+          </div>
+
           {/* Fechar */}
           <button
             type="button"
             onClick={() => setLightboxOpen(false)}
             aria-label="Fechar galeria"
-            className="interactive absolute right-6 top-6 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+            className="interactive absolute right-6 top-6 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 transition-all backdrop-blur-md"
           >
             <X size={24} />
           </button>
@@ -166,7 +194,7 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
                 type="button"
                 onClick={prevPhoto}
                 aria-label="Foto anterior"
-                className="interactive absolute left-6 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+                className="interactive absolute left-6 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 transition-all backdrop-blur-md"
               >
                 <ChevronLeft size={28} />
               </button>
@@ -174,27 +202,27 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
                 type="button"
                 onClick={nextPhoto}
                 aria-label="Próxima foto"
-                className="interactive absolute right-6 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+                className="interactive absolute right-6 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 transition-all backdrop-blur-md"
               >
                 <ChevronRight size={28} />
               </button>
             </>
           )}
 
-          {/* Imagem em tamanho grande */}
-          <div className="relative h-[85vh] w-[90vw] max-w-6xl">
+          {/* Imagem em tamanho grande com object-contain */}
+          <div className="relative z-10 h-[80vh] w-[92vw] max-w-6xl">
             <Image
               src={currentPhoto.url}
               alt={currentPhoto.alt || title}
               fill
               priority
-              sizes="90vw"
+              sizes="95vw"
               className="object-contain"
             />
           </div>
 
           {/* Contador de fotos no modal */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 rounded-full bg-white/15 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md border border-white/10">
             {selectedIndex + 1} de {photos.length}
           </div>
         </div>
