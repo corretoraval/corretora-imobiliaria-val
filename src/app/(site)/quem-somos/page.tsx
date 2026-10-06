@@ -252,7 +252,7 @@ export default async function QuemSomosPage() {
             {/* Foto da Família em Proporção 3:2 Nativa com object-contain */}
             <div className="lg:col-span-6">
               <div className="overflow-hidden rounded-3xl border border-[var(--gold-light)] bg-white p-4 md:p-5 shadow-lg space-y-3">
-                <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-neutral-50 shadow-inner">
+                <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-white">
                   <Image
                     src="/images/institutional/corretora-val-logo-banner-sf.png"
                     alt="Logo da Corretora Val — empresa imobiliária familiar em Balneário Camboriú"
