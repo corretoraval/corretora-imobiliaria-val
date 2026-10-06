@@ -38,19 +38,19 @@ export default async function QuemSomosPage() {
   const timelineItems =
     dbMarcos.length > 0
       ? dbMarcos.map((m) => ({
-          year: String(m.year),
-          title: m.title,
-          description: m.description || "",
-          image:
-            String(m.year) === "1989"
-              ? {
-                  src: "/images/institutional/valdete-inicio-1989.png",
-                  alt: "Valdete no início da carreira na Imobiliária Gonzaga em Curitiba (1989/1990)",
-                  caption:
-                    "1989 — O convite que abriu a primeira porta, na Imobiliária Gonzaga em Curitiba.",
-                }
-              : undefined,
-        }))
+        year: String(m.year),
+        title: m.title,
+        description: m.description || "",
+        image:
+          String(m.year) === "1989"
+            ? {
+              src: "/images/institutional/valdete-inicio-1989.png",
+              alt: "Valdete no início da carreira na Imobiliária Gonzaga em Curitiba (1989/1990)",
+              caption:
+                "1989 — O convite que abriu a primeira porta, na Imobiliária Gonzaga em Curitiba.",
+            }
+            : undefined,
+      }))
       : undefined;
   return (
     <main className="min-h-screen">
@@ -254,8 +254,8 @@ export default async function QuemSomosPage() {
               <div className="overflow-hidden rounded-3xl border border-[var(--gold-light)] bg-white p-4 md:p-5 shadow-lg space-y-3">
                 <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-neutral-50 shadow-inner">
                   <Image
-                    src="/images/institutional/valdete-familia.jpg"
-                    alt="Valdete Gonçalves de Melo, seu filho Felipe Cesar e seu neto Kauan Enrique com vista panorâmica para o skyline de Balneário Camboriú"
+                    src="/images/institutional/corretora-val-logo-banner-sf.png"
+                    alt="Logo da Corretora Val — empresa imobiliária familiar em Balneário Camboriú"
                     fill
                     className="object-contain"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
