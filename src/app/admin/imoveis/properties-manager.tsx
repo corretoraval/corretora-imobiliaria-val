@@ -7,9 +7,11 @@ import {
   ChevronDown,
   ChevronUp,
   Compass,
+  ExternalLink,
   Eye,
   EyeOff,
   LoaderCircle,
+  Lock,
   MapPin,
   MapPinned,
   Pencil,
@@ -265,9 +267,58 @@ const fieldLabels: Record<string, string> = {
   photos: "Fotos do Imóvel",
 };
 
+const DRAFT_STORAGE_KEY = "corretora_val_property_draft_v1";
+
+type StoredDraft = {
+  draft: Draft;
+  photos: PhotoEntry[];
+  editingId: string | null;
+  savedAt: number;
+};
+
+function saveLocalDraft(
+  draftData: Draft,
+  photosData: PhotoEntry[],
+  editId: string | null,
+) {
+  if (typeof window === "undefined") return;
+  try {
+    const data: StoredDraft = {
+      draft: draftData,
+      photos: photosData,
+      editingId: editId,
+      savedAt: Date.now(),
+    };
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(data));
+  } catch (err) {
+    console.warn("Não foi possível salvar rascunho local:", err);
+  }
+}
+
+function clearLocalDraft() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
+  } catch (err) {
+    console.warn("Não foi possível limpar rascunho local:", err);
+  }
+}
+
+function getLocalDraft(): StoredDraft | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as StoredDraft;
+  } catch {
+    return null;
+  }
+}
+
 function parseApiError(errorData: unknown): {
   message: string;
   fieldErrors: Record<string, string>;
+  isUnauthorized?: boolean;
 } {
   const fieldErrors: Record<string, string> = {};
 
@@ -279,6 +330,13 @@ function parseApiError(errorData: unknown): {
   }
 
   if (typeof errorData === "string") {
+    if (errorData.toLowerCase().includes("unauthorized")) {
+      return {
+        message: "Sua sessão expirou. Entre novamente para continuar.",
+        fieldErrors,
+        isUnauthorized: true,
+      };
+    }
     return { message: errorData, fieldErrors };
   }
 
@@ -313,6 +371,13 @@ function parseApiError(errorData: unknown): {
     }
 
     if (typeof obj.error === "string") {
+      if (obj.error.toLowerCase().includes("unauthorized")) {
+        return {
+          message: "Sua sessão expirou. Entre novamente para continuar.",
+          fieldErrors,
+          isUnauthorized: true,
+        };
+      }
       return { message: obj.error, fieldErrors };
     }
   }
@@ -356,7 +421,34 @@ export function AdminPropertiesManager() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [savedDraftAvailable, setSavedDraftAvailable] =
+    useState<StoredDraft | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const existing = getLocalDraft();
+    if (existing) {
+      setSavedDraftAvailable(existing);
+    }
+  }, []);
+
+  function restoreSavedDraft() {
+    if (!savedDraftAvailable) return;
+    setDraft(savedDraftAvailable.draft);
+    setPhotos(savedDraftAvailable.photos);
+    if (savedDraftAvailable.editingId) {
+      setEditingId(savedDraftAvailable.editingId);
+    }
+    setSessionExpired(false);
+    setFormError(null);
+    setSavedDraftAvailable(null);
+  }
+
+  function discardSavedDraft() {
+    clearLocalDraft();
+    setSavedDraftAvailable(null);
+  }
 
   const loadProperties = useCallback(async () => {
     setLoading(true);
@@ -399,6 +491,11 @@ export function AdminPropertiesManager() {
     setMessage(null);
     setFormError(null);
     setFieldErrors({});
+    setSessionExpired(false);
+    const existing = getLocalDraft();
+    if (existing) {
+      setSavedDraftAvailable(existing);
+    }
     setIsModalOpen(true);
   }
 
@@ -413,6 +510,7 @@ export function AdminPropertiesManager() {
     setGeocodeFeedback(null);
     setFormError(null);
     setFieldErrors({});
+    setSessionExpired(false);
     setIsModalOpen(false);
   }
 
@@ -691,14 +789,35 @@ export function AdminPropertiesManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = await response.json();
+
       if (!response.ok) {
+        if (response.status === 401) {
+          saveLocalDraft(draft, photos, null);
+          setSessionExpired(true);
+          const sessionMsg =
+            "Sua sessão expirou. Entre novamente para continuar.";
+          setFormError(sessionMsg);
+          throw new Error(sessionMsg);
+        }
+        let result: unknown = null;
+        try {
+          result = await response.json();
+        } catch {
+          // Ignore
+        }
         const parsed = parseApiError(result);
+        if (parsed.isUnauthorized) {
+          saveLocalDraft(draft, photos, null);
+          setSessionExpired(true);
+        }
         setFieldErrors(parsed.fieldErrors);
         setFormError(parsed.message);
         throw new Error(parsed.message);
       }
 
+      clearLocalDraft();
+      setSessionExpired(false);
+      setSavedDraftAvailable(null);
       setDraft(initialDraft);
       setPhotos([]);
       setFormError(null);
@@ -799,14 +918,35 @@ export function AdminPropertiesManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = await response.json();
+
       if (!response.ok) {
+        if (response.status === 401) {
+          saveLocalDraft(draft, photos, editingId);
+          setSessionExpired(true);
+          const sessionMsg =
+            "Sua sessão expirou. Entre novamente para continuar.";
+          setFormError(sessionMsg);
+          throw new Error(sessionMsg);
+        }
+        let result: unknown = null;
+        try {
+          result = await response.json();
+        } catch {
+          // Ignore
+        }
         const parsed = parseApiError(result);
+        if (parsed.isUnauthorized) {
+          saveLocalDraft(draft, photos, editingId);
+          setSessionExpired(true);
+        }
         setFieldErrors(parsed.fieldErrors);
         setFormError(parsed.message);
         throw new Error(parsed.message);
       }
 
+      clearLocalDraft();
+      setSessionExpired(false);
+      setSavedDraftAvailable(null);
       setMessage(`Imóvel ${draft.code} atualizado com sucesso.`);
       setEditingId(null);
       setDraft(initialDraft);
@@ -1185,8 +1325,88 @@ export function AdminPropertiesManager() {
         size="4xl"
       >
         <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Banner de Sessão Expirada (401) */}
+          {sessionExpired && (
+            <div
+              role="alert"
+              className="rounded-2xl border-2 border-amber-500 bg-amber-50 p-5 shadow-sm space-y-3"
+            >
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-amber-100 p-2 text-amber-800 shrink-0">
+                  <Lock size={20} />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-extrabold text-amber-950 sm:text-base">
+                    Sua sessão expirou. Entre novamente para continuar
+                  </h4>
+                  <p className="text-xs text-amber-800 font-medium">
+                    Não se preocupe: seus dados preenchidos e fotos foram
+                    preservados com segurança como rascunho neste navegador.
+                    Faça login na outra aba e clique no botão abaixo para
+                    concluir o salvamento sem perder nada.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-amber-200/80">
+                <a
+                  href="/auth/signin?callbackUrl=/admin/imoveis"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="interactive inline-flex items-center gap-1.5 rounded-full bg-[var(--plum)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--plum-bright)] shadow-xs"
+                >
+                  <ExternalLink size={14} /> Fazer login em nova aba
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSessionExpired(false);
+                    if (editingId) {
+                      updateProperty();
+                    } else {
+                      createProperty();
+                    }
+                  }}
+                  className="interactive inline-flex items-center gap-1.5 rounded-full border border-[var(--plum)] bg-white px-4 py-2 text-xs font-bold text-[var(--plum)] hover:bg-[var(--plum)]/5 cursor-pointer"
+                >
+                  <RefreshCw size={14} /> Já fiz login, salvar agora
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Aviso de rascunho recuperável */}
+          {savedDraftAvailable && !sessionExpired && !isEditing && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-[var(--plum)]/20 bg-[var(--plum)]/5 p-4 text-xs">
+              <div className="space-y-0.5">
+                <span className="font-bold text-[var(--plum)]">
+                  Rascunho não salvo encontrado
+                </span>
+                <p className="text-[var(--ink-soft)]">
+                  Há dados e fotos de um imóvel preservados neste navegador (
+                  {savedDraftAvailable.draft.title || "sem título"}).
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={restoreSavedDraft}
+                  className="interactive rounded-full bg-[var(--plum)] px-3.5 py-1.5 font-bold text-white hover:bg-[var(--plum-bright)] cursor-pointer"
+                >
+                  Restaurar rascunho
+                </button>
+                <button
+                  type="button"
+                  onClick={discardSavedDraft}
+                  className="interactive rounded-full border border-gray-300 px-3 py-1.5 font-semibold text-[var(--ink-soft)] hover:bg-gray-100 cursor-pointer"
+                >
+                  Descartar
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Alerta de erro global e detalhado no topo do formulário */}
-          {formError && (
+          {formError && !sessionExpired && (
             <div
               role="alert"
               className="rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-800 shadow-xs"
@@ -1924,16 +2144,20 @@ export function AdminPropertiesManager() {
                       });
 
                       if (uploaded.url) {
-                        setPhotos((current) => [
-                          ...current,
-                          {
-                            url: uploaded.url,
-                            path: uploaded.path,
-                            alt: draft.title || file.name,
-                            position: current.length,
-                            isCover: current.length === 0,
-                          },
-                        ]);
+                        setPhotos((current) => {
+                          const updated = [
+                            ...current,
+                            {
+                              url: uploaded.url,
+                              path: uploaded.path,
+                              alt: draft.title || file.name,
+                              position: current.length,
+                              isCover: current.length === 0,
+                            },
+                          ];
+                          saveLocalDraft(draft, updated, editingId);
+                          return updated;
+                        });
                       }
                     } catch (err) {
                       console.error("Upload error:", err);
@@ -2108,7 +2332,7 @@ export function AdminPropertiesManager() {
           </div>
 
           {/* Erro global do formulário */}
-          {formError && (
+          {formError && !sessionExpired && (
             <div
               role="alert"
               className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"

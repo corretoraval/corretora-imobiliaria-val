@@ -6,7 +6,11 @@ import { prisma } from "@/lib/prisma";
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
-    maxAge: 8 * 60 * 60, // 8 horas — condizente com uma jornada de trabalho
+    maxAge: 30 * 24 * 60 * 60, // 30 dias (adequado ao uso prolongado do painel admin)
+    updateAge: 24 * 60 * 60, // Renova a sessão a cada 24 horas enquanto o usuário estiver ativo
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 dias sincronizado com a sessão
   },
   providers: [
     CredentialsProvider({
