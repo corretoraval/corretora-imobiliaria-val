@@ -8,6 +8,8 @@ import { findAvailableSlug, nextPropertyCode } from "@/lib/identifiers";
 import { prisma } from "@/lib/prisma";
 import { getStorageProvider } from "@/lib/storage";
 
+export const dynamic = "force-dynamic";
+
 const purposes = ["VENDA", "LOCACAO_ANUAL", "TEMPORADA"] as const;
 const statuses = [
   "DISPONIVEL",

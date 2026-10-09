@@ -241,6 +241,85 @@ function parseCurrencyInput(value: string): number | null {
   return digits ? Number(digits) : null;
 }
 
+const fieldLabels: Record<string, string> = {
+  title: "Título do Imóvel",
+  slug: "URL Amigável (Slug)",
+  purpose: "Finalidade / Valor Principal",
+  propertyType: "Tipo do Imóvel",
+  city: "Cidade",
+  neighborhood: "Bairro",
+  address: "Endereço",
+  postalCode: "CEP",
+  salePrice: "Valor de Venda",
+  monthlyRent: "Valor do Aluguel",
+  dailyRate: "Valor da Diária",
+  guestCapacity: "Capacidade de Hóspedes",
+  availabilityStart: "Data Inicial de Disponibilidade",
+  availabilityEnd: "Data Final de Disponibilidade",
+  bedrooms: "Quartos",
+  suites: "Suítes",
+  bathrooms: "Banheiros",
+  parkingSpaces: "Vagas de Garagem",
+  privateArea: "Área Privativa",
+  features: "Características Extras",
+  photos: "Fotos do Imóvel",
+};
+
+function parseApiError(errorData: unknown): {
+  message: string;
+  fieldErrors: Record<string, string>;
+} {
+  const fieldErrors: Record<string, string> = {};
+
+  if (!errorData) {
+    return {
+      message: "Erro desconhecido ao processar requisição.",
+      fieldErrors,
+    };
+  }
+
+  if (typeof errorData === "string") {
+    return { message: errorData, fieldErrors };
+  }
+
+  if (typeof errorData === "object" && errorData !== null) {
+    const obj = errorData as Record<string, unknown>;
+    if (Array.isArray(obj.error)) {
+      const messages: string[] = [];
+      for (const item of obj.error) {
+        if (typeof item === "object" && item !== null) {
+          const issue = item as {
+            path?: (string | number)[];
+            message?: string;
+          };
+          const pathKey =
+            Array.isArray(issue.path) && issue.path.length > 0
+              ? String(issue.path[0])
+              : "_geral";
+          if (issue.message) {
+            fieldErrors[pathKey] = issue.message;
+            const label = fieldLabels[pathKey] || pathKey;
+            messages.push(`${label}: ${issue.message}`);
+          }
+        }
+      }
+      return {
+        message:
+          messages.length > 0
+            ? messages.join(" • ")
+            : "Revise os campos com erro.",
+        fieldErrors,
+      };
+    }
+
+    if (typeof obj.error === "string") {
+      return { message: obj.error, fieldErrors };
+    }
+  }
+
+  return { message: "Revise os dados do imóvel.", fieldErrors };
+}
+
 export function AdminPropertiesManager() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [draft, setDraft] = useState<Draft>(initialDraft);
@@ -248,6 +327,9 @@ export function AdminPropertiesManager() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [adminPage, setAdminPage] = useState(1);
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [userEditedSlug, setUserEditedSlug] = useState(false);
   const [showMoreDetails, setShowMoreDetails] = useState(false);
@@ -315,6 +397,8 @@ export function AdminPropertiesManager() {
     setUploadError(null);
     setGeocodeFeedback(null);
     setMessage(null);
+    setFormError(null);
+    setFieldErrors({});
     setIsModalOpen(true);
   }
 
@@ -327,6 +411,8 @@ export function AdminPropertiesManager() {
     setUploadProgress(null);
     setUploadError(null);
     setGeocodeFeedback(null);
+    setFormError(null);
+    setFieldErrors({});
     setIsModalOpen(false);
   }
 
@@ -497,6 +583,8 @@ export function AdminPropertiesManager() {
       setUploadingPhotos(false);
       setUploadProgress(null);
       setUploadError(null);
+      setFormError(null);
+      setFieldErrors({});
       setEditingId(property.id);
       setIsModalOpen(true);
     } catch (error) {
@@ -518,6 +606,8 @@ export function AdminPropertiesManager() {
   async function createProperty() {
     setSubmitting(true);
     setMessage(null);
+    setFormError(null);
+    setFieldErrors({});
 
     const numericPrice = parseCurrencyInput(draft.price);
     const payload: PropertyPayload = {
@@ -603,20 +693,26 @@ export function AdminPropertiesManager() {
       });
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(
-          typeof result.error === "string"
-            ? result.error
-            : "Revise os dados do imóvel.",
-        );
+        const parsed = parseApiError(result);
+        setFieldErrors(parsed.fieldErrors);
+        setFormError(parsed.message);
+        throw new Error(parsed.message);
       }
 
       setDraft(initialDraft);
       setPhotos([]);
+      setFormError(null);
+      setFieldErrors({});
       setIsModalOpen(false);
       setMessage("Imóvel cadastrado com sucesso.");
       await loadProperties();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Ocorreu um erro.");
+      const errMsg =
+        error instanceof Error
+          ? error.message
+          : "Ocorreu um erro ao cadastrar o imóvel.";
+      setMessage(errMsg);
+      setFormError((prev) => prev || errMsg);
     } finally {
       setSubmitting(false);
     }
@@ -626,6 +722,8 @@ export function AdminPropertiesManager() {
     if (!editingId) return;
     setSubmitting(true);
     setMessage(null);
+    setFormError(null);
+    setFieldErrors({});
 
     const numericPrice = parseCurrencyInput(draft.price);
     const payload: PropertyPayload = {
@@ -703,21 +801,27 @@ export function AdminPropertiesManager() {
       });
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(
-          typeof result.error === "string"
-            ? result.error
-            : "Revise os dados do imóvel.",
-        );
+        const parsed = parseApiError(result);
+        setFieldErrors(parsed.fieldErrors);
+        setFormError(parsed.message);
+        throw new Error(parsed.message);
       }
 
       setMessage(`Imóvel ${draft.code} atualizado com sucesso.`);
       setEditingId(null);
       setDraft(initialDraft);
       setPhotos([]);
+      setFormError(null);
+      setFieldErrors({});
       setIsModalOpen(false);
       await loadProperties();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Ocorreu um erro.");
+      const errMsg =
+        error instanceof Error
+          ? error.message
+          : "Ocorreu um erro ao atualizar o imóvel.";
+      setMessage(errMsg);
+      setFormError((prev) => prev || errMsg);
     } finally {
       setSubmitting(false);
     }
@@ -800,6 +904,17 @@ export function AdminPropertiesManager() {
     });
   }, [properties, propertySort, searchTerm]);
 
+  const ADMIN_PAGE_SIZE = 10;
+  const totalAdminPages = Math.max(
+    1,
+    Math.ceil(visibleProperties.length / ADMIN_PAGE_SIZE),
+  );
+  const effectiveAdminPage = Math.min(adminPage, totalAdminPages);
+  const paginatedProperties = useMemo(() => {
+    const start = (effectiveAdminPage - 1) * ADMIN_PAGE_SIZE;
+    return visibleProperties.slice(start, start + ADMIN_PAGE_SIZE);
+  }, [visibleProperties, effectiveAdminPage]);
+
   return (
     <main className="shell py-12 sm:py-16" style={{ minHeight: "100dvh" }}>
       {/* ── Header ─────────────────────────────────────── */}
@@ -861,7 +976,10 @@ export function AdminPropertiesManager() {
               <input
                 type="search"
                 value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
+                onChange={(event) => {
+                  setSearchTerm(event.target.value);
+                  setAdminPage(1);
+                }}
                 placeholder="Buscar por título, código ou cidade..."
                 className="w-full rounded-xl border border-[var(--border,#d4cec4)] bg-[var(--surface-muted,#faf8f5)] px-4 py-2.5 text-sm focus:border-[var(--plum)] focus:outline-hidden"
               />
@@ -870,9 +988,10 @@ export function AdminPropertiesManager() {
               <span className="sr-only">Ordenar imóveis</span>
               <select
                 value={propertySort}
-                onChange={(event) =>
-                  setPropertySort(event.target.value as PropertySort)
-                }
+                onChange={(event) => {
+                  setPropertySort(event.target.value as PropertySort);
+                  setAdminPage(1);
+                }}
                 className="w-full rounded-xl border border-[var(--border,#d4cec4)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--ink)] focus:border-[var(--plum)] focus:outline-hidden"
               >
                 <option value="code-asc">Código: menor para maior</option>
@@ -914,97 +1033,139 @@ export function AdminPropertiesManager() {
               </p>
             </div>
           ) : (
-            <ul className="mt-6 divide-y divide-[var(--border,#f0ede6)]">
-              {visibleProperties.map((property) => {
-                const price =
-                  property.salePrice ??
-                  property.monthlyRent ??
-                  property.dailyRate ??
-                  null;
+            <>
+              <ul className="mt-6 divide-y divide-[var(--border,#f0ede6)]">
+                {paginatedProperties.map((property) => {
+                  const price =
+                    property.salePrice ??
+                    property.monthlyRent ??
+                    property.dailyRate ??
+                    null;
 
-                return (
-                  <li
-                    className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center hover:bg-[var(--surface-muted,#faf8f5)]/50 rounded-2xl px-3 transition-colors"
-                    key={property.id}
-                  >
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-[var(--plum)] bg-[var(--plum)]/10 px-2 py-0.5 rounded">
-                          {property.code}
-                        </span>
-                        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-bold text-[var(--ink-soft)] uppercase tracking-wider">
-                          {property.purpose.replace("_", " ")}
-                        </span>
-                        {property.isFeatured && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-800">
-                            <Sparkles size={10} /> Destaque
+                  return (
+                    <li
+                      className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center hover:bg-[var(--surface-muted,#faf8f5)]/50 rounded-2xl px-3 transition-colors"
+                      key={property.id}
+                    >
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-[var(--plum)] bg-[var(--plum)]/10 px-2 py-0.5 rounded">
+                            {property.code}
                           </span>
-                        )}
+                          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-bold text-[var(--ink-soft)] uppercase tracking-wider">
+                            {property.purpose.replace("_", " ")}
+                          </span>
+                          {property.isFeatured && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-800">
+                              <Sparkles size={10} /> Destaque
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="font-bold text-[var(--ink)] text-base truncate">
+                          {property.title}
+                        </h3>
+
+                        <p className="text-xs text-[var(--ink-soft)] flex items-center gap-1.5 flex-wrap">
+                          <MapPin
+                            size={12}
+                            className="text-[var(--gold)] shrink-0"
+                          />
+                          <span>{property.city}</span>
+                          {property.neighborhood ? (
+                            <span>· {property.neighborhood}</span>
+                          ) : null}
+                          {price != null ? (
+                            <span className="font-bold text-[var(--plum)]">
+                              · {formatPrice(price)}
+                            </span>
+                          ) : null}
+                          {property.bedrooms ? (
+                            <span>· {property.bedrooms} dorms</span>
+                          ) : null}
+                          {property.privateArea ? (
+                            <span>· {property.privateArea} m²</span>
+                          ) : null}
+                        </p>
                       </div>
 
-                      <h3 className="font-bold text-[var(--ink)] text-base truncate">
-                        {property.title}
-                      </h3>
+                      {/* Botões de Ação */}
+                      <div className="flex shrink-0 flex-wrap gap-2 mt-2 sm:mt-0">
+                        <button
+                          className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--plum)]/25 px-4 py-2 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--plum)]/5 min-h-[36px]"
+                          onClick={() => loadPropertyForEdit(property)}
+                          type="button"
+                        >
+                          <Pencil aria-hidden="true" size={14} /> Editar
+                        </button>
 
-                      <p className="text-xs text-[var(--ink-soft)] flex items-center gap-1.5 flex-wrap">
-                        <MapPin
-                          size={12}
-                          className="text-[var(--gold)] shrink-0"
-                        />
-                        <span>{property.city}</span>
-                        {property.neighborhood ? (
-                          <span>· {property.neighborhood}</span>
-                        ) : null}
-                        {price != null ? (
-                          <span className="font-bold text-[var(--plum)]">
-                            · {formatPrice(price)}
-                          </span>
-                        ) : null}
-                        {property.bedrooms ? (
-                          <span>· {property.bedrooms} dorms</span>
-                        ) : null}
-                        {property.privateArea ? (
-                          <span>· {property.privateArea} m²</span>
-                        ) : null}
-                      </p>
-                    </div>
+                        <button
+                          className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-gray-200 px-4 py-2 text-xs font-bold text-[var(--ink-soft)] hover:border-amber-400 hover:text-amber-700 min-h-[36px]"
+                          onClick={() => archiveProperty(property.id)}
+                          type="button"
+                        >
+                          <Archive aria-hidden="true" size={14} /> Arquivar
+                        </button>
 
-                    {/* Botões de Ação */}
-                    <div className="flex shrink-0 flex-wrap gap-2 mt-2 sm:mt-0">
-                      <button
-                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--plum)]/25 px-4 py-2 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--plum)]/5 min-h-[36px]"
-                        onClick={() => loadPropertyForEdit(property)}
-                        type="button"
-                      >
-                        <Pencil aria-hidden="true" size={14} /> Editar
-                      </button>
+                        <button
+                          className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-red-200 px-4 py-2 text-xs font-bold text-red-600 hover:border-red-500 hover:bg-red-50 min-h-[36px]"
+                          onClick={() =>
+                            setDeleteTarget({
+                              id: property.id,
+                              code: property.code,
+                              title: property.title,
+                            })
+                          }
+                          type="button"
+                        >
+                          <Trash2 aria-hidden="true" size={14} /> Excluir
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
 
-                      <button
-                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-gray-200 px-4 py-2 text-xs font-bold text-[var(--ink-soft)] hover:border-amber-400 hover:text-amber-700 min-h-[36px]"
-                        onClick={() => archiveProperty(property.id)}
-                        type="button"
-                      >
-                        <Archive aria-hidden="true" size={14} /> Arquivar
-                      </button>
-
-                      <button
-                        className="interactive inline-flex items-center justify-center gap-1.5 rounded-full border border-red-200 px-4 py-2 text-xs font-bold text-red-600 hover:border-red-500 hover:bg-red-50 min-h-[36px]"
-                        onClick={() =>
-                          setDeleteTarget({
-                            id: property.id,
-                            code: property.code,
-                            title: property.title,
-                          })
-                        }
-                        type="button"
-                      >
-                        <Trash2 aria-hidden="true" size={14} /> Excluir
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+              {/* ── Paginação do admin ─────────────────────── */}
+              {totalAdminPages > 1 && (
+                <nav
+                  aria-label="Paginação da lista de imóveis"
+                  className="mt-6 flex flex-col items-center justify-between gap-3 border-t border-[var(--border,#f0ede6)] pt-5 sm:flex-row"
+                >
+                  <p className="text-xs text-[var(--ink-soft)]">
+                    Mostrando {(effectiveAdminPage - 1) * ADMIN_PAGE_SIZE + 1}–
+                    {Math.min(
+                      effectiveAdminPage * ADMIN_PAGE_SIZE,
+                      visibleProperties.length,
+                    )}{" "}
+                    de {visibleProperties.length} imóveis
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={effectiveAdminPage <= 1}
+                      onClick={() => setAdminPage((p) => Math.max(1, p - 1))}
+                      className="interactive inline-flex items-center gap-1 rounded-full border border-[var(--border,#d4cec4)] bg-white px-4 py-2 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--surface-muted,#faf8f5)] disabled:cursor-not-allowed disabled:opacity-40 transition-all"
+                    >
+                      ← Anterior
+                    </button>
+                    <span className="px-3 text-xs font-bold text-[var(--plum)]">
+                      Página {effectiveAdminPage} de {totalAdminPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={effectiveAdminPage >= totalAdminPages}
+                      onClick={() =>
+                        setAdminPage((p) => Math.min(totalAdminPages, p + 1))
+                      }
+                      className="interactive inline-flex items-center gap-1 rounded-full border border-[var(--border,#d4cec4)] bg-white px-4 py-2 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--surface-muted,#faf8f5)] disabled:cursor-not-allowed disabled:opacity-40 transition-all"
+                    >
+                      Próxima →
+                    </button>
+                  </div>
+                </nav>
+              )}
+            </>
           )}
         </div>
       </section>
@@ -1024,6 +1185,32 @@ export function AdminPropertiesManager() {
         size="4xl"
       >
         <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Alerta de erro global e detalhado no topo do formulário */}
+          {formError && (
+            <div
+              role="alert"
+              className="rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-800 shadow-xs"
+            >
+              <div className="flex items-center gap-2 font-bold text-red-900 mb-1">
+                <span aria-hidden="true">⚠️</span>
+                <span>Não foi possível salvar o imóvel:</span>
+              </div>
+              <p className="font-medium text-red-800">{formError}</p>
+              {Object.keys(fieldErrors).length > 0 && (
+                <ul className="mt-2.5 list-disc list-inside text-xs space-y-1 text-red-700 font-medium">
+                  {Object.entries(fieldErrors).map(([key, msg]) => (
+                    <li key={key}>
+                      <strong className="capitalize">
+                        {fieldLabels[key] || key}:
+                      </strong>{" "}
+                      {msg}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
           {/* Seção: Identificação Principal */}
           <div className="rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface-muted,#faf8f5)] p-5 space-y-4">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--gold)]">
@@ -1042,6 +1229,11 @@ export function AdminPropertiesManager() {
                   }
                   value={draft.code}
                 />
+                {fieldErrors.code && (
+                  <span className="text-xs font-bold text-red-600 mt-0.5 normal-case">
+                    {fieldErrors.code}
+                  </span>
+                )}
               </label>
 
               <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
@@ -1062,6 +1254,11 @@ export function AdminPropertiesManager() {
                   required
                   value={draft.title}
                 />
+                {fieldErrors.title && (
+                  <span className="text-xs font-bold text-red-600 mt-0.5 normal-case">
+                    {fieldErrors.title}
+                  </span>
+                )}
               </label>
             </div>
 
@@ -1076,6 +1273,11 @@ export function AdminPropertiesManager() {
                 }}
                 value={draft.slug}
               />
+              {fieldErrors.slug && (
+                <span className="text-xs font-bold text-red-600 mt-0.5 normal-case">
+                  {fieldErrors.slug}
+                </span>
+              )}
             </label>
 
             <div className="grid gap-4 sm:grid-cols-3">
@@ -1095,6 +1297,11 @@ export function AdminPropertiesManager() {
                   <option value="LOCACAO_ANUAL">Locação Anual</option>
                   <option value="TEMPORADA">Temporada</option>
                 </select>
+                {fieldErrors.purpose && (
+                  <span className="text-xs font-bold text-red-600 mt-0.5 normal-case">
+                    {fieldErrors.purpose}
+                  </span>
+                )}
               </label>
 
               <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
@@ -1108,6 +1315,11 @@ export function AdminPropertiesManager() {
                   required
                   value={draft.propertyType}
                 />
+                {fieldErrors.propertyType && (
+                  <span className="text-xs font-bold text-red-600 mt-0.5 normal-case">
+                    {fieldErrors.propertyType}
+                  </span>
+                )}
               </label>
 
               <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
@@ -1132,6 +1344,15 @@ export function AdminPropertiesManager() {
                   }
                   value={draft.price}
                 />
+                {(fieldErrors.salePrice ||
+                  fieldErrors.monthlyRent ||
+                  fieldErrors.dailyRate) && (
+                  <span className="text-xs font-bold text-red-600 mt-0.5 normal-case">
+                    {fieldErrors.salePrice ||
+                      fieldErrors.monthlyRent ||
+                      fieldErrors.dailyRate}
+                  </span>
+                )}
               </label>
             </div>
 
@@ -1222,6 +1443,11 @@ export function AdminPropertiesManager() {
                   required
                   value={draft.city}
                 />
+                {fieldErrors.city && (
+                  <span className="text-xs font-bold text-red-600 mt-0.5 normal-case">
+                    {fieldErrors.city}
+                  </span>
+                )}
               </label>
 
               <label className="grid gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
@@ -1234,6 +1460,11 @@ export function AdminPropertiesManager() {
                   }
                   value={draft.neighborhood}
                 />
+                {fieldErrors.neighborhood && (
+                  <span className="text-xs font-bold text-red-600 mt-0.5 normal-case">
+                    {fieldErrors.neighborhood}
+                  </span>
+                )}
               </label>
             </div>
 
@@ -1436,9 +1667,15 @@ export function AdminPropertiesManager() {
                     }`}
                   >
                     {geocodeFeedback.type === "success" ? (
-                      <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                      <CheckCircle2
+                        size={15}
+                        className="text-emerald-600 shrink-0"
+                      />
                     ) : (
-                      <AlertCircle size={15} className="text-amber-600 shrink-0" />
+                      <AlertCircle
+                        size={15}
+                        className="text-amber-600 shrink-0"
+                      />
                     )}
                     <span>{geocodeFeedback.text}</span>
                   </div>
@@ -1461,7 +1698,8 @@ export function AdminPropertiesManager() {
                 value={draft.pontosReferencia}
               />
               <span className="text-[11px] font-normal normal-case text-[var(--ink-soft)]">
-                Este texto será exibido na seção de Localização do imóvel para valorizar a vizinhança.
+                Este texto será exibido na seção de Localização do imóvel para
+                valorizar a vizinhança.
               </span>
             </label>
           </div>
@@ -1729,6 +1967,12 @@ export function AdminPropertiesManager() {
                 </div>
               )}
 
+              {fieldErrors.photos && (
+                <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-bold text-red-800">
+                  {fieldErrors.photos}
+                </div>
+              )}
+
               {uploadingPhotos && uploadProgress && (
                 <div className="mt-3 rounded-xl border border-[var(--border,#d4cec4)] bg-white p-3 space-y-2 shadow-xs">
                   <div className="flex items-center justify-between text-xs font-semibold text-[var(--plum)]">
@@ -1862,6 +2106,16 @@ export function AdminPropertiesManager() {
               )}
             </div>
           </div>
+
+          {/* Erro global do formulário */}
+          {formError && (
+            <div
+              role="alert"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+            >
+              {formError}
+            </div>
+          )}
 
           {/* Ações do Formulário */}
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border,#f0ede6)]">

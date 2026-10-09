@@ -538,4 +538,56 @@ describe("API /api/imoveis handlers", () => {
       ],
     });
   });
+
+  it("supports sequential creation of more than 10 properties without limit", async () => {
+    mockGetServerSession.mockResolvedValue({ user: { role: "admin" } });
+
+    const existingList: { code: string }[] = [];
+    prismaMock.prisma.imovel.findMany.mockImplementation(
+      async () => existingList,
+    );
+    prismaMock.prisma.imovel.findUnique.mockResolvedValue(null);
+    prismaMock.prisma.imovel.create.mockImplementation(
+      async ({
+        data,
+      }: {
+        data: {
+          code: string;
+          title: string;
+          slug: string;
+          [key: string]: unknown;
+        };
+      }) => {
+        existingList.push({ code: data.code });
+        return {
+          id: `prop-${existingList.length}`,
+          ...data,
+        };
+      },
+    );
+
+    const createdResults = [];
+    for (let i = 1; i <= 15; i++) {
+      const req = new Request("http://localhost/api/imoveis", {
+        method: "POST",
+        body: JSON.stringify({
+          title: `Imóvel Sequencial Teste ${i}`,
+          propertyType: "Apartamento",
+          purpose: "VENDA",
+          city: "Balneário Camboriú",
+          salePrice: 1_000_000 + i * 10_000,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const res = await route.POST(req);
+      expect(res.status).toBe(201);
+      const json = await res.json();
+      expect(json.code).toBe(`VAL-${String(i).padStart(3, "0")}`);
+      createdResults.push(json);
+    }
+
+    expect(createdResults).toHaveLength(15);
+    expect(prismaMock.prisma.imovel.create).toHaveBeenCalledTimes(15);
+    expect(createdResults[14].code).toBe("VAL-015");
+  });
 });

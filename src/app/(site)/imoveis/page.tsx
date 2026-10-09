@@ -5,11 +5,13 @@ import Link from "next/link";
 import { PropertyCard, type PropertyPurpose } from "@/components/property-card";
 import { prisma } from "@/lib/prisma";
 
+const PAGE_SIZE = 12;
+
 interface ImoveisPageProps {
-  searchParams: Promise<{ finalidade?: string }>;
+  searchParams: Promise<{ finalidade?: string; pagina?: string }>;
 }
 
-async function loadProperties(finalidadeFilter?: string) {
+async function loadProperties(finalidadeFilter?: string, page = 1) {
   try {
     const validPurpose = ["VENDA", "LOCACAO_ANUAL", "TEMPORADA"].includes(
       finalidadeFilter?.toUpperCase() || "",
@@ -17,53 +19,82 @@ async function loadProperties(finalidadeFilter?: string) {
       ? (finalidadeFilter?.toUpperCase() as PropertyPurpose)
       : undefined;
 
-    const rows = await prisma.imovel.findMany({
-      where: {
-        archivedAt: null,
-        ...(validPurpose ? { purpose: validPurpose } : {}),
-      },
-      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
-      take: 60,
-      include: {
-        photos: {
-          orderBy: [{ isCover: "desc" }, { position: "asc" }],
-        },
-      },
-    });
+    const where = {
+      archivedAt: null,
+      ...(validPurpose ? { purpose: validPurpose } : {}),
+    };
 
-    return rows.map((r) => ({
-      id: r.id,
-      code: r.code,
-      slug: r.slug,
-      title: r.title,
-      location: r.neighborhood ? `${r.neighborhood}, ${r.city}` : r.city,
-      city: r.city,
-      neighborhood: r.neighborhood,
-      purpose: r.purpose as PropertyPurpose,
-      price: r.salePrice ?? r.monthlyRent ?? r.dailyRate ?? null,
-      salePrice: r.salePrice,
-      monthlyRent: r.monthlyRent,
-      dailyRate: r.dailyRate,
-      propertyType: r.propertyType,
-      bedrooms: r.bedrooms,
-      suites: r.suites,
-      bathrooms: r.bathrooms,
-      parkingSpaces: r.parkingSpaces,
-      privateArea: r.privateArea,
-      isFeatured: r.isFeatured,
-      features: r.features,
-      photos: r.photos,
-    }));
+    const [totalCount, rows] = await Promise.all([
+      prisma.imovel.count({ where }),
+      prisma.imovel.findMany({
+        where,
+        orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+        include: {
+          photos: {
+            orderBy: [{ isCover: "desc" }, { position: "asc" }],
+          },
+        },
+      }),
+    ]);
+
+    return {
+      totalCount,
+      totalPages: Math.max(1, Math.ceil(totalCount / PAGE_SIZE)),
+      currentPage: page,
+      items: rows.map((r) => ({
+        id: r.id,
+        code: r.code,
+        slug: r.slug,
+        title: r.title,
+        location: r.neighborhood ? `${r.neighborhood}, ${r.city}` : r.city,
+        city: r.city,
+        neighborhood: r.neighborhood,
+        purpose: r.purpose as PropertyPurpose,
+        price: r.salePrice ?? r.monthlyRent ?? r.dailyRate ?? null,
+        salePrice: r.salePrice,
+        monthlyRent: r.monthlyRent,
+        dailyRate: r.dailyRate,
+        propertyType: r.propertyType,
+        bedrooms: r.bedrooms,
+        suites: r.suites,
+        bathrooms: r.bathrooms,
+        parkingSpaces: r.parkingSpaces,
+        privateArea: r.privateArea,
+        isFeatured: r.isFeatured,
+        features: r.features,
+        photos: r.photos,
+      })),
+    };
   } catch (error) {
     console.error("Erro ao carregar imóveis:", error);
-    return [];
+    return {
+      totalCount: 0,
+      totalPages: 1,
+      currentPage: 1,
+      items: [],
+    };
   }
 }
 
 export default async function ImoveisPage({ searchParams }: ImoveisPageProps) {
-  const { finalidade } = await searchParams;
+  const { finalidade, pagina } = await searchParams;
+  const currentPage = Math.max(1, Number.parseInt(pagina || "1", 10) || 1);
   const currentFilter = finalidade?.toUpperCase() || "TODOS";
-  const properties = await loadProperties(finalidade);
+  const {
+    items: properties,
+    totalCount,
+    totalPages,
+  } = await loadProperties(finalidade, currentPage);
+
+  function buildPageHref(pageNumber: number) {
+    const params = new URLSearchParams();
+    if (finalidade) params.set("finalidade", finalidade.toLowerCase());
+    if (pageNumber > 1) params.set("pagina", String(pageNumber));
+    const qs = params.toString();
+    return `/imoveis${qs ? `?${qs}` : ""}`;
+  }
 
   const filterTabs = [
     { id: "TODOS", label: "Todos os Imóveis", href: "/imoveis", icon: Layers },
@@ -151,6 +182,51 @@ export default async function ImoveisPage({ searchParams }: ImoveisPageProps) {
           properties.map((p) => <PropertyCard key={p.id} property={p} />)
         )}
       </div>
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <nav
+          aria-label="Paginação do catálogo de imóveis"
+          className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[var(--border,#e8e3d9)] pt-8 sm:flex-row"
+        >
+          <p className="text-xs text-[var(--ink-soft)]">
+            Mostrando {(currentPage - 1) * PAGE_SIZE + 1} a{" "}
+            {Math.min(currentPage * PAGE_SIZE, totalCount)} de {totalCount}{" "}
+            imóveis
+          </p>
+          <div className="flex items-center gap-2">
+            {currentPage > 1 ? (
+              <Link
+                href={buildPageHref(currentPage - 1)}
+                className="interactive inline-flex items-center gap-1 rounded-full border border-[var(--border,#d4cec4)] bg-white px-4 py-2 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--surface-muted,#faf8f5)] transition-all"
+              >
+                ← Anterior
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border,#e8e3d9)] px-4 py-2 text-xs font-bold text-gray-300 cursor-not-allowed">
+                ← Anterior
+              </span>
+            )}
+
+            <span className="px-3 text-xs font-bold text-[var(--plum)]">
+              Página {currentPage} de {totalPages}
+            </span>
+
+            {currentPage < totalPages ? (
+              <Link
+                href={buildPageHref(currentPage + 1)}
+                className="interactive inline-flex items-center gap-1 rounded-full border border-[var(--border,#d4cec4)] bg-white px-4 py-2 text-xs font-bold text-[var(--plum)] hover:border-[var(--plum)] hover:bg-[var(--surface-muted,#faf8f5)] transition-all"
+              >
+                Próxima →
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border,#e8e3d9)] px-4 py-2 text-xs font-bold text-gray-300 cursor-not-allowed">
+                Próxima →
+              </span>
+            )}
+          </div>
+        </nav>
+      )}
     </main>
   );
 }
