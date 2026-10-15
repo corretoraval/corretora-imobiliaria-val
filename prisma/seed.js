@@ -255,7 +255,7 @@ async function main() {
       id: "principal",
       phone: "(47) 97400-7391",
       whatsapp: "5547974007391",
-      email: "contato@corretoraval.com.br",
+      // email: não seeded — deve ser configurado pela corretora no admin
       address: "Balneário Camboriú — SC",
       instagramUrl: "https://www.instagram.com/valdete_goncalvesdemelo/",
       // Tema padrão: Ametista & Ouro Real
@@ -372,6 +372,77 @@ async function main() {
     if (!existing) {
       await prisma.membroEquipe.create({ data: membro });
     }
+  }
+
+  const defaultCampos = [
+    {
+      id: "campo_nome",
+      name: "name",
+      label: "Nome completo",
+      type: "text",
+      required: true,
+      placeholder: "Seu nome completo",
+      options: null,
+      order: 0,
+      isActive: true,
+      isProtected: true,
+    },
+    {
+      id: "campo_email",
+      name: "email",
+      label: "E-mail",
+      type: "email",
+      required: true,
+      placeholder: "seu@email.com",
+      options: null,
+      order: 1,
+      isActive: true,
+      isProtected: true,
+    },
+    {
+      id: "campo_phone",
+      name: "phone",
+      label: "Telefone / WhatsApp",
+      type: "tel",
+      required: true,
+      placeholder: "(47) 99999-9999",
+      options: null,
+      order: 2,
+      isActive: true,
+      isProtected: true,
+    },
+    {
+      id: "campo_subject",
+      name: "subject",
+      label: "Assunto",
+      type: "text",
+      required: false,
+      placeholder: "Sobre o que gostaria de conversar?",
+      options: null,
+      order: 3,
+      isActive: true,
+      isProtected: false,
+    },
+    {
+      id: "campo_message",
+      name: "message",
+      label: "Mensagem",
+      type: "textarea",
+      required: false,
+      placeholder: "Escreva sua mensagem aqui...",
+      options: null,
+      order: 4,
+      isActive: true,
+      isProtected: false,
+    },
+  ];
+
+  for (const campo of defaultCampos) {
+    await prisma.campoContato.upsert({
+      where: { name: campo.name },
+      update: {},
+      create: campo,
+    });
   }
 
   console.log("Seed complete.");

@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import { ContactForm } from "@/components/forms/contact-form";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
+import { prisma } from "@/lib/prisma";
 import { getPageSeo, getSiteSettings } from "@/lib/site-content";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,7 +25,30 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContatoPage() {
-  const settings = await getSiteSettings();
+  const [settings, dbFields, contatoPage] = await Promise.all([
+    getSiteSettings(),
+    prisma.campoContato
+      .findMany({ where: { isActive: true }, orderBy: { order: "asc" } })
+      .catch(() => []),
+    prisma.paginaSite
+      .findUnique({ where: { slug: "contato" }, select: { content: true } })
+      .catch(() => null),
+  ]);
+
+  const pageContent = (contatoPage?.content ?? {}) as Record<string, unknown>;
+  const formTexts = {
+    formTitle:
+      (pageContent.formTitle as string) || "Envie uma Mensagem",
+    formSubtitle:
+      (pageContent.formSubtitle as string) ??
+      "Preencha o formulário abaixo e eu entrarei em contato diretamente com a orientação certa para o que você precisa.",
+    formButtonText:
+      (pageContent.formButtonText as string) || "Enviar Mensagem",
+    formSuccessMessage:
+      (pageContent.formSuccessMessage as string) ||
+      "Obrigada pelo contato! Retornarei sua mensagem o mais breve possível.",
+  };
+
   const whatsappUrl = settings.whatsapp
     ? `https://wa.me/${settings.whatsapp}`
     : "#";
@@ -97,22 +121,24 @@ export default async function ContatoPage() {
                   </div>
                 </a>
 
-                <a
-                  href={`mailto:${settings.email}`}
-                  className="interactive flex items-center gap-4 rounded-2xl border p-5 bg-[var(--surface)] hover:border-[var(--gold-light)] hover:bg-white transition-all group"
-                >
-                  <div className="flex size-12 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs group-hover:scale-105 transition-transform">
-                    <Mail size={20} />
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold text-[var(--ink-soft)] uppercase block">
-                      E-mail
-                    </span>
-                    <strong className="text-base text-[var(--plum)] font-bold">
-                      {settings.email || "contato@corretoraval.com.br"}
-                    </strong>
-                  </div>
-                </a>
+                {settings.email ? (
+                  <a
+                    href={`mailto:${settings.email}`}
+                    className="interactive flex items-center gap-4 rounded-2xl border p-5 bg-[var(--surface)] hover:border-[var(--gold-light)] hover:bg-white transition-all group"
+                  >
+                    <div className="flex size-12 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs group-hover:scale-105 transition-transform">
+                      <Mail size={20} />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-[var(--ink-soft)] uppercase block">
+                        E-mail
+                      </span>
+                      <strong className="text-base text-[var(--plum)] font-bold">
+                        {settings.email}
+                      </strong>
+                    </div>
+                  </a>
+                ) : null}
 
                 {settings.instagramUrl && (
                   <a
@@ -158,7 +184,13 @@ export default async function ContatoPage() {
 
             {/* Form Column */}
             <div className="lg:col-span-7">
-              <ContactForm />
+              <ContactForm
+                contactEmail={settings.contactEmail}
+                whatsapp={settings.whatsapp}
+                phone={settings.phone}
+                initialFields={dbFields}
+                initialTexts={formTexts}
+              />
             </div>
           </div>
         </div>

@@ -211,7 +211,8 @@ const fallbackSettings = {
   tagline: "Confiança que abre portas.",
   phone: "(47) 97400-7391",
   whatsapp: "5547974007391",
-  email: "contato@corretoraval.com.br",
+  email: null as string | null,
+  contactEmail: null as string | null, // e-mail interno que recebe os formulários
   address: "Balneário Camboriú — SC",
   instagramUrl: "https://www.instagram.com/valdete_goncalvesdemelo/",
   creci: "CRECI/SC 56372-F",
