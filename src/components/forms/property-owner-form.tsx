@@ -25,6 +25,7 @@ export function PropertyOwnerForm() {
       propertyType: formData.get("propertyType") as string,
       message: formData.get("message") as string,
       type: "ANUNCIAR",
+      contact_security_token: (formData.get("contact_security_token") as string) || undefined,
     };
 
     try {
@@ -83,6 +84,16 @@ export function PropertyOwnerForm() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Honeypot invisível contra bots */}
+          <input
+            type="text"
+            name="contact_security_token"
+            aria-hidden="true"
+            tabIndex={-1}
+            autoComplete="off"
+            style={{ display: "none" }}
+          />
+
           {status === "error" && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 flex items-center gap-2">
               <AlertCircle size={18} className="text-red-500 shrink-0" />

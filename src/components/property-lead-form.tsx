@@ -24,6 +24,7 @@ export function PropertyLeadForm({
   const [message, setMessage] = useState(
     `Olá! Tenho interesse no imóvel ${propertyCode} (${propertyTitle}) e gostaria de mais informações ou agendar uma visita.`,
   );
+  const [securityToken, setSecurityToken] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +53,7 @@ export function PropertyLeadForm({
           message,
           propertyAddress: propertyAddress || null,
           propertyType: propertyType || null,
+          contact_security_token: securityToken || undefined,
         }),
       });
 
@@ -104,17 +106,37 @@ export function PropertyLeadForm({
       </div>
 
       {submitted ? (
-        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center">
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-6 text-center animate-fade-in">
           <CheckCircle2 className="mx-auto text-emerald-600 mb-2" size={32} />
-          <h4 className="font-bold text-emerald-900 text-sm">
-            Mensagem enviada com sucesso!
+          <h4 className="font-bold text-emerald-950 text-base">
+            Recebemos sua mensagem!
           </h4>
-          <p className="mt-1 text-xs text-emerald-700">
-            A Corretora Val entrará em contato com você o mais breve possível.
+          <p className="mt-2 text-xs text-emerald-800 leading-relaxed">
+            A Corretora Val entrará em contato em breve. Se preferir atendimento imediato, fale pelo WhatsApp.
           </p>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="interactive mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-2.5 text-xs font-extrabold text-white shadow-sm hover:bg-[#20bd5a] transition-all"
+          >
+            <MessageSquare size={16} />
+            <span>Falar no WhatsApp</span>
+          </a>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3.5">
+          {/* Honeypot invisível contra bots */}
+          <input
+            type="text"
+            name="contact_security_token"
+            value={securityToken}
+            onChange={(e) => setSecurityToken(e.target.value)}
+            aria-hidden="true"
+            tabIndex={-1}
+            autoComplete="off"
+            style={{ display: "none" }}
+          />
           <div>
             <label
               htmlFor="lead-name"
