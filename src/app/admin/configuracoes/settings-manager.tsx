@@ -1,7 +1,8 @@
 "use client";
 
-import { LoaderCircle, Palette, Save, Settings2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, LoaderCircle, MessageSquare, Palette, Save, Settings2, Send } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { ContactFormConfigManager } from "./contact-form-manager";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 type Settings = {
@@ -10,6 +11,7 @@ type Settings = {
   phone: string | null;
   whatsapp: string | null;
   email: string | null;
+  contactEmail: string | null;
   address: string | null;
   instagramUrl: string | null;
   creci: string;
@@ -134,7 +136,11 @@ export function SettingsManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"identity" | "design">("identity");
+  const [activeTab, setActiveTab] = useState<"identity" | "design" | "form">("identity");
+  const [testEmailStatus, setTestEmailStatus] = useState<
+    "idle" | "sending" | "ok" | "error"
+  >("idle");
+  const [testEmailMsg, setTestEmailMsg] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -160,6 +166,13 @@ export function SettingsManager() {
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!settings) return;
+
+    // O admin exige o preenchimento de contactEmail para garantir que os formulários recebam retorno
+    if (!settings.contactEmail?.trim()) {
+      setMessage("O 'E-mail que recebe as mensagens' é obrigatório para garantir o funcionamento do formulário de contato.");
+      return;
+    }
+
     setSaving(true);
     setMessage(null);
     try {
@@ -188,6 +201,25 @@ export function SettingsManager() {
       setMessage(error instanceof Error ? error.message : "Ocorreu um erro.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function sendTestEmail() {
+    setTestEmailStatus("sending");
+    setTestEmailMsg(null);
+    try {
+      const res = await fetch("/api/admin/email-teste", { method: "POST" });
+      const data = (await res.json()) as { ok: boolean; message?: string; error?: string };
+      if (data.ok) {
+        setTestEmailStatus("ok");
+        setTestEmailMsg(data.message ?? "E-mail de teste enviado!");
+      } else {
+        setTestEmailStatus("error");
+        setTestEmailMsg(data.error ?? "Falha ao enviar e-mail de teste.");
+      }
+    } catch {
+      setTestEmailStatus("error");
+      setTestEmailMsg("Erro de rede ao enviar e-mail de teste.");
     }
   }
 
@@ -225,6 +257,21 @@ export function SettingsManager() {
         Edite as configurações globais e o tema visual do site.
       </p>
 
+      {/* ── Alerta: e-mail de recebimento não configurado ── */}
+      {settings && !settings.contactEmail && (
+        <div className="mt-6 flex items-start gap-3 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+          <AlertTriangle size={18} className="mt-0.5 shrink-0 text-red-500" />
+          <div>
+            <p className="font-bold">E-mail de contato não configurado</p>
+            <p className="mt-0.5 text-red-700">
+              Os clientes não conseguem enviar mensagens pelo site. Configure o
+              campo <strong>"E-mail que recebe as mensagens"</strong> abaixo e
+              salve.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="mt-8 flex gap-1 rounded-xl border bg-[var(--surface-muted)] p-1 w-fit">
         <button
@@ -250,6 +297,18 @@ export function SettingsManager() {
         >
           <Palette size={15} />
           Design
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("form")}
+          className={`interactive flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
+            activeTab === "form"
+              ? "bg-white text-[var(--plum)] shadow-sm"
+              : "text-[var(--ink-soft)] hover:text-[var(--plum)]"
+          }`}
+        >
+          <MessageSquare size={15} />
+          Formulário de Contato
         </button>
       </div>
 
@@ -288,7 +347,7 @@ export function SettingsManager() {
                   }
                 />
                 <Input
-                  label="E-mail"
+                  label="E-mail (exibido no rodapé e página de contato)"
                   type="email"
                   value={settings.email}
                   onChange={(value) =>
@@ -320,6 +379,66 @@ export function SettingsManager() {
                     })
                   }
                 />
+                {/* ── E-mail de recebimento de contatos (campo interno) ── */}
+                <div className="md:col-span-2">
+                  <div className="rounded-xl border border-[var(--gold)] bg-amber-50 p-4">
+                    <p className="text-xs font-extrabold uppercase tracking-wider text-[var(--plum)] mb-1">
+                      E-mail que recebe as mensagens de contato
+                    </p>
+                    <p className="text-xs text-[var(--ink-soft)] mb-3">
+                      Endereço interno — não exibido publicamente. Obrigatório
+                      para os formulários funcionarem.
+                    </p>
+                    <label className="grid gap-1 text-sm font-bold text-[var(--plum)]">
+                      E-mail de recebimento *
+                      <input
+                        id="settings-contactEmail"
+                        className="rounded-lg border bg-white px-3 py-2 font-normal text-[var(--ink)]"
+                        type="email"
+                        required
+                        placeholder="ex: seuemail@gmail.com"
+                        value={settings.contactEmail ?? ""}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            contactEmail: emptyToNull(e.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                    {/* Botão de teste */}
+                    <button
+                      type="button"
+                      id="btn-test-email"
+                      onClick={sendTestEmail}
+                      disabled={testEmailStatus === "sending" || !settings.contactEmail}
+                      className="interactive mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--plum)] px-4 py-2 text-xs font-bold text-[var(--plum)] hover:bg-[var(--plum)] hover:text-white disabled:opacity-40 transition-colors"
+                    >
+                      {testEmailStatus === "sending" ? (
+                        <LoaderCircle size={14} className="animate-spin" />
+                      ) : (
+                        <Send size={14} />
+                      )}
+                      Enviar e-mail de teste
+                    </button>
+                    {testEmailMsg && (
+                      <p
+                        className={`mt-2 flex items-center gap-1.5 text-xs font-semibold ${
+                          testEmailStatus === "ok"
+                            ? "text-emerald-700"
+                            : "text-red-700"
+                        }`}
+                      >
+                        {testEmailStatus === "ok" ? (
+                          <CheckCircle2 size={13} />
+                        ) : (
+                          <AlertTriangle size={13} />
+                        )}
+                        {testEmailMsg}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -446,13 +565,20 @@ export function SettingsManager() {
               </div>
             )}
 
-            <button
-              className="interactive mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--gold)] px-5 py-3 text-sm font-extrabold text-[var(--plum)] hover:bg-[var(--gold-light)] disabled:opacity-60"
-              disabled={saving}
-              type="submit"
-            >
-              <Save size={17} /> {saving ? "Salvando…" : "Salvar configurações"}
-            </button>
+            {/* ── ABA FORMULÁRIO DE CONTATO ─────────────────────────────────── */}
+            {activeTab === "form" && (
+              <ContactFormConfigManager />
+            )}
+
+            {activeTab !== "form" && (
+              <button
+                className="interactive mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--gold)] px-5 py-3 text-sm font-extrabold text-[var(--plum)] hover:bg-[var(--gold-light)] disabled:opacity-60"
+                disabled={saving}
+                type="submit"
+              >
+                <Save size={17} /> {saving ? "Salvando…" : "Salvar configurações"}
+              </button>
+            )}
           </form>
         ) : (
           <p className="text-sm text-[var(--ink-soft)]">

@@ -49,6 +49,7 @@ const settingsSchema = z.object({
   phone: nullableText(40),
   whatsapp: nullableText(32),
   email: nullableEmail,
+  contactEmail: nullableEmail.optional(),
   address: nullableText(160),
   instagramUrl: nullableUrl,
   creci: z.string().trim().min(3).max(60),
