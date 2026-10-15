@@ -96,3 +96,34 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Erro interno." }, { status: 500 });
   }
 }
+
+// DELETE /api/admin/mensagens — exclusão em massa de mensagens
+const bulkDeleteSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1, "Selecione ao menos uma mensagem para excluir."),
+});
+
+export async function DELETE(request: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const body = bulkDeleteSchema.parse(await request.json());
+    const result = await prisma.lead.deleteMany({
+      where: { id: { in: body.ids } },
+    });
+    return NextResponse.json({ ok: true, count: result.count });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.issues[0]?.message ?? "Dados inválidos." },
+        { status: 400 },
+      );
+    }
+    console.error("DELETE /api/admin/mensagens error:", error);
+    return NextResponse.json(
+      { error: "Erro interno ao excluir mensagens." },
+      { status: 500 },
+    );
+  }
+}

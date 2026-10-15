@@ -49,7 +49,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/admin/mensagens/[id] — soft delete via status ARQUIVADO
+// DELETE /api/admin/mensagens/[id] — exclusão individual de mensagem
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -61,13 +61,20 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    await prisma.lead.update({
+    await prisma.lead.delete({
       where: { id },
-      data: { status: "ARQUIVADO" },
     });
     return NextResponse.json({ ok: true });
-  } catch (error) {
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code: string }).code === "P2025"
+    ) {
+      return NextResponse.json({ ok: true, message: "Mensagem já excluída." });
+    }
     console.error(`DELETE /api/admin/mensagens/${id} error:`, error);
-    return NextResponse.json({ error: "Erro interno." }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno ao excluir mensagem." }, { status: 500 });
   }
 }
