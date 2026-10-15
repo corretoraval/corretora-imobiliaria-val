@@ -4,6 +4,7 @@ import {
   ExternalLink,
   FileText,
   LayoutDashboard,
+  MessageSquare,
   Settings,
   Users,
 } from "lucide-react";
@@ -12,6 +13,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import type { ReactNode } from "react";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { SignOutButton } from "./sign-out-button";
 
 export const metadata = {
@@ -21,6 +23,7 @@ export const metadata = {
 const navigation = [
   { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { href: "/admin/imoveis", label: "Imóveis", icon: Building2 },
+  { href: "/admin/mensagens", label: "Mensagens", icon: MessageSquare },
   { href: "/admin/blog", label: "Blog", icon: FileText },
   { href: "/admin/conteudo", label: "Páginas e conteúdo", icon: BookOpen },
   {
@@ -40,6 +43,20 @@ export default async function AdminLayout({
   if (session?.user?.role !== "admin")
     redirect("/auth/signin?callbackUrl=/admin");
 
+  // Contador de mensagens não lidas para o badge na sidebar
+  let unreadCount = 0;
+  try {
+    unreadCount = await prisma.lead.count({
+      where: {
+        isRead: false,
+        status: { not: "ARQUIVADO" },
+        emailStatus: { not: "spam" },
+      },
+    });
+  } catch {
+    // Silencioso — badge simplesmente não aparece se o banco estiver indisponível
+  }
+
   return (
     <div className="min-h-screen bg-[var(--surface-muted)] text-[var(--ink)] lg:grid lg:grid-cols-[17rem_1fr]">
       <aside className="flex flex-col border-b bg-[var(--plum)] p-5 text-white lg:min-h-screen lg:border-r lg:border-b-0">
@@ -52,11 +69,18 @@ export default async function AdminLayout({
         <nav className="mt-7 grid gap-1" aria-label="Navegação do painel">
           {navigation.map(({ href, label, icon: Icon }) => (
             <Link
-              className="interactive flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white"
+              className="interactive flex items-center justify-between gap-3 rounded-xl px-3 py-3 text-sm font-bold text-white/75 hover:bg-white/10 hover:text-white"
               href={href}
               key={href}
             >
-              <Icon aria-hidden="true" size={18} /> {label}
+              <span className="flex items-center gap-3">
+                <Icon aria-hidden="true" size={18} /> {label}
+              </span>
+              {href === "/admin/mensagens" && unreadCount > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--gold)] px-1.5 text-[10px] font-extrabold text-[var(--plum)]">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
