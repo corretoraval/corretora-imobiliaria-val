@@ -160,7 +160,8 @@ model ConfiguracaoSite {
   tagline          String   @default("Confiança que abre portas.")
   phone            String?
   whatsapp         String?
-  email            String?
+  email            String?  // e-mail público exibido no rodapé / página de contato
+  contactEmail     String?  // e-mail que recebe os formulários de contato (interno)
   address          String?
   instagramUrl     String?
   creci            String   @default("CRECI/SC 56372-F")
@@ -223,10 +224,38 @@ model Lead {
   propertyAddress String?
   propertyType    String?
   status          StatusLead @default(NOVO)
+  // Controle de envio de e-mail
+  emailStatus     String     @default("pending") // pending | sent | failed | no_config | legacy
+  emailError      String?    // mensagem de erro se emailStatus = failed
+  // Caixa de entrada
+  isRead          Boolean    @default(false)
+  readAt          DateTime?
+  // Proteção antispam
+  ipAddress       String?
+  customFields    Json?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
   @@index([type, status])
+  @@index([isRead, createdAt])
+  @@index([emailStatus])
+}
+
+model CampoContato {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  label       String
+  type        String   @default("text") // text, email, tel, textarea, select
+  required    Boolean  @default(false)
+  placeholder String?
+  options     String?  // opções para select (separadas por vírgula ou JSON)
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  isProtected Boolean  @default(false) // campos essenciais: nome e meio de retorno
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([order, isActive])
 }
 
 model PostBlog {
