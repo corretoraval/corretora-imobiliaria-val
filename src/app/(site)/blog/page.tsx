@@ -2,17 +2,40 @@ import type { Metadata } from "next";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getPageSeo } from "@/lib/site-content";
 import { BlogClientWrapper } from "./blog-client-wrapper";
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("blog");
+  const title =
+    seo.title ??
+    "Blog Imobiliário | Notícias e Guias em Balneário Camboriú | Corretora Val";
+  const description =
+    seo.description ??
+    "Conteúdos, guias de investimento, dicas de locação e análises do mercado imobiliário em Balneário Camboriú e Camboriú.";
 
   return {
-    title: seo.title ?? "Blog Imobiliário | Corretora Val",
-    description:
-      seo.description ??
-      "Conteúdos, guias de investimento, dicas de locação e análises do mercado imobiliário em Balneário Camboriú e Camboriú.",
+    title,
+    description,
+    alternates: {
+      canonical: "/blog",
+    },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}/blog`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
   };
 }
 

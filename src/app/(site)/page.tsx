@@ -13,22 +13,54 @@ import Link from "next/link";
 import { AuthorityStats } from "@/components/institutional/authority-stats";
 import { TestimonialsPlaceholder } from "@/components/institutional/testimonials-placeholder";
 import { PropertyCard } from "@/components/property-card";
+import {
+  JsonLd,
+  generateRealEstateAgentSchema,
+} from "@/components/seo/json-ld";
 import { CTASection } from "@/components/site/cta-section";
 import { SectionTitle } from "@/components/site/section-title";
 import { splitHighlightedText } from "@/lib/home-content";
 import { prisma } from "@/lib/prisma";
-import { getDepoimentos, getHomeContent, getPageSeo } from "@/lib/site-content";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
+import {
+  getDepoimentos,
+  getHomeContent,
+  getPageSeo,
+  getSiteSettings,
+} from "@/lib/site-content";
 
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("home");
+  const title =
+    seo.title ??
+    "Corretora Val | Imóveis e Administração em Balneário Camboriú e Camboriú";
+  const description =
+    seo.description ??
+    "Imóveis à venda, locação anual, temporada e administração de imóveis em Balneário Camboriú e Camboriú. Atendimento próximo e seguro desde 1990.";
 
   return {
-    title: seo.title ?? "Corretora Val | Confiança que abre portas.",
-    description:
-      seo.description ??
-      "Administração de imóveis, venda, locação anual e temporada em Balneário Camboriú e Camboriú.",
+    title,
+    description,
+    alternates: {
+      canonical: "/",
+    },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: SITE_URL,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
   };
 }
 
@@ -76,11 +108,13 @@ async function getFeaturedProperties() {
 }
 
 export default async function Home() {
-  const [featuredProperties, content, depoimentos] = await Promise.all([
-    getFeaturedProperties(),
-    getHomeContent(),
-    getDepoimentos(),
-  ]);
+  const [featuredProperties, content, depoimentos, settings] =
+    await Promise.all([
+      getFeaturedProperties(),
+      getHomeContent(),
+      getDepoimentos(),
+      getSiteSettings(),
+    ]);
   const heroTitle = splitHighlightedText(
     content.hero.title,
     content.hero.emphasis,
@@ -88,11 +122,13 @@ export default async function Home() {
 
   return (
     <main>
+      <JsonLd data={generateRealEstateAgentSchema(settings)} />
       {/* Hero Section */}
       <section className="shell grid min-h-[calc(100dvh-5rem)] items-center gap-12 py-16 lg:grid-cols-[1fr_0.92fr] lg:py-20">
         <div className="max-w-2xl">
           <p className="eyebrow fade-up">{content.hero.eyebrow}</p>
           <h1 className="display fade-up-delay mt-5 text-5xl leading-[0.92] text-[var(--plum)] sm:text-6xl lg:text-8xl">
+            <span className="sr-only">Corretora Val | </span>
             {heroTitle.before}
             {heroTitle.highlighted && (
               <em className="font-normal text-[var(--gold)]">
@@ -100,6 +136,10 @@ export default async function Home() {
               </em>
             )}
             {heroTitle.after}
+            <span className="sr-only">
+              {" "}
+              — Imóveis e Administração em Balneário Camboriú e Camboriú
+            </span>
           </h1>
           <p className="fade-up-delay mt-7 max-w-xl text-base leading-8 text-[var(--ink-soft)] sm:text-lg">
             {content.hero.description}
@@ -229,8 +269,12 @@ export default async function Home() {
           ) : (
             <>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {featuredProperties.map((property) => (
-                  <PropertyCard key={property.id} property={property} />
+                {featuredProperties.map((property, index) => (
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    priority={index === 0}
+                  />
                 ))}
               </div>
 

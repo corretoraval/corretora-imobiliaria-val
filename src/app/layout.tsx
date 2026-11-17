@@ -9,6 +9,7 @@ import {
   Playfair_Display,
   Plus_Jakarta_Sans,
 } from "next/font/google";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/site-content";
 import type { ReactNode } from "react";
 import "./globals.css";
@@ -70,9 +71,36 @@ const FONT_VAR: Record<string, string> = {
 };
 
 export const metadata: Metadata = {
-  title: "Corretora Val | Confiança que abre portas.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default:
+      "Corretora Val | Imóveis e Administração em Balneário Camboriú e Camboriú",
+    template: "%s | Corretora Val",
+  },
   description:
-    "Administração de imóveis, venda, locação anual e temporada em Balneário Camboriú e Camboriú.",
+    "Imóveis à venda, locação anual, temporada e administração de imóveis em Balneário Camboriú e Camboriú. Atendimento humano e seguro desde 1990.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: SITE_URL,
+    siteName: "Corretora Val",
+    title:
+      "Corretora Val | Imóveis e Administração em Balneário Camboriú e Camboriú",
+    description:
+      "Imóveis à venda, locação anual, temporada e administração de imóveis em Balneário Camboriú e Camboriú. Atendimento humano e seguro desde 1990.",
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title:
+      "Corretora Val | Imóveis e Administração em Balneário Camboriú e Camboriú",
+    description:
+      "Imóveis à venda, locação anual, temporada e administração de imóveis em Balneário Camboriú e Camboriú.",
+    images: [DEFAULT_OG_IMAGE.url],
+  },
 };
 
 export default async function RootLayout({

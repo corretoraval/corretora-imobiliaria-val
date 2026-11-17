@@ -11,16 +11,39 @@ import { ContactForm } from "@/components/forms/contact-form";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getPageSeo, getSiteSettings } from "@/lib/site-content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("contato");
+  const title =
+    seo.title ??
+    "Contato | Atendimento Imobiliário em Balneário Camboriú | Corretora Val";
+  const description =
+    seo.description ??
+    "Fale com a Corretora Val por WhatsApp ou formulário. Atendimento especializado para compra, venda, locação e administração em Balneário Camboriú.";
 
   return {
-    title: seo.title ?? "Contato | Corretora Val",
-    description:
-      seo.description ??
-      "Fale com a Corretora Val por WhatsApp, telefone ou formulário. Atendimento especializado para compra, venda e administração de imóveis em Balneário Camboriú.",
+    title,
+    description,
+    alternates: {
+      canonical: "/contato",
+    },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}/contato`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
   };
 }
 

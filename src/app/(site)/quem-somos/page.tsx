@@ -13,17 +13,40 @@ import {
   getQuemSomosContent,
   getQuemSomosPageContent,
 } from "@/lib/site-content";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("quem-somos");
+  const title =
+    seo.title ??
+    "Quem Somos | Corretora Val em Balneário Camboriú e Camboriú";
+  const description =
+    seo.description ??
+    "Conheça a história de Valdete Gonçalves de Melo e a trajetória da Corretora Val: trabalho, família e compromisso imobiliário desde 1990 em Balneário Camboriú.";
 
   return {
-    title: seo.title ?? "Quem Somos | Corretora Val",
-    description:
-      seo.description ??
-      "Conheça a história de Valdete Gonçalves de Melo e a trajetória da Corretora Val em Balneário Camboriú e Camboriú: trabalho, família, compromisso e confiança desde 1990.",
+    title,
+    description,
+    alternates: {
+      canonical: "/quem-somos",
+    },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}/quem-somos`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
   };
 }
 

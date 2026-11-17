@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -20,9 +21,42 @@ export async function generateMetadata({
     return { title: "Artigo não encontrado | Corretora Val" };
   }
 
+  const title = post.seoTitle || `${post.title} | Blog Corretora Val`;
+  const description =
+    post.seoDescription ||
+    post.summary ||
+    "Artigo sobre mercado imobiliário em Balneário Camboriú e região.";
+  const canonicalUrl = `/blog/${post.slug}`;
+  const coverUrl = post.coverImage;
+
   return {
-    title: post.seoTitle || `${post.title} | Blog Corretora Val`,
-    description: post.seoDescription || post.summary,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      type: "article",
+      locale: "pt_BR",
+      url: `${SITE_URL}${canonicalUrl}`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: coverUrl
+        ? [
+            {
+              url: coverUrl,
+              alt: title,
+            },
+          ]
+        : [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: coverUrl ? [coverUrl] : [DEFAULT_OG_IMAGE.url],
+    },
   };
 }
 

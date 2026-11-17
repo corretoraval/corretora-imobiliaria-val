@@ -9,17 +9,38 @@ import {
   getMemoriaVivaContent,
   getPageSeo,
 } from "@/lib/site-content";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("memoria-viva");
+  const title = seo.title ?? "Memória Viva | Corretora Val";
+  const description =
+    seo.description ??
+    "Explore a trajetória da Corretora Val ao longo dos anos. Um memorial digital sobre nossas origens, momentos marcantes e o legado imobiliário em Balneário Camboriú.";
 
   return {
-    title: seo.title ?? "Memória Viva | Corretora Val",
-    description:
-      seo.description ??
-      "Explore a trajetória da Corretora Val ao longo dos anos. Um memorial digital sobre nossas origens, momentos marcantes e o legado imobiliário em Balneário Camboriú.",
+    title,
+    description,
+    alternates: {
+      canonical: "/memoria-viva",
+    },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}/memoria-viva`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
   };
 }
 

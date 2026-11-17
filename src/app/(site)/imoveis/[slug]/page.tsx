@@ -26,8 +26,15 @@ import { PropertyCard } from "@/components/property-card";
 import { PropertyGallery } from "@/components/property-gallery";
 import { PropertyLeadForm } from "@/components/property-lead-form";
 import { PropertyMap } from "@/components/property-map";
+import { JsonLd, generatePropertySchema } from "@/components/seo/json-ld";
 import { formatPrice } from "@/lib/format-price";
 import { prisma } from "@/lib/prisma";
+import {
+  DEFAULT_OG_IMAGE,
+  SITE_URL,
+  buildPropertyDescription,
+  buildPropertyTitle,
+} from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -117,18 +124,38 @@ export async function generateMetadata({
     };
   }
 
+  const title = buildPropertyTitle(property);
+  const description = buildPropertyDescription(property);
+  const canonicalUrl = `/imoveis/${property.slug}`;
   const coverUrl = property.photos[0]?.url;
 
   return {
-    title: `${property.title} | ${property.code} - Corretora Val`,
-    description:
-      property.summary ||
-      property.description ||
-      `Confira detalhes de ${property.title} em ${property.city}. Atendimento exclusivo Corretora Val.`,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
-      title: `${property.title} | Corretora Val`,
-      description: property.summary || undefined,
-      images: coverUrl ? [{ url: coverUrl }] : undefined,
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}${canonicalUrl}`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: coverUrl
+        ? [
+            {
+              url: coverUrl,
+              alt: title,
+            },
+          ]
+        : [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: coverUrl ? [coverUrl] : [DEFAULT_OG_IMAGE.url],
     },
   };
 }
@@ -205,6 +232,7 @@ export default async function PropertyDetailPage({
 
   return (
     <main className="shell py-10 sm:py-14">
+      <JsonLd data={generatePropertySchema(property)} />
       {/* Breadcrumb Navigation */}
       <nav
         aria-label="Navegação estrutural"
@@ -288,7 +316,15 @@ export default async function PropertyDetailPage({
         {/* Coluna da Esquerda */}
         <div className="min-w-0 w-full space-y-10">
           {/* Galeria de Fotos */}
-          <PropertyGallery title={property.title} photos={property.photos} />
+          <PropertyGallery
+            title={property.title}
+            propertyType={property.propertyType}
+            bedrooms={property.bedrooms}
+            neighborhood={property.neighborhood}
+            city={property.city}
+            purpose={property.purpose}
+            photos={property.photos}
+          />
 
           {/* Ficha Rápida / Especificações em Cartões */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
