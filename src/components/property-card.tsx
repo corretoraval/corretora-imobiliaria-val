@@ -10,6 +10,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/format-price";
+import { buildPropertyImageAlt } from "@/lib/seo";
 
 export type PropertyPurpose = "VENDA" | "LOCACAO_ANUAL" | "TEMPORADA";
 
@@ -38,9 +39,10 @@ export interface PropertyCardProps {
     coverImage?: string | null;
     features?: unknown;
   };
+  priority?: boolean;
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
+export function PropertyCard({ property, priority }: PropertyCardProps) {
   const href = property.slug ? `/imoveis/${property.slug}` : "/imoveis";
 
   // Determinar foto de capa
@@ -76,6 +78,20 @@ export function PropertyCard({ property }: PropertyCardProps) {
       "bg-[var(--gold)] text-[var(--plum)] border border-[var(--gold-light)]/50 shadow-xs";
   }
 
+  const imageAlt = buildPropertyImageAlt(
+    {
+      title: property.title,
+      propertyType: property.propertyType,
+      bedrooms: property.bedrooms,
+      neighborhood: property.neighborhood,
+      city: property.city,
+      purpose: property.purpose,
+    },
+    0,
+    true,
+    property.photos?.[0]?.alt,
+  );
+
   return (
     <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[var(--border,#e8e3d9)] bg-[var(--surface,#ffffff)] shadow-[0_4px_16px_rgba(53,16,79,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--gold)] hover:shadow-[0_12px_28px_rgba(53,16,79,0.12)] min-w-0 w-full">
       <div>
@@ -84,8 +100,9 @@ export function PropertyCard({ property }: PropertyCardProps) {
           {coverPhoto ? (
             <Image
               src={coverPhoto}
-              alt={property.title}
+              alt={imageAlt}
               fill
+              priority={priority}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />

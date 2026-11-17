@@ -316,7 +316,15 @@ export default async function PropertyDetailPage({
         {/* Coluna da Esquerda */}
         <div className="min-w-0 w-full space-y-10">
           {/* Galeria de Fotos */}
-          <PropertyGallery title={property.title} photos={property.photos} />
+          <PropertyGallery
+            title={property.title}
+            propertyType={property.propertyType}
+            bedrooms={property.bedrooms}
+            neighborhood={property.neighborhood}
+            city={property.city}
+            purpose={property.purpose}
+            photos={property.photos}
+          />
 
           {/* Ficha Rápida / Especificações em Cartões */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

@@ -3,9 +3,15 @@
 import { ChevronLeft, ChevronRight, Expand, Home, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { buildPropertyImageAlt } from "@/lib/seo";
 
 interface PropertyGalleryProps {
   title: string;
+  propertyType?: string | null;
+  bedrooms?: number | null;
+  neighborhood?: string | null;
+  city?: string | null;
+  purpose?: string | null;
   photos: Array<{
     id?: string;
     url: string;
@@ -15,7 +21,15 @@ interface PropertyGalleryProps {
   }>;
 }
 
-export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
+export function PropertyGallery({
+  title,
+  propertyType,
+  bedrooms,
+  neighborhood,
+  city,
+  purpose,
+  photos,
+}: PropertyGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -62,21 +76,33 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
   }
 
   const currentPhoto = photos[selectedIndex] || photos[0];
+  const currentAlt = buildPropertyImageAlt(
+    {
+      title,
+      propertyType,
+      bedrooms,
+      neighborhood,
+      city,
+      purpose,
+    },
+    selectedIndex,
+    selectedIndex === 0,
+    currentPhoto.alt,
+  );
 
   return (
     <div className="space-y-3 w-full min-w-0 max-w-full">
       {/* Imagem Principal com Contenção e Fundo Desfocado */}
       <div className="group relative h-[300px] sm:h-[400px] md:h-[460px] lg:h-[500px] xl:h-[540px] max-h-[70vh] w-full max-w-full overflow-hidden rounded-3xl bg-neutral-950 shadow-xl">
-        {/* Fundo Desfocado da Própria Foto para Preenchimento Elegante */}
+        {/* Fundo Desfocado da Própria Foto para Preenchimento Elegante (sem priority e com sizes reduzido) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <Image
             src={currentPhoto.url}
             alt=""
             fill
-            sizes="100vw"
+            sizes="(max-width: 768px) 50vw, 30vw"
             className="scale-125 object-cover opacity-35 blur-2xl filter"
             aria-hidden="true"
-            priority
           />
           <div className="absolute inset-0 bg-neutral-950/40 backdrop-blur-xs" />
         </div>
@@ -84,10 +110,10 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
         {/* Imagem Principal Preservando 100% dos Ambientes sem Cortes */}
         <Image
           src={currentPhoto.url}
-          alt={currentPhoto.alt || `${title} - Foto ${selectedIndex + 1}`}
+          alt={currentAlt}
           fill
           priority
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 850px"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 850px"
           className="relative z-10 object-contain p-1 sm:p-2 transition-all duration-300"
         />
 
@@ -170,7 +196,7 @@ export function PropertyGallery({ title, photos }: PropertyGalleryProps) {
               src={currentPhoto.url}
               alt=""
               fill
-              sizes="100vw"
+              sizes="30vw"
               className="scale-125 object-cover opacity-25 blur-3xl filter"
               aria-hidden="true"
             />
