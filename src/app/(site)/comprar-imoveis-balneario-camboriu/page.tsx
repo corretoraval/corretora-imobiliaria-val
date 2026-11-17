@@ -13,37 +13,42 @@ import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
+import {
+  getComprarImoveisPageContent,
+  getPageSeo,
+} from "@/lib/site-content";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title:
-    "Comprar Imóveis em Balneário Camboriú e Camboriú | Venda | Corretora Val",
-  description:
-    "Apartamentos, coberturas e casas à venda em Balneário Camboriú e Camboriú. Assessoria jurídica completa e oportunidades com alta valorização no litoral.",
-  alternates: {
-    canonical: "/comprar-imoveis-balneario-camboriu",
-  },
-  openGraph: {
-    type: "website",
-    locale: "pt_BR",
-    url: `${SITE_URL}/comprar-imoveis-balneario-camboriu`,
-    siteName: "Corretora Val",
-    title:
-      "Comprar Imóveis em Balneário Camboriú e Camboriú | Venda | Corretora Val",
-    description:
-      "Apartamentos, coberturas e casas à venda em Balneário Camboriú e Camboriú com assessoria experiente da Corretora Val.",
-    images: [DEFAULT_OG_IMAGE],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Comprar Imóveis em Balneário Camboriú e Camboriú | Venda | Corretora Val",
-    description:
-      "Oportunidades de compra de imóveis em Balneário Camboriú e Camboriú.",
-    images: [DEFAULT_OG_IMAGE.url],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("comprar-imoveis-balneario-camboriu");
+  const title =
+    seo.title ??
+    "Comprar Imóveis em Balneário Camboriú e Camboriú | Venda | Corretora Val";
+  const description =
+    seo.description ??
+    "Apartamentos, coberturas e casas à venda em Balneário Camboriú e Camboriú. Assessoria jurídica completa e oportunidades com alta valorização no litoral.";
+  return {
+    title,
+    description,
+    alternates: { canonical: "/comprar-imoveis-balneario-camboriu" },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}/comprar-imoveis-balneario-camboriu`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
+  };
+}
 
 async function getSaleProperties() {
   try {
@@ -90,33 +95,28 @@ async function getSaleProperties() {
 }
 
 export default async function ComprarImoveisPage() {
-  const properties = await getSaleProperties();
+  const [properties, c] = await Promise.all([
+    getSaleProperties(),
+    getComprarImoveisPageContent(),
+  ]);
 
   return (
     <main className="min-h-screen">
       <PageHero
-        eyebrow="COMPRA & VENDA DE IMÓVEIS"
-        title="Comprar Imóveis em Balneário Camboriú e Camboriú"
-        subtitle="Invista no metro quadrado mais valorizado do Brasil com total segurança jurídica, suporte documental minucioso e orientação de quem atua no mercado desde 1990."
+        eyebrow={c.heroEyebrow}
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
       />
 
       {/* Conteúdo Editorial Otimizado para SEO (>300 palavras) */}
       <section className="py-16 md:py-20 bg-white border-b">
         <div className="shell max-w-4xl space-y-8 text-[var(--ink-soft)] leading-relaxed">
           <SectionTitle
-            eyebrow="Investimento Seguro"
-            title="O Mercado Imobiliário de Balneário Camboriú e Camboriú"
+            eyebrow={c.sectionEyebrow}
+            title={c.sectionTitle}
           />
 
-          <p className="text-base sm:text-lg">
-            <strong>Balneário Camboriú</strong> consolidou-se como o polo de
-            maior valorização imobiliária do Brasil, atraindo investidores e
-            famílias em busca de rentabilidade sólida, solidez patrimonial e
-            qualidade de vida incomparável. Com arranha-céus imponentes, praias
-            limpas, segurança de primeiro mundo e índice elevado de
-            desenvolvimento humano (IDH), adquirir um imóvel na região é uma
-            decisão estratégica de preservação e crescimento de capital.
-          </p>
+          <p className="text-base sm:text-lg">{c.intro}</p>
 
           <div className="grid gap-6 md:grid-cols-3 pt-4">
             <div className="rounded-2xl border border-[var(--gold-light)]/40 bg-[var(--surface-muted)] p-6 shadow-xs">
@@ -124,12 +124,9 @@ export default async function ComprarImoveisPage() {
                 <TrendingUp size={20} />
               </div>
               <h3 className="display text-xl text-[var(--plum)] font-bold">
-                Alta Valorização
+                {c.card1Title}
               </h3>
-              <p className="text-xs sm:text-sm mt-2">
-                Histórico consistente de valorização do metro quadrado acima da
-                média nacional e excelente liquidez para revenda e locação.
-              </p>
+              <p className="text-xs sm:text-sm mt-2">{c.card1Text}</p>
             </div>
 
             <div className="rounded-2xl border border-[var(--gold-light)]/40 bg-[var(--surface-muted)] p-6 shadow-xs">
@@ -137,12 +134,9 @@ export default async function ComprarImoveisPage() {
                 <Shield size={20} />
               </div>
               <h3 className="display text-xl text-[var(--plum)] font-bold">
-                Due Diligence Completa
+                {c.card2Title}
               </h3>
-              <p className="text-xs sm:text-sm mt-2">
-                Auditoria jurídica rigorosa: checagem de certidões cíveis, fiscais,
-                trabalhistas, matrícula e ônus reais antes de qualquer sinal.
-              </p>
+              <p className="text-xs sm:text-sm mt-2">{c.card2Text}</p>
             </div>
 
             <div className="rounded-2xl border border-[var(--gold-light)]/40 bg-[var(--surface-muted)] p-6 shadow-xs">
@@ -150,36 +144,18 @@ export default async function ComprarImoveisPage() {
                 <FileCheck2 size={20} />
               </div>
               <h3 className="display text-xl text-[var(--plum)] font-bold">
-                Escritura & Financiamento
+                {c.card3Title}
               </h3>
-              <p className="text-xs sm:text-sm mt-2">
-                Acompanhamento integral desde a proposta de compra até a
-                assinatura da escritura pública definitiva e registro imobiliário.
-              </p>
+              <p className="text-xs sm:text-sm mt-2">{c.card3Text}</p>
             </div>
           </div>
 
           <div className="space-y-4 pt-4">
             <h3 className="display text-2xl text-[var(--plum)] font-bold">
-              Opções em Balneário Camboriú e Camboriú para Cada Perfil
+              {c.textSectionTitle}
             </h3>
-            <p className="text-sm sm:text-base">
-              Nosso portfólio contempla desde estúdios e apartamentos compactos
-              para geração de renda por aluguel até suntuosos apartamentos de 3
-              a 5 suítes frente ao mar na <em>Barra Sul</em>, <em>Centro</em> e{" "}
-              <em>Pioneiros</em>. Para quem busca condomínios horizontais com
-              amplo espaço, jardins e contato direto com a natureza,{" "}
-              <strong>Camboriú</strong> apresenta condomínios fechados e bairros
-              planejados com excelente relação custo por metro quadrado.
-            </p>
-            <p className="text-sm sm:text-base">
-              A corretora Valdete Gonçalves de Melo (CRECI/SC 56372-F) atua com
-              ética e discrição absoluta, intermediando negociações diretas com
-              proprietários e construtoras renomadas. Seja para pagamento à vista,
-              parcelamento direto com a construtora ou financiamento bancário com
-              as melhores taxas do mercado, oferecemos assessoria personalizada
-              em cada etapa.
-            </p>
+            <p className="text-sm sm:text-base">{c.textParagraph1}</p>
+            <p className="text-sm sm:text-base">{c.textParagraph2}</p>
           </div>
         </div>
       </section>
@@ -189,9 +165,9 @@ export default async function ComprarImoveisPage() {
         <div className="shell">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <SectionTitle
-              eyebrow="Oportunidades de Compra"
-              title="Imóveis Selecionados à Venda"
-              subtitle="Confira apartamentos, casas e coberturas disponíveis para compra imediata."
+              eyebrow={c.listingsEyebrow}
+              title={c.listingsTitle}
+              subtitle={c.listingsSubtitle}
             />
             <Link
               href="/imoveis?finalidade=venda"
@@ -243,10 +219,10 @@ export default async function ComprarImoveisPage() {
 
       {/* CTA Final */}
       <CTASection
-        title="Quer comprar ou vender seu imóvel no litoral?"
-        description="Fale diretamente com a Corretora Val e descubra as melhores opções com segurança jurídica total."
-        primaryButtonText="Falar com a Corretora"
-        secondaryButtonText="Ver mais imóveis"
+        title={c.ctaTitle}
+        description={c.ctaDescription}
+        primaryButtonText={c.ctaPrimaryLabel}
+        secondaryButtonText={c.ctaSecondaryLabel}
         secondaryButtonHref="/imoveis"
       />
     </main>

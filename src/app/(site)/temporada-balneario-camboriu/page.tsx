@@ -12,37 +12,42 @@ import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
+import {
+  getTemporadaPageContent,
+  getPageSeo,
+} from "@/lib/site-content";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title:
-    "Aluguel por Temporada em Balneário Camboriú e Camboriú | Corretora Val",
-  description:
-    "Imóveis mobiliados para aluguel de temporada em Balneário Camboriú e Camboriú. Próximos ao mar, conforto e segurança para suas férias no litoral catarinense.",
-  alternates: {
-    canonical: "/temporada-balneario-camboriu",
-  },
-  openGraph: {
-    type: "website",
-    locale: "pt_BR",
-    url: `${SITE_URL}/temporada-balneario-camboriu`,
-    siteName: "Corretora Val",
-    title:
-      "Aluguel por Temporada em Balneário Camboriú e Camboriú | Corretora Val",
-    description:
-      "Reserve apartamentos e casas confortáveis para temporada em Balneário Camboriú e Camboriú com atendimento de confiança.",
-    images: [DEFAULT_OG_IMAGE],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Aluguel por Temporada em Balneário Camboriú e Camboriú | Corretora Val",
-    description:
-      "Imóveis para aluguel de temporada em Balneário Camboriú e Camboriú.",
-    images: [DEFAULT_OG_IMAGE.url],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("temporada-balneario-camboriu");
+  const title =
+    seo.title ??
+    "Aluguel por Temporada em Balneário Camboriú e Camboriú | Corretora Val";
+  const description =
+    seo.description ??
+    "Imóveis mobiliados para aluguel de temporada em Balneário Camboriú e Camboriú. Próximos ao mar, conforto e segurança para suas férias no litoral catarinense.";
+  return {
+    title,
+    description,
+    alternates: { canonical: "/temporada-balneario-camboriu" },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}/temporada-balneario-camboriu`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
+  };
+}
 
 async function getSeasonProperties() {
   try {
@@ -89,33 +94,28 @@ async function getSeasonProperties() {
 }
 
 export default async function TemporadaPage() {
-  const properties = await getSeasonProperties();
+  const [properties, c] = await Promise.all([
+    getSeasonProperties(),
+    getTemporadaPageContent(),
+  ]);
 
   return (
     <main className="min-h-screen">
       <PageHero
-        eyebrow="LOCAÇÃO DE TEMPORADA & FÉRIAS"
-        title="Aluguel por Temporada em Balneário Camboriú e Camboriú"
-        subtitle="Viva momentos inesquecíveis no litoral de Santa Catarina com imóveis mobiliados, climatizados e estrategicamente localizados para o seu descanso e lazer."
+        eyebrow={c.heroEyebrow}
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
       />
 
       {/* Conteúdo Editorial Otimizado para SEO (>300 palavras) */}
       <section className="py-16 md:py-20 bg-white border-b">
         <div className="shell max-w-4xl space-y-8 text-[var(--ink-soft)] leading-relaxed">
           <SectionTitle
-            eyebrow="Férias no Litoral Catarinense"
-            title="Por que Alugar por Temporada com a Corretora Val?"
+            eyebrow={c.sectionEyebrow}
+            title={c.sectionTitle}
           />
 
-          <p className="text-base sm:text-lg">
-            Conhecida como a <em>Capital Catarinense do Turismo</em>,{" "}
-            <strong>Balneário Camboriú</strong> atrai milhares de visitantes todos
-            os anos durante o verão, feriados prolongados e finais de semana.
-            A cidade conta com atrações famosas internacionalmente, como a
-            orla revitalizada da Praia Central, a moderna FG Big Wheel, o
-            Parque Unipraias com bondinhos aéreos e uma vida noturna e
-            gastronômica inigualável.
-          </p>
+          <p className="text-base sm:text-lg">{c.intro}</p>
 
           <div className="grid gap-6 md:grid-cols-3 pt-4">
             <div className="rounded-2xl border border-[var(--gold-light)]/40 bg-[var(--surface-muted)] p-6 shadow-xs">
@@ -123,12 +123,9 @@ export default async function TemporadaPage() {
                 <Waves size={20} />
               </div>
               <h3 className="display text-xl text-[var(--plum)] font-bold">
-                Localização Privilegiada
+                {c.card1Title}
               </h3>
-              <p className="text-xs sm:text-sm mt-2">
-                Opções frente mar, quadra mar e a poucos metros da praia nos
-                melhores pontos da Avenida Atlântica e Avenida Brasil.
-              </p>
+              <p className="text-xs sm:text-sm mt-2">{c.card1Text}</p>
             </div>
 
             <div className="rounded-2xl border border-[var(--gold-light)]/40 bg-[var(--surface-muted)] p-6 shadow-xs">
@@ -136,12 +133,9 @@ export default async function TemporadaPage() {
                 <Sun size={20} />
               </div>
               <h3 className="display text-xl text-[var(--plum)] font-bold">
-                Totalmente Equipados
+                {c.card2Title}
               </h3>
-              <p className="text-xs sm:text-sm mt-2">
-                Imóveis com ar-condicionado, Wi-Fi de alta velocidade, cozinha
-                completa, churrasqueira e vaga de garagem privativa.
-              </p>
+              <p className="text-xs sm:text-sm mt-2">{c.card2Text}</p>
             </div>
 
             <div className="rounded-2xl border border-[var(--gold-light)]/40 bg-[var(--surface-muted)] p-6 shadow-xs">
@@ -149,40 +143,19 @@ export default async function TemporadaPage() {
                 <CheckCircle2 size={20} />
               </div>
               <h3 className="display text-xl text-[var(--plum)] font-bold">
-                Check-in Seguro
+                {c.card3Title}
               </h3>
-              <p className="text-xs sm:text-sm mt-2">
-                Entrega de chaves organizada, contrato de locação por temporada
-                formalizado e assistência próxima durante todo o período.
-              </p>
+              <p className="text-xs sm:text-sm mt-2">{c.card3Text}</p>
             </div>
           </div>
 
           <div className="space-y-4 pt-4">
             <h3 className="display text-2xl text-[var(--plum)] font-bold">
-              Imóveis para Famílias e Grupos em Balneário Camboriú e Camboriú
+              {c.textSectionTitle}
             </h3>
-            <p className="text-sm sm:text-base">
-              Ao planejar suas férias, evitar intermediários desconhecidos e
-              garantir que o imóvel reservado condiz exatamente com as fotos é
-              fundamental. A Corretora Val (CRECI/SC 56372-F) seleciona
-              pessoalmente cada imóvel para <strong>temporada</strong>,
-              certificando-se de que a estrutura esteja impecável para receber
-              famílias com crianças, casais e pequenos grupos de amigos.
-            </p>
-            <p className="text-sm sm:text-base">
-              Além de Balneário Camboriú, o município vizinho de{" "}
-              <strong>Camboriú</strong> desponta como excelente alternativa de
-              hospedagem, proporcionando tranquilidade no interior verde,
-              imóveis amplos para grandes famílias e acesso rápido às praias em
-              poucos minutos de carro.
-            </p>
-            <p className="text-sm sm:text-base">
-              Nossa equipe orienta você na escolha do número ideal de dormitórios,
-              capacidade máxima de hóspedes, proximidade com supermercados e
-              farmácias, garantindo férias livres de imprevistos e com o aconchego
-              que sua família merece.
-            </p>
+            <p className="text-sm sm:text-base">{c.textParagraph1}</p>
+            <p className="text-sm sm:text-base">{c.textParagraph2}</p>
+            <p className="text-sm sm:text-base">{c.textParagraph3}</p>
           </div>
         </div>
       </section>
@@ -192,9 +165,9 @@ export default async function TemporadaPage() {
         <div className="shell">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <SectionTitle
-              eyebrow="Seleção de Férias"
-              title="Imóveis Disponíveis para Temporada"
-              subtitle="Consulte diárias e pacotes especiais de verão, réveillon e feriados."
+              eyebrow={c.listingsEyebrow}
+              title={c.listingsTitle}
+              subtitle={c.listingsSubtitle}
             />
             <Link
               href="/imoveis?finalidade=temporada"
@@ -246,10 +219,10 @@ export default async function TemporadaPage() {
 
       {/* CTA Final */}
       <CTASection
-        title="Planejando suas férias em Balneário Camboriú?"
-        description="Entre em contato com a Corretora Val e reserve seu imóvel de temporada com total antecedência e segurança."
-        primaryButtonText="Reservar pelo WhatsApp"
-        secondaryButtonText="Ver mais imóveis"
+        title={c.ctaTitle}
+        description={c.ctaDescription}
+        primaryButtonText={c.ctaPrimaryLabel}
+        secondaryButtonText={c.ctaSecondaryLabel}
         secondaryButtonHref="/imoveis"
       />
     </main>

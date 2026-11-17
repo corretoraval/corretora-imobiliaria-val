@@ -1,5 +1,5 @@
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://corretoraval.com.br";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.corretoraval.com.br";
 
 export const DEFAULT_OG_IMAGE = {
   url: `${SITE_URL}/images/institutional/corretora-val-logo-banner.png`,

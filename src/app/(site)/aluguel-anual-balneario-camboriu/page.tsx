@@ -13,34 +13,42 @@ import { PageHero } from "@/components/site/page-hero";
 import { SectionTitle } from "@/components/site/section-title";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
+import {
+  getAluguelAnualPageContent,
+  getPageSeo,
+} from "@/lib/site-content";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Aluguel Anual em Balneário Camboriú e Camboriú | Corretora Val",
-  description:
-    "Encontre apartamentos e casas para aluguel anual em Balneário Camboriú e Camboriú. Contratos seguros, vistorias detalhadas e assessoria completa.",
-  alternates: {
-    canonical: "/aluguel-anual-balneario-camboriu",
-  },
-  openGraph: {
-    type: "website",
-    locale: "pt_BR",
-    url: `${SITE_URL}/aluguel-anual-balneario-camboriu`,
-    siteName: "Corretora Val",
-    title: "Aluguel Anual em Balneário Camboriú e Camboriú | Corretora Val",
-    description:
-      "Apartamentos e casas para aluguel anual em Balneário Camboriú e Camboriú com garantia de transparência e contratos seguros.",
-    images: [DEFAULT_OG_IMAGE],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Aluguel Anual em Balneário Camboriú e Camboriú | Corretora Val",
-    description:
-      "Apartamentos e casas para locação anual em Balneário Camboriú e Camboriú.",
-    images: [DEFAULT_OG_IMAGE.url],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("aluguel-anual-balneario-camboriu");
+  const title =
+    seo.title ??
+    "Aluguel Anual em Balneário Camboriú e Camboriú | Corretora Val";
+  const description =
+    seo.description ??
+    "Encontre apartamentos e casas para aluguel anual em Balneário Camboriú e Camboriú. Contratos seguros, vistorias detalhadas e assessoria completa.";
+  return {
+    title,
+    description,
+    alternates: { canonical: "/aluguel-anual-balneario-camboriu" },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}/aluguel-anual-balneario-camboriu`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
+  };
+}
 
 async function getRentalProperties() {
   try {
@@ -87,33 +95,28 @@ async function getRentalProperties() {
 }
 
 export default async function AluguelAnualPage() {
-  const properties = await getRentalProperties();
+  const [properties, c] = await Promise.all([
+    getRentalProperties(),
+    getAluguelAnualPageContent(),
+  ]);
 
   return (
     <main className="min-h-screen">
       <PageHero
-        eyebrow="LOCAÇÃO ANUAL RESIDENCIAL & COMERCIAL"
-        title="Aluguel Anual em Balneário Camboriú e Camboriú com Segurança Jurídica"
-        subtitle="Encontre o imóvel ideal para morar ou estabelecer seu negócio no litoral catarinense com contratos estruturados, vistoria fotográfica minuciosa e atendimento dedicado."
+        eyebrow={c.heroEyebrow}
+        title={c.heroTitle}
+        subtitle={c.heroSubtitle}
       />
 
       {/* Conteúdo Editorial Otimizado para SEO (>300 palavras) */}
       <section className="py-16 md:py-20 bg-white border-b">
         <div className="shell max-w-4xl space-y-8 text-[var(--ink-soft)] leading-relaxed">
           <SectionTitle
-            eyebrow="Mercado de Locação Local"
-            title="Como Funciona o Aluguel Anual em Balneário Camboriú e Região"
+            eyebrow={c.sectionEyebrow}
+            title={c.sectionTitle}
           />
 
-          <p className="text-base sm:text-lg">
-            Morar em Balneário Camboriú ou em Camboriú é o objetivo de muitas
-            famílias e profissionais atraídos pela excepcional qualidade de
-            vida, segurança pública de ponta, infraestrutura completa e praias
-            deslumbrantes. No entanto, o mercado de <strong>aluguel anual</strong>{" "}
-            na região possui características muito particulares que exigem
-            acompanhamento profissional experiente para garantir negócios
-            tranquilos e juridicamente equilibrados.
-          </p>
+          <p className="text-base sm:text-lg">{c.intro}</p>
 
           <div className="grid gap-6 md:grid-cols-3 pt-4">
             <div className="rounded-2xl border border-[var(--gold-light)]/40 bg-[var(--surface-muted)] p-6 shadow-xs">
@@ -121,12 +124,9 @@ export default async function AluguelAnualPage() {
                 <ShieldCheck size={20} />
               </div>
               <h3 className="display text-xl text-[var(--plum)] font-bold">
-                Garantias Seguras
+                {c.card1Title}
               </h3>
-              <p className="text-xs sm:text-sm mt-2">
-                Análise ágil e desburocratizada com modalidades aceitas: caução,
-                seguro fiança, fiador idôneo ou título de capitalização.
-              </p>
+              <p className="text-xs sm:text-sm mt-2">{c.card1Text}</p>
             </div>
 
             <div className="rounded-2xl border border-[var(--gold-light)]/40 bg-[var(--surface-muted)] p-6 shadow-xs">
@@ -134,13 +134,9 @@ export default async function AluguelAnualPage() {
                 <FileText size={20} />
               </div>
               <h3 className="display text-xl text-[var(--plum)] font-bold">
-                Contratos Claros
+                {c.card2Title}
               </h3>
-              <p className="text-xs sm:text-sm mt-2">
-                Instrumentos contratuais rigorosamente alinhados à Lei do
-                Inquilinato (Lei nº 8.245/1991), resguardando locador e
-                locatário.
-              </p>
+              <p className="text-xs sm:text-sm mt-2">{c.card2Text}</p>
             </div>
 
             <div className="rounded-2xl border border-[var(--gold-light)]/40 bg-[var(--surface-muted)] p-6 shadow-xs">
@@ -148,43 +144,19 @@ export default async function AluguelAnualPage() {
                 <CheckCircle2 size={20} />
               </div>
               <h3 className="display text-xl text-[var(--plum)] font-bold">
-                Vistoria Fotográfica
+                {c.card3Title}
               </h3>
-              <p className="text-xs sm:text-sm mt-2">
-                Relatório minucioso de entrada e saída com fotos em alta
-                resolução, prevenindo qualquer atrito ao término do contrato.
-              </p>
+              <p className="text-xs sm:text-sm mt-2">{c.card3Text}</p>
             </div>
           </div>
 
           <div className="space-y-4 pt-4">
             <h3 className="display text-2xl text-[var(--plum)] font-bold">
-              Principais Bairros para Locação Anual
+              {c.textSectionTitle}
             </h3>
-            <p className="text-sm sm:text-base">
-              A escolha da localização ideal depende do estilo de vida e do
-              orçamento de cada locatário. Em <strong>Balneário Camboriú</strong>,
-              o <em>Centro</em> oferece comodidade total para fazer tudo a pé,
-              ficando próximo a bancos, supermercados, colégios e à praia. Os
-              bairros <em>Pioneiros</em> e <em>Barra Sul</em> são procurados por
-              quem valoriza tranquilidade e alta sofisticação. Já os bairros{" "}
-              <em>Nações</em> e <em>Municípios</em> oferecem excelentes opções
-              residenciais com ótimo custo-benefício.
-            </p>
-            <p className="text-sm sm:text-base">
-              Em <strong>Camboriú</strong>, bairros como o <em>Centro</em>,{" "}
-              <em>Santa Regina</em> e <em>Tabuleiros</em> combinam proximidade
-              imediata com Balneário Camboriú, facilidade de deslocamento e
-              valores de locação bastante atrativos para apartamentos novos e
-              casas em condomínio.
-            </p>
-            <p className="text-sm sm:text-base">
-              Com mais de 35 anos de vivência no setor imobiliário e registro{" "}
-              <strong>CRECI/SC 56372-F</strong>, a Corretora Valdete Gonçalves
-              de Melo presta assessoria humanizada, esclarecendo todas as dúvidas
-              sobre taxas condominiais, IPTU, consumo individualizado e
-              transferência de titularidade de serviços essenciais.
-            </p>
+            <p className="text-sm sm:text-base">{c.textParagraph1}</p>
+            <p className="text-sm sm:text-base">{c.textParagraph2}</p>
+            <p className="text-sm sm:text-base">{c.textParagraph3}</p>
           </div>
         </div>
       </section>
@@ -194,9 +166,9 @@ export default async function AluguelAnualPage() {
         <div className="shell">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <SectionTitle
-              eyebrow="Oportunidades de Locação"
-              title="Imóveis Disponíveis para Aluguel Anual"
-              subtitle="Confira opções selecionadas em Balneário Camboriú e Camboriú prontas para morar."
+              eyebrow={c.listingsEyebrow}
+              title={c.listingsTitle}
+              subtitle={c.listingsSubtitle}
             />
             <Link
               href="/imoveis?finalidade=locacao_anual"
@@ -248,10 +220,10 @@ export default async function AluguelAnualPage() {
 
       {/* CTA Final */}
       <CTASection
-        title="Quer alugar seu imóvel ou procura um novo lar?"
-        description="Fale diretamente com a Corretora Val e tenha orientação sob medida para seu contrato de locação anual."
-        primaryButtonText="Falar pelo WhatsApp"
-        secondaryButtonText="Ver mais imóveis"
+        title={c.ctaTitle}
+        description={c.ctaDescription}
+        primaryButtonText={c.ctaPrimaryLabel}
+        secondaryButtonText={c.ctaSecondaryLabel}
         secondaryButtonHref="/imoveis"
       />
     </main>
