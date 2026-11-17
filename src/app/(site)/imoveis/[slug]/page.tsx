@@ -28,6 +28,12 @@ import { PropertyLeadForm } from "@/components/property-lead-form";
 import { PropertyMap } from "@/components/property-map";
 import { formatPrice } from "@/lib/format-price";
 import { prisma } from "@/lib/prisma";
+import {
+  DEFAULT_OG_IMAGE,
+  SITE_URL,
+  buildPropertyDescription,
+  buildPropertyTitle,
+} from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -117,18 +123,38 @@ export async function generateMetadata({
     };
   }
 
+  const title = buildPropertyTitle(property);
+  const description = buildPropertyDescription(property);
+  const canonicalUrl = `/imoveis/${property.slug}`;
   const coverUrl = property.photos[0]?.url;
 
   return {
-    title: `${property.title} | ${property.code} - Corretora Val`,
-    description:
-      property.summary ||
-      property.description ||
-      `Confira detalhes de ${property.title} em ${property.city}. Atendimento exclusivo Corretora Val.`,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
-      title: `${property.title} | Corretora Val`,
-      description: property.summary || undefined,
-      images: coverUrl ? [{ url: coverUrl }] : undefined,
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}${canonicalUrl}`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: coverUrl
+        ? [
+            {
+              url: coverUrl,
+              alt: title,
+            },
+          ]
+        : [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: coverUrl ? [coverUrl] : [DEFAULT_OG_IMAGE.url],
     },
   };
 }

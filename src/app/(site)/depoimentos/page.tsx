@@ -2,18 +2,39 @@ import type { Metadata } from "next";
 import { TestimonialsPlaceholder } from "@/components/institutional/testimonials-placeholder";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getDepoimentos, getPageSeo } from "@/lib/site-content";
 
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("depoimentos");
+  const title = seo.title ?? "Depoimentos de Clientes | Corretora Val";
+  const description =
+    seo.description ??
+    "Confira as avaliações e experiências reais de clientes que confiaram a compra, venda ou administração de seus imóveis à Corretora Val.";
 
   return {
-    title: seo.title ?? "Depoimentos de Clientes | Corretora Val",
-    description:
-      seo.description ??
-      "Confira as avaliações e experiências reais de clientes que confiaram a compra, venda ou administração de seus imóveis à Corretora Val.",
+    title,
+    description,
+    alternates: {
+      canonical: "/depoimentos",
+    },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}/depoimentos`,
+      siteName: "Corretora Val",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
   };
 }
 

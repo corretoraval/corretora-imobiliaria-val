@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { findAvailableSlug } from "@/lib/identifiers";
 import { prisma } from "@/lib/prisma";
 import { sanitizeBlogPostContent } from "@/lib/sanitize-blog";
-import { blogPostSchema } from "../route";
+import { blogPostSchema } from "@/lib/blog-constants";
 
 const blogPostUpdateSchema = blogPostSchema
   .partial()

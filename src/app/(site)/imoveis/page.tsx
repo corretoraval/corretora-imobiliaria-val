@@ -1,9 +1,41 @@
 export const revalidate = 30; // revalidate every 30s
 
-import { KeyRound, ShoppingBag, Sun, Layers } from "lucide-react";
+import { KeyRound, Layers, ShoppingBag, Sun } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PropertyCard, type PropertyPurpose } from "@/components/property-card";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const title =
+    "Imóveis em Balneário Camboriú e Camboriú | Venda, Locação e Temporada";
+  const description =
+    "Encontre casas, apartamentos e coberturas para comprar, alugar anual ou temporada em Balneário Camboriú, Camboriú e região com a Corretora Val.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: "/imoveis",
+    },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      url: `${SITE_URL}/imoveis`,
+      siteName: "Corretora Val",
+      title: `${title} | Corretora Val`,
+      description,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Corretora Val`,
+      description,
+      images: [DEFAULT_OG_IMAGE.url],
+    },
+  };
+}
 
 const PAGE_SIZE = 12;
 

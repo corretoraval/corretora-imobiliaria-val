@@ -2,48 +2,12 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { ZodError, z } from "zod";
+import { ZodError } from "zod";
 import { authOptions } from "@/lib/auth";
-import { BLOG_CATEGORIES } from "@/lib/blog-constants";
+import { blogPostSchema } from "@/lib/blog-constants";
 import { findAvailableSlug } from "@/lib/identifiers";
 import { prisma } from "@/lib/prisma";
 import { sanitizeBlogPostContent } from "@/lib/sanitize-blog";
-
-export const categories = BLOG_CATEGORIES;
-
-export const blogPostSchema = z.object({
-  slug: z
-    .string()
-    .trim()
-    .min(3, "O slug deve ter pelo menos 3 caracteres")
-    .max(200, "O slug não pode ter mais de 200 caracteres")
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Formato de URL amigável inválido")
-    .optional(),
-  title: z
-    .string()
-    .trim()
-    .min(3, "O título deve ter pelo menos 3 caracteres")
-    .max(200, "O título não pode ter mais de 200 caracteres"),
-  summary: z
-    .string()
-    .trim()
-    .min(10, "O resumo deve ter pelo menos 10 caracteres")
-    .max(500, "O resumo não pode ter mais de 500 caracteres"),
-  content: z.string().trim().min(1, "O conteúdo do post não pode estar vazio"),
-  category: z.enum(BLOG_CATEGORIES),
-  coverImage: z.string().trim().url().nullable().optional(),
-  authorName: z
-    .string()
-    .trim()
-    .min(2, "Nome do autor deve ter pelo menos 2 caracteres")
-    .max(100)
-    .default("Corretora Val"),
-  readingTimeMinutes: z.coerce.number().int().positive().default(5),
-  isFeatured: z.boolean().default(false),
-  isPublished: z.boolean().default(false),
-  seoTitle: z.string().trim().max(160).nullable().optional(),
-  seoDescription: z.string().trim().max(320).nullable().optional(),
-});
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
