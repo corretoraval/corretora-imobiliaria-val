@@ -13,12 +13,21 @@ import Link from "next/link";
 import { AuthorityStats } from "@/components/institutional/authority-stats";
 import { TestimonialsPlaceholder } from "@/components/institutional/testimonials-placeholder";
 import { PropertyCard } from "@/components/property-card";
+import {
+  JsonLd,
+  generateRealEstateAgentSchema,
+} from "@/components/seo/json-ld";
 import { CTASection } from "@/components/site/cta-section";
 import { SectionTitle } from "@/components/site/section-title";
 import { splitHighlightedText } from "@/lib/home-content";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
-import { getDepoimentos, getHomeContent, getPageSeo } from "@/lib/site-content";
+import {
+  getDepoimentos,
+  getHomeContent,
+  getPageSeo,
+  getSiteSettings,
+} from "@/lib/site-content";
 
 export const revalidate = 60;
 
@@ -99,11 +108,13 @@ async function getFeaturedProperties() {
 }
 
 export default async function Home() {
-  const [featuredProperties, content, depoimentos] = await Promise.all([
-    getFeaturedProperties(),
-    getHomeContent(),
-    getDepoimentos(),
-  ]);
+  const [featuredProperties, content, depoimentos, settings] =
+    await Promise.all([
+      getFeaturedProperties(),
+      getHomeContent(),
+      getDepoimentos(),
+      getSiteSettings(),
+    ]);
   const heroTitle = splitHighlightedText(
     content.hero.title,
     content.hero.emphasis,
@@ -111,6 +122,7 @@ export default async function Home() {
 
   return (
     <main>
+      <JsonLd data={generateRealEstateAgentSchema(settings)} />
       {/* Hero Section */}
       <section className="shell grid min-h-[calc(100dvh-5rem)] items-center gap-12 py-16 lg:grid-cols-[1fr_0.92fr] lg:py-20">
         <div className="max-w-2xl">

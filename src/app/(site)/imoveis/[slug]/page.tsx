@@ -26,6 +26,7 @@ import { PropertyCard } from "@/components/property-card";
 import { PropertyGallery } from "@/components/property-gallery";
 import { PropertyLeadForm } from "@/components/property-lead-form";
 import { PropertyMap } from "@/components/property-map";
+import { JsonLd, generatePropertySchema } from "@/components/seo/json-ld";
 import { formatPrice } from "@/lib/format-price";
 import { prisma } from "@/lib/prisma";
 import {
@@ -231,6 +232,7 @@ export default async function PropertyDetailPage({
 
   return (
     <main className="shell py-10 sm:py-14">
+      <JsonLd data={generatePropertySchema(property)} />
       {/* Breadcrumb Navigation */}
       <nav
         aria-label="Navegação estrutural"
