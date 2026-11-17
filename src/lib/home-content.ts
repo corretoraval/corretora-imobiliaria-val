@@ -57,7 +57,7 @@ export type HomeContent = {
 
 export const defaultHomeContent: HomeContent = {
   hero: {
-    eyebrow: "Balneário Camboriú e Camboriú",
+    eyebrow: "Imóveis e Administração · Balneário Camboriú e Camboriú",
     title: "Confiança que abre portas.",
     emphasis: "abre",
     description:

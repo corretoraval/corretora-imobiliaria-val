@@ -116,6 +116,7 @@ export default async function Home() {
         <div className="max-w-2xl">
           <p className="eyebrow fade-up">{content.hero.eyebrow}</p>
           <h1 className="display fade-up-delay mt-5 text-5xl leading-[0.92] text-[var(--plum)] sm:text-6xl lg:text-8xl">
+            <span className="sr-only">Corretora Val | </span>
             {heroTitle.before}
             {heroTitle.highlighted && (
               <em className="font-normal text-[var(--gold)]">
@@ -123,6 +124,10 @@ export default async function Home() {
               </em>
             )}
             {heroTitle.after}
+            <span className="sr-only">
+              {" "}
+              — Imóveis e Administração em Balneário Camboriú e Camboriú
+            </span>
           </h1>
           <p className="fade-up-delay mt-7 max-w-xl text-base leading-8 text-[var(--ink-soft)] sm:text-lg">
             {content.hero.description}
