@@ -81,25 +81,25 @@ export const defaultHomeContent: HomeContent = {
       key: "comprar",
       title: "Comprar",
       text: "Oportunidades selecionadas de imóveis para compra com análise documental completa e segurança jurídica.",
-      href: "/imoveis",
+      href: "/comprar-imoveis-balneario-camboriu",
     },
     {
       key: "alugar",
       title: "Alugar",
       text: "Locação anual transparente, com análise rigorosa e contratos seguros para inquilinos e proprietários.",
-      href: "/imoveis",
+      href: "/aluguel-anual-balneario-camboriu",
     },
     {
       key: "temporada",
       title: "Temporada",
       text: "Imóveis exclusivos para desfrutar o litoral de Balneário Camboriú com conforto em cada temporada.",
-      href: "/imoveis",
+      href: "/temporada-balneario-camboriu",
     },
     {
       key: "administrar",
       title: "Administrar Imóvel",
       text: "Gestão completa do seu patrimônio com vistorias, prestação de contas e atendimento próximo.",
-      href: "/administracao",
+      href: "/administracao-imoveis-balneario-camboriu",
     },
   ],
   featuredProperties: {
@@ -178,11 +178,27 @@ export function normalizeHomeContent(raw: unknown): HomeContent {
     canonicalHero.secondaryHref = hero.secondaryCtaHref;
   if (canonicalHero.cardDescription === undefined)
     canonicalHero.cardDescription = hero.cardText;
+  const dedicatedServiceHrefs: Record<string, string> = {
+    comprar: "/comprar-imoveis-balneario-camboriu",
+    alugar: "/aluguel-anual-balneario-camboriu",
+    temporada: "/temporada-balneario-camboriu",
+    administrar: "/administracao-imoveis-balneario-camboriu",
+  };
+
   const rawServices = Array.isArray(raw.services) ? raw.services : null;
   const services = rawServices
-    ? defaultHomeContent.services.map((service, index) =>
-        mergeValue(service, rawServices[index]),
-      )
+    ? defaultHomeContent.services.map((service, index) => {
+        const merged = mergeValue(service, rawServices[index]);
+        if (
+          merged.href === "/imoveis" ||
+          merged.href === "/administracao"
+        ) {
+          if (dedicatedServiceHrefs[service.key]) {
+            merged.href = dedicatedServiceHrefs[service.key];
+          }
+        }
+        return merged;
+      })
     : undefined;
   const normalized = {
     ...raw,

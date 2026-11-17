@@ -36,6 +36,30 @@ describe("Home content normalization", () => {
       "Uma trajetória guiada pela confiança",
     );
   });
+
+  it("atualiza links legados de servicos da home para as landing pages dedicadas", () => {
+    const content = normalizeHomeContent({
+      services: [
+        { key: "comprar", href: "/imoveis" },
+        { key: "alugar", href: "/imoveis" },
+        { key: "temporada", href: "/imoveis" },
+        { key: "administrar", href: "/administracao" },
+      ],
+    });
+
+    expect(content.services[0].href).toBe(
+      "/comprar-imoveis-balneario-camboriu",
+    );
+    expect(content.services[1].href).toBe(
+      "/aluguel-anual-balneario-camboriu",
+    );
+    expect(content.services[2].href).toBe(
+      "/temporada-balneario-camboriu",
+    );
+    expect(content.services[3].href).toBe(
+      "/administracao-imoveis-balneario-camboriu",
+    );
+  });
 });
 
 describe("splitHighlightedText", () => {

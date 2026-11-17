@@ -40,10 +40,10 @@ describe("sitemap.ts e robots.ts", () => {
     ];
 
     vi.mocked(prisma.imovel.findMany).mockResolvedValueOnce(
-      mockImoveis as unknown as ReturnType<typeof prisma.imovel.findMany>,
+      mockImoveis as never,
     );
     vi.mocked(prisma.postBlog.findMany).mockResolvedValueOnce(
-      mockPosts as unknown as ReturnType<typeof prisma.postBlog.findMany>,
+      mockPosts as never,
     );
 
     const result = await sitemap();
