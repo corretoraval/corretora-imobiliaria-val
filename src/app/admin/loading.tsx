@@ -5,7 +5,7 @@ export default function Loading() {
     <main
       className="shell py-16"
       aria-busy="true"
-      aria-label="Carregando página"
+      aria-label="Carregando painel"
     >
       <div className="h-5 w-28 animate-pulse rounded-full bg-[var(--surface-muted)]" />
       <div className="mt-5 h-16 max-w-xl animate-pulse rounded-2xl bg-[var(--surface-muted)]" />
@@ -14,7 +14,6 @@ export default function Loading() {
         <PropertyCardSkeleton />
         <PropertyCardSkeleton />
       </section>
-      <span className="sr-only">Carregando conteúdo.</span>
     </main>
   );
 }
