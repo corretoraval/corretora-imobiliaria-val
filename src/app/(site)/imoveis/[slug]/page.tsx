@@ -36,7 +36,7 @@ import {
   buildPropertyTitle,
 } from "@/lib/seo";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 interface PropertyPageProps {
   params: Promise<{ slug: string }>;

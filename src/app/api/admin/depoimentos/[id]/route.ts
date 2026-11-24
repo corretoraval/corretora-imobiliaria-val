@@ -34,6 +34,7 @@ export async function PUT(
       data,
     });
     revalidatePath("/depoimentos");
+    revalidatePath("/");
     return NextResponse.json({ item });
   } catch (error) {
     if (error instanceof ZodError)
@@ -55,5 +56,6 @@ export async function DELETE(
   const { id } = await params;
   await prisma.depoimento.delete({ where: { id } });
   revalidatePath("/depoimentos");
+  revalidatePath("/");
   return NextResponse.json({ ok: true });
 }

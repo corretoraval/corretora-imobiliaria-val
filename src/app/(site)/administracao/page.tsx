@@ -17,7 +17,7 @@ import { SectionTitle } from "@/components/site/section-title";
 import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getAdministracaoContent, getPageSeo } from "@/lib/site-content";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("administracao");

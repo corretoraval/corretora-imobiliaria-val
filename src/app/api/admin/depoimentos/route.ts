@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     const data = schema.parse(await request.json());
     const item = await prisma.depoimento.create({ data });
     revalidatePath("/depoimentos");
+    revalidatePath("/");
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {
     if (error instanceof ZodError)

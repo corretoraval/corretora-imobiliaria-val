@@ -56,6 +56,7 @@ export async function DELETE(
     try {
       revalidatePath("/imoveis");
       if (slug) revalidatePath(`/imoveis/${slug}`);
+      revalidatePath("/");
     } catch (e) {
       console.error("Revalidate after hard delete failed:", e);
     }

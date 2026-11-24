@@ -17,7 +17,7 @@ import {
   getPageSeo,
 } from "@/lib/site-content";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("temporada-balneario-camboriu");
