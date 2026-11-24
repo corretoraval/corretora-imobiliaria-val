@@ -11,7 +11,7 @@ import {
 } from "@/lib/site-content";
 import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("memoria-viva");

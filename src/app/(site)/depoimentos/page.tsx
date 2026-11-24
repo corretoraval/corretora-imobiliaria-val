@@ -5,7 +5,7 @@ import { PageHero } from "@/components/site/page-hero";
 import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
 import { getDepoimentos, getPageSeo } from "@/lib/site-content";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("depoimentos");
