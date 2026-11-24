@@ -1,5 +1,6 @@
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CTASection } from "@/components/site/cta-section";
@@ -93,6 +94,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <div className="grid gap-12 lg:grid-cols-12">
             {/* Main Content */}
             <article className="lg:col-span-8 space-y-8">
+              {post.coverImage && (
+                <figure className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl bg-[var(--surface-muted)]">
+                  <Image
+                    src={post.coverImage}
+                    alt={`Capa do artigo: ${post.title}`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 66vw"
+                    preload
+                    className="object-cover"
+                  />
+                </figure>
+              )}
+
               {/* Meta bar */}
               <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b text-xs text-[var(--ink-soft)]">
                 <div className="flex items-center gap-4">
