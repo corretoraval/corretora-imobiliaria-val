@@ -1,5 +1,6 @@
 import { ArrowUpRight, Clock, User } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface BlogCardProps {
   post: {
@@ -23,6 +24,21 @@ export function BlogCard({ post }: BlogCardProps) {
 
   return (
     <article className="group flex flex-col rounded-2xl border bg-white overflow-hidden shadow-xs hover:border-[var(--gold-light)] hover:shadow-md transition-all">
+      {post.coverImage && (
+        <Link
+          href={`/blog/${post.slug}`}
+          className="relative block aspect-[16/9] overflow-hidden bg-[var(--surface-muted)]"
+          aria-label={`Ler artigo: ${post.title}`}
+        >
+          <Image
+            src={post.coverImage}
+            alt={`Capa do artigo: ${post.title}`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </Link>
+      )}
       <div className="p-6 md:p-8 flex flex-col flex-1">
         <div className="flex items-center justify-between gap-2 mb-4">
           <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1 text-[0.65rem] font-extrabold tracking-wider text-[var(--plum)] uppercase">
